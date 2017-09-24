@@ -14,7 +14,8 @@ Features
 > - Save drawing to a non-transparent image (png or jpg) or a transparent image (png only)
 > - Use vector concept. So sketches won't be cropped between different sizes of canvas.
 
-Installation
+
+## Installation
 -------------
 Install from `npm` (only support RN >= 0.40)
 ```bash
@@ -25,11 +26,11 @@ Link native code
 react-native link @terrylinla/react-native-sketch-canvas
 ```
 
-Usage
+## Usage
 -------------
 <img src="https://i.imgur.com/4qpiX8m.png" height="400" />
 
-### Using without UI component (for customizing UI)
+### ● Using without UI component (for customizing UI)
 ```javascript
 import React, { Component } from 'react';
 import {
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
 AppRegistry.registerComponent('example', () => example);
 ```
 
-Properties
+#### Properties
 -------------
 | Prop  | Type | Description |
 | :------------ |:---------------:| :---------------| 
@@ -79,19 +80,19 @@ Properties
 | user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
 | touchEnabled | `bool` | If false, disable touching. Default is true.  |
 
-Methods
+#### Methods
 -------------
 | Method | Description |
 | :------------ |:---------------|
 | clear() | Clear all the paths |
 | undo() | Delete the latest path. Can undo multiple times. |
-| addPath(path) | Add a path (see `below`) to canvas.  |
+| addPath(path) | Add a path (see [below](#objects)) to canvas.  |
 | deletePath(id) | Delete a path with its `id` |
 | save(imageType, transparent, folder, filename) | Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to /sdcard/Pictures/`folder`/`filename` (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll. (`folder` and `filename` are ignored automatically)  |
 | getPaths() | Get the paths that drawn on the canvas |
 
 
-### Using with build-in UI components
+### ● Using with build-in UI components
 <img src="https://i.imgur.com/O0vVdD6.png" height="400" />
 
 ```javascript
@@ -172,20 +173,20 @@ const styles = StyleSheet.create({
 AppRegistry.registerComponent('example', () => example);
 ```
 
-Properties
+#### Properties
 -------------
 | Prop  | Type | Description |
 | :------------ |:---------------:| :---------------| 
 | containerStyle | `object` | Styles to be applied on container |
 | canvasStyle | `object` | Styles to be applied on canvas component |
-| onStrokeStart | `function` | See `above` |
-| onStrokeChanged | `function` | See `above` |
-| onStrokeEnd | `function` | See `above` |
+| onStrokeStart | `function` | See [above](#properties) |
+| onStrokeChanged | `function` | See [above](#properties) |
+| onStrokeEnd | `function` | See [above](#properties) |
 | onClosePressed | `function` | An optional function called when user taps closeComponent |
 | onInfoPressed | `function` | An optional function called when user taps infoComponent |
 | onUndoPressed | `function` | An optional function that accepts a argument `id` (the deleted id of path) and is called when user taps "undo" |
 | onClearPressed | `function` | An optional function called when user taps clearComponent |
-| user | `string` | See `above` |
+| user | `string` | See [above](#properties) |
 | closeComponent | `component` | An optional component for closing |
 | infoComponent | `component` | An optional component for showing info |
 | undoComponent | `component` | An optional component for undoing |
@@ -200,11 +201,11 @@ Properties
 | minStrokeWidth | `number` | The minimum value of thickness |
 | maxStrokeWidth | `number` | The maximum value of thickness |
 | strokeWidthStep | `number` | The step value of thickness when tapping `strokeWidthComponent`. |
-| savePreference | `function` | A function which is called when saving image and should return an object (see `below`). |
-| onSketchSaved | `function` | See `above` |
+| savePreference | `function` | A function which is called when saving image and should return an object (see [below](#objects)). |
+| onSketchSaved | `function` | See [above](#properties) |
 
-### Objects
-Use for saving image
+## Objects
+### Use for saving image
 ```javascript
 {
   folder: 'RNSketchCanvas', // use in Android, the folder name in Pictures
@@ -214,7 +215,7 @@ Use for saving image
 }
 ```
 
-Path format
+### Path format
 ```javascript
 {
   drawer: 'user1',
@@ -235,7 +236,7 @@ Path format
 }
 ```
 
-Example
+## Example
 -------------
 The source code includes 3 examples, using build-in UI components, using with only canvas, and sync between two canvases.
 
