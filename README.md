@@ -22,7 +22,7 @@ npm install @terrylinla/react-native-sketch-canvas --save
 ```
 Link native code
 ```bash
-react-native link react-native-sketch-canvas
+react-native link @terrylinla/react-native-sketch-canvas
 ```
 
 Usage

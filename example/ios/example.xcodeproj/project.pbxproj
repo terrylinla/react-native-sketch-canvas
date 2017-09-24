@@ -264,7 +264,7 @@
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
-		A871C5FA87244217B6AC3763 /* RNSketchCanvas.xcodeproj */ = {isa = PBXFileReference; name = "RNSketchCanvas.xcodeproj"; path = "../node_modules/react-native-sketch-canvas/ios/RNSketchCanvas/RNSketchCanvas.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		A871C5FA87244217B6AC3763 /* RNSketchCanvas.xcodeproj */ = {isa = PBXFileReference; name = "RNSketchCanvas.xcodeproj"; path = "../node_modules/@terrylinla/react-native-sketch-canvas/ios/RNSketchCanvas/RNSketchCanvas.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
 		09AA50CC9C60447BB3E4660B /* libRNSketchCanvas.a */ = {isa = PBXFileReference; name = "libRNSketchCanvas.a"; path = "libRNSketchCanvas.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
@@ -1015,7 +1015,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)\..\node_modules\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
+					"$(SRCROOT)\..\node_modules\@terrylinla\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
 				);
 			};
 			name = Debug;
@@ -1040,7 +1040,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)\..\node_modules\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
+					"$(SRCROOT)\..\node_modules\@terrylinla\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
 				);
 			};
 			name = Release;
@@ -1062,7 +1062,7 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)\..\node_modules\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
+					"$(SRCROOT)\..\node_modules\@terrylinla\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
 				);
 			};
 			name = Debug;
@@ -1083,7 +1083,7 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)\..\node_modules\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
+					"$(SRCROOT)\..\node_modules\@terrylinla\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
 				);
 			};
 			name = Release;
@@ -1117,7 +1117,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)\..\node_modules\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
+					"$(SRCROOT)\..\node_modules\@terrylinla\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
 				);
 			};
 			name = Debug;
@@ -1151,7 +1151,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)\..\node_modules\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
+					"$(SRCROOT)\..\node_modules\@terrylinla\react-native-sketch-canvas\ios\RNSketchCanvas\RNSketchCanvas",
 				);
 			};
 			name = Release;
