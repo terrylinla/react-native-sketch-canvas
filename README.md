@@ -12,7 +12,7 @@ Features
 > - Can undo strokes one by one.
 > - Can serialize path data to JSON. So it can sync other devices or someone else and continue to edit.
 > - Save drawing to a non-transparent image (png or jpg) or a transparent image (png only)
-> - Use vector concept. So sketches won't be cropped between different sizes of canvas.
+> - Use vector concept. So sketches won't be cropped in different sizes of canvas.
 
 
 ## Installation
