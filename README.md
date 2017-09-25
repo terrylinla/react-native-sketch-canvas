@@ -7,12 +7,12 @@ A React Native component for drawing by touching on both iOS and Android.
 
 Features
 -------------
-> - Support iOS and Android
-> - Stroke thickness and color are changable while drawing.
-> - Can undo strokes one by one.
-> - Can serialize path data to JSON. So it can sync other devices or someone else and continue to edit.
-> - Save drawing to a non-transparent image (png or jpg) or a transparent image (png only)
-> - Use vector concept. So sketches won't be cropped in different sizes of canvas.
+* Support iOS and Android
+* Stroke thickness and color are changable while drawing.
+* Can undo strokes one by one.
+* Can serialize path data to JSON. So it can sync other devices or someone else and continue to edit.
+* Save drawing to a non-transparent image (png or jpg) or a transparent image (png only)
+* Use vector concept. So sketches won't be cropped in different sizes of canvas.
 
 
 ## Installation
