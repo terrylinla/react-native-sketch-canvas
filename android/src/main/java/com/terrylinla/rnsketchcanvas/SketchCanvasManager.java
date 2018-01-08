@@ -34,6 +34,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_DELETE_PATH = 5;
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
+    public static final int COMMAND_GET_BASE64 = 8;
 
     @Override
     public String getName() {
@@ -47,15 +48,18 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @Override
     public Map<String,Integer> getCommandsMap() {
-        return MapBuilder.of(
-            "addPoint", COMMAND_ADD_POINT, 
-            "newPath", COMMAND_NEW_PATH,
-            "clear", COMMAND_CLEAR,
-            "addPath", COMMAND_ADD_PATH,
-            "deletePath", COMMAND_DELETE_PATH,
-            "save", COMMAND_SAVE,
-            "endPath", COMMAND_END_PATH
-        );
+        Map<String, Integer> map = new HashMap<>();
+        
+        map.put("addPoint", COMMAND_ADD_POINT);
+        map.put("newPath", COMMAND_NEW_PATH);
+        map.put("clear", COMMAND_CLEAR);
+        map.put("addPath", COMMAND_ADD_PATH);
+        map.put("deletePath", COMMAND_DELETE_PATH);
+        map.put("save", COMMAND_SAVE);
+        map.put("endPath", COMMAND_END_PATH);
+        map.put("getBase64", COMMAND_GET_BASE64);
+
+        return map;
     }
 
     @Override
@@ -98,6 +102,10 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
             }
             case COMMAND_END_PATH: {
                 view.end();
+                return;
+            }
+            case COMMAND_GET_BASE64: {
+                view.getBase64(args.getString(0), args.getBoolean(1));
                 return;
             }
             default:

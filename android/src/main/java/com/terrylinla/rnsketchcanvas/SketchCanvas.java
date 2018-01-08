@@ -14,8 +14,10 @@ import android.graphics.PointF;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.os.Environment;
+import android.util.Base64;
 
 import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -124,6 +126,36 @@ public class SketchCanvas extends View {
         if (this._currentPath != null) {
             this._currentPath.end();
         }
+    }
+
+    public void getBase64(String format, boolean transparent) {
+        WritableMap event = Arguments.createMap();
+        Bitmap  bitmap = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        if (format.equals("png")) {
+            canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
+        } else {
+            canvas.drawARGB(255, 255, 255, 255);
+        }
+        this.drawPath(canvas);
+
+        try {
+            ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+            bitmap.compress(
+                format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 
+                format.equals("png") ? 100 : 90, 
+                byteArrayOS);
+            event.putString("base64", Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT));
+        } catch (Exception e) {
+            e.printStackTrace();
+            this.onSaved(false);
+            event.putString("base64", null);
+        }   
+
+        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+            getId(),
+            "topChange",
+            event);
     }
 
     @Override  

@@ -153,6 +153,9 @@ export default class example extends Component {
                 onStrokeEnd={() => {
                   this.setState({ message: 'End' })
                 }}
+                onBase64={(base64) => {
+                  console.log(base64) // For Android
+                }}
               />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <View style={{flexDirection: 'row'}}>
@@ -171,6 +174,9 @@ export default class example extends Component {
                 <TouchableOpacity style={[styles.functionButton, {backgroundColor: 'black', width: 90}]} onPress={() => {
                   console.log(this.canvas.getPaths())
                   Alert.alert(JSON.stringify(this.canvas.getPaths()))
+                  this.canvas.getBase64('jpg', false, (err, result) => {
+                    console.log(result) // For iOS
+                  })
                 }}>
                   <Text style={{color: 'white'}}>Get Paths</Text>
                 </TouchableOpacity>

@@ -13,5 +13,6 @@
 - (void)endPath;
 - (void)clear;
 - (void)saveImageOfType: (NSString*) type withTransparentBackground: (BOOL) transparent;
+- (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent;
 
 @end

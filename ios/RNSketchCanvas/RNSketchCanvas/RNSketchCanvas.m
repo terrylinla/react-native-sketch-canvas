@@ -123,6 +123,24 @@
     }
 }
 
+- (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
+    CGRect rect = self.frame;
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    if ([type isEqualToString: @"png"] && !transparent) {
+        CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
+        CGContextFillRect(context, CGRectMake(0, 0, rect.size.width, rect.size.height));
+    }
+    [_layer renderInContext:context];
+    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    if ([type isEqualToString: @"jpg"]) {
+        return [UIImageJPEGRepresentation(img, 0.9) base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
+    } else {
+        return [UIImagePNGRepresentation(img) base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
+    }
+}
+
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo: (void *) contextInfo {
     if (error) {
         [_eventDispatcher sendInputEventWithName:@"topChange"

@@ -71,4 +71,9 @@ RCT_EXPORT_METHOD(clear)
     [self.sketchCanvasView clear];
 }
 
+RCT_EXPORT_METHOD(transferToBase64: (NSString*) type withTransparentBackground:(BOOL) transparent :(RCTResponseSenderBlock)callback)
+{
+    callback(@[[NSNull null], [self.sketchCanvasView transferToBase64OfType: type withTransparentBackground: transparent]]);
+}
+
 @end

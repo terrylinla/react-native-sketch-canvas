@@ -31,6 +31,7 @@ class SketchCanvas extends React.Component {
     onStrokeChanged: PropTypes.func,
     onStrokeEnd: PropTypes.func,
     onSketchSaved: PropTypes.func,
+    onBase64: PropTypes.func,
     user: PropTypes.string,
 
     touchEnabled: PropTypes.bool,
@@ -44,6 +45,7 @@ class SketchCanvas extends React.Component {
     onStrokeChanged: () => {},
     onStrokeEnd: () => {},
     onSketchSaved: () => {},
+    onBase64: () => {},
     user: null,
 
     touchEnabled: true,
@@ -52,12 +54,14 @@ class SketchCanvas extends React.Component {
   constructor(props) {
     super(props)
 
+    this._pathsToProcess = []
     this._paths = []
     this._path = null
     this._handle = null
     this._screenScale = Platform.OS === 'ios' ? 1 : Dimensions.get('window').scale
     this._offset = { x: 0, y: 0 }
     this._size = { width: 0, height: 0 }
+    this._initialized = false
   }
 
   clear() {
@@ -78,17 +82,21 @@ class SketchCanvas extends React.Component {
   }
 
   addPath(data) {
-    if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data)
-    const pathData = data.path.data.map(p => {
-      const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2))
-      return `${coor[0] * this._screenScale * this._size.width / data.size.width },${coor[1] * this._screenScale * this._size.height / data.size.height }`;
-    })
-    if (Platform.OS === 'ios') {
-      SketchCanvasManager.addPath(data.path.id, data.path.color, data.path.width, pathData)
+    if (this._initialized) {
+      if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data)
+      const pathData = data.path.data.map(p => {
+        const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2))
+        return `${coor[0] * this._screenScale * this._size.width / data.size.width },${coor[1] * this._screenScale * this._size.height / data.size.height }`;
+      })
+      if (Platform.OS === 'ios') {
+        SketchCanvasManager.addPath(data.path.id, data.path.color, data.path.width, pathData)
+      } else {
+        UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPath, [
+          data.path.id, data.path.color, data.path.width, pathData
+        ])
+      }
     } else {
-      UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPath, [
-        data.path.id, data.path.color, data.path.width, pathData
-      ])
+      this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data)
     }
   }
 
@@ -111,6 +119,14 @@ class SketchCanvas extends React.Component {
 
   getPaths() {
     return this._paths
+  }
+
+  getBase64(imageType, transparent, callback) {
+    if (Platform.OS === 'ios') {
+      SketchCanvasManager.transferToBase64(imageType, transparent, callback)
+    } else {
+      UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.getBase64, [ imageType, transparent ])
+    }
   }
 
   componentWillMount() {
@@ -192,9 +208,19 @@ class SketchCanvas extends React.Component {
           this._handle = ReactNative.findNodeHandle(ref)
         }}
         style={this.props.style}
-        onLayout={e => this._size={ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }}
+        onLayout={e => {
+          this._size={ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
+          this._initialized = true
+          this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
+        }}
         {...this.panResponder.panHandlers} 
-        onChange={(e) => { this.props.onSketchSaved(e.nativeEvent.success) }}
+        onChange={(e) => {
+          if (e.nativeEvent.hasOwnProperty('success')) {
+            this.props.onSketchSaved(e.nativeEvent.success)
+          } else if (e.nativeEvent.hasOwnProperty('base64')) {
+            this.props.onBase64(e.nativeEvent.base64)
+          }
+        }}
       />
     );
   }
