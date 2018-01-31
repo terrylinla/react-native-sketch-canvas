@@ -132,8 +132,8 @@ class SketchCanvas extends React.Component {
   componentWillMount() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
-      onStartShouldSetPanResponder: (evt, gestureState) => false,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => false,
+      onStartShouldSetPanResponder: (evt, gestureState) => true,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
       onMoveShouldSetPanResponder: (evt, gestureState) => true,
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
 
@@ -149,19 +149,19 @@ class SketchCanvas extends React.Component {
         if (Platform.OS === 'ios') {
           SketchCanvasManager.newPath(this._path.id, this._path.color, this._path.width)
           SketchCanvasManager.addPoint(
-            parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale), 
-            parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
+            parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
+            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
           )
         } else {
           UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.newPath, [
             this._path.id, this._path.color, this._path.width,
           ])
           UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
-            parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale), 
-            parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
+            parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
+            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
           ])
         }
-        this._path.data.push(`${parseFloat(gestureState.moveX - this._offset.x).toFixed(2)},${parseFloat(gestureState.moveY - this._offset.y).toFixed(2)}`)
+        this._path.data.push(`${parseFloat(gestureState.x0 - this._offset.x).toFixed(2)},${parseFloat(gestureState.y0 - this._offset.y).toFixed(2)}`)
         this.props.onStrokeStart()
       },
       onPanResponderMove: (evt, gestureState) => {
