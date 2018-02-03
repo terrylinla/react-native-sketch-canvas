@@ -14,7 +14,7 @@
     for (int index=0; index<_paths.count; index++) {
         RNSketchData *data = _paths[index];
         bool first = true;
-        CGContextSetLineWidth(context, (float)data.strokeWidth / 2.0);
+        CGContextSetLineWidth(context, (float)data.strokeWidth);
         CGContextSetStrokeColorWithColor(context, [data.strokeColor CGColor]);
         
         if (data.cgPoints) {
