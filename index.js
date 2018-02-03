@@ -5,13 +5,14 @@ import ReactNative, {
   Text,
   TouchableOpacity,
   FlatList,
+  ViewPropTypes,
 } from 'react-native'
 import SketchCanvas from './src/SketchCanvas'
 
 export default class extends React.Component {
   static propTypes = {
-    containerStyle: View.propTypes.style,
-    canvasStyle: View.propTypes.style,
+    containerStyle: ViewPropTypes.style,
+    canvasStyle: ViewPropTypes.style,
     onStrokeStart: PropTypes.func,
     onStrokeChanged: PropTypes.func,
     onStrokeEnd: PropTypes.func,

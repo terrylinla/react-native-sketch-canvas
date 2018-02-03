@@ -11,7 +11,8 @@ import ReactNative, {
   TouchableOpacity,
   PanResponder,
   Dimensions,
-  Platform
+  Platform,
+  ViewPropTypes,
 } from 'react-native'
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
@@ -24,7 +25,7 @@ const SketchCanvasManager = NativeModules.RNSketchCanvasManager || {};
 
 class SketchCanvas extends React.Component {
   static propTypes = {
-    style: View.propTypes.style,
+    style: ViewPropTypes.style,
     strokeColor: PropTypes.string,
     strokeWidth: PropTypes.number,
     onStrokeStart: PropTypes.func,
