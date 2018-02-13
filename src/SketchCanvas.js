@@ -28,6 +28,7 @@ class SketchCanvas extends React.Component {
     style: ViewPropTypes.style,
     strokeColor: PropTypes.string,
     strokeWidth: PropTypes.number,
+    onPathsChange: PropTypes.func,
     onStrokeStart: PropTypes.func,
     onStrokeChanged: PropTypes.func,
     onStrokeEnd: PropTypes.func,
@@ -42,6 +43,7 @@ class SketchCanvas extends React.Component {
     style: null,
     strokeColor: '#000000',
     strokeWidth: 3,
+    onPathsChange: () => {},
     onStrokeStart: () => {},
     onStrokeChanged: () => {},
     onStrokeEnd: () => {},
@@ -216,7 +218,9 @@ class SketchCanvas extends React.Component {
         }}
         {...this.panResponder.panHandlers} 
         onChange={(e) => {
-          if (e.nativeEvent.hasOwnProperty('success')) {
+          if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
+            this.props.onPathsChange(e.nativeEvent.pathsUpdate)
+          } else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
           } else if (e.nativeEvent.hasOwnProperty('base64')) {
             this.props.onBase64(e.nativeEvent.base64)

@@ -39,7 +39,7 @@ public class SketchCanvas extends View {
     public void clear() {
         this._paths.clear();
         this._currentPath = null;
-        invalidate();
+        invalidateCanvas();
     }
 
     public void newPath(int id, String strokeColor, int strokeWidth) {
@@ -49,7 +49,7 @@ public class SketchCanvas extends View {
 
     public void addPoint(float x, float y) {
         this._currentPath.addPoint(new PointF(x, y));
-        invalidate();
+        invalidateCanvas();
     }
 
     public void addPath(int id, String strokeColor, int strokeWidth, ArrayList<PointF> points) {
@@ -63,8 +63,8 @@ public class SketchCanvas extends View {
 
         if (!exist) {
             this._paths.add(new SketchData(id, strokeColor, strokeWidth, points));
-            invalidate();
-        } 
+            invalidateCanvas();
+        }
     }
 
     public void deletePath(int id) {
@@ -78,7 +78,7 @@ public class SketchCanvas extends View {
 
         if (index > -1) {
             this._paths.remove(index);
-            invalidate();
+            invalidateCanvas();
         }
     }
 
@@ -163,6 +163,16 @@ public class SketchCanvas extends View {
     protected void onDraw(Canvas canvas) {  
         super.onDraw(canvas);
         this.drawPath(canvas);
+    }
+
+    private void invalidateCanvas() {
+      WritableMap event = Arguments.createMap();
+      event.putInt("pathsUpdate", this._paths.size());
+      mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+          getId(),
+          "topChange",
+          event);
+      invalidate();
     }
 
     private void drawPath(Canvas canvas) {
