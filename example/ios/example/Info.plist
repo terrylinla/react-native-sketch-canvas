@@ -40,7 +40,7 @@
 	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
-	<key>NSPhotoLibraryUsageDescription</key>
+	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Use Photo Library</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>

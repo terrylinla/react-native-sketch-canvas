@@ -77,7 +77,7 @@ AppRegistry.registerComponent('example', () => example);
 | onStrokeChanged | `function` | An optional function called when user's finger moves |
 | onStrokeEnd | `function` | An optional function called when user's finger leaves the canvas (end drawing) |
 | onSketchSaved | `function` | An optional function which accpets 1 argument `success`, true if image is saved successfully |
-| onBase64 | `function` | An optional function which accpets 1 argument `base64`, null if err (for Android) |
+| onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
 | user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
 | touchEnabled | `bool` | If false, disable touching. Default is true.  |
 
@@ -91,7 +91,7 @@ AppRegistry.registerComponent('example', () => example);
 | deletePath(id) | Delete a path with its `id` |
 | save(imageType, transparent, folder, filename) | Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to /sdcard/Pictures/`folder`/`filename` (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll. (`folder` and `filename` are ignored automatically)  |
 | getPaths() | Get the paths that drawn on the canvas |
-| getBase64(imageType, transparent, callback) | Android: Get the base64 of image and receive data in `onBase64` (callback will ignore) <br/>iOS: Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
+| getBase64(imageType, transparent, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
 
 
 ### ● Using with build-in UI components
@@ -184,6 +184,7 @@ AppRegistry.registerComponent('example', () => example);
 | onStrokeStart | `function` | See [above](#properties) |
 | onStrokeChanged | `function` | See [above](#properties) |
 | onStrokeEnd | `function` | See [above](#properties) |
+| onPathsChange | `function` | See [above](#properties) |
 | onClosePressed | `function` | An optional function called when user taps closeComponent |
 | onInfoPressed | `function` | An optional function called when user taps infoComponent |
 | onUndoPressed | `function` | An optional function that accepts a argument `id` (the deleted id of path) and is called when user taps "undo" |

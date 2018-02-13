@@ -18,7 +18,9 @@ public class SketchCanvasPackage implements ReactPackage {
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return new ArrayList<NativeModule>();
+        return Arrays.<NativeModule>asList(
+            new SketchCanvasModule(reactContext)
+        );
     }
 
     @Override

@@ -8,6 +8,15 @@
 
 RCT_EXPORT_MODULE()
 
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
+#pragma mark - Events
+
+RCT_EXPORT_VIEW_PROPERTY(onChange, RCTBubblingEventBlock);
+
 #pragma mark - Lifecycle
 
 - (instancetype)init
@@ -41,7 +50,7 @@ RCT_EXPORT_METHOD(addPoint: (float)x : (float)y)
     [self.sketchCanvasView addPointX:x Y:y];
 }
 
-RCT_EXPORT_METHOD(addPath: (int) pathId strokeColor: (NSString*) strokeColor strokeWidth: (int) strokeWidth points: (NSArray*) points)
+RCT_EXPORT_METHOD(addPath: (int) pathId strokeColor: (UIColor*) strokeColor strokeWidth: (int) strokeWidth points: (NSArray*) points)
 {
     NSMutableArray *cgPoints = [[NSMutableArray alloc] initWithCapacity: points.count];
     for (NSString *coor in points) {
@@ -51,7 +60,7 @@ RCT_EXPORT_METHOD(addPath: (int) pathId strokeColor: (NSString*) strokeColor str
     [self.sketchCanvasView addPath: pathId strokeColor: strokeColor strokeWidth: strokeWidth points: cgPoints];
 }
 
-RCT_EXPORT_METHOD(newPath: (int) pathId strokeColor: (NSString*) strokeColor strokeWidth: (int) strokeWidth)
+RCT_EXPORT_METHOD(newPath: (int) pathId strokeColor: (UIColor*) strokeColor strokeWidth: (int) strokeWidth)
 {
     [self.sketchCanvasView newPath: pathId strokeColor: strokeColor strokeWidth: strokeWidth];
 }

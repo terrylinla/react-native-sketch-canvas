@@ -12,6 +12,7 @@ import android.util.Log;
 import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
@@ -34,7 +35,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_DELETE_PATH = 5;
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
-    public static final int COMMAND_GET_BASE64 = 8;
+
+    public static SketchCanvas Canvas = null;
 
     @Override
     public String getName() {
@@ -43,7 +45,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @Override
     protected SketchCanvas createViewInstance(ThemedReactContext context) {
-        return new SketchCanvas(context);
+        SketchCanvasManager.Canvas = new SketchCanvas(context);
+        return SketchCanvasManager.Canvas;
     }
 
     @Override
@@ -57,7 +60,6 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("deletePath", COMMAND_DELETE_PATH);
         map.put("save", COMMAND_SAVE);
         map.put("endPath", COMMAND_END_PATH);
-        map.put("getBase64", COMMAND_GET_BASE64);
 
         return map;
     }
@@ -75,7 +77,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 return;
             }
             case COMMAND_NEW_PATH: {
-                view.newPath(args.getInt(0), args.getString(1), args.getInt(2));
+                view.newPath(args.getInt(0), args.getInt(1), args.getInt(2));
                 return;
             }
             case COMMAND_CLEAR: {
@@ -89,7 +91,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                     String[] coor = path.getString(i).split(",");
                     pointPath.add(new PointF(Float.parseFloat(coor[0]), Float.parseFloat(coor[1])));
                 }
-                view.addPath(args.getInt(0), args.getString(1), args.getInt(2), pointPath);
+                view.addPath(args.getInt(0), args.getInt(1), args.getInt(2), pointPath);
                 return;
             }
             case COMMAND_DELETE_PATH: {
@@ -102,10 +104,6 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
             }
             case COMMAND_END_PATH: {
                 view.end();
-                return;
-            }
-            case COMMAND_GET_BASE64: {
-                view.getBase64(args.getString(0), args.getBoolean(1));
                 return;
             }
             default:

@@ -2,7 +2,6 @@
 #import "RNSketchCanvas.h"
 #import "RNSketchData.h"
 #import "RNSketchCanvasDelegate.h"
-#import "UIColor+HexString.h"
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
@@ -43,18 +42,19 @@
     }
 }
 
-- (void)newPath:(int) pathId strokeColor:(NSString*) strokeColor strokeWidth:(int) strokeWidth {
+- (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
     if (_currentPath) {
         [_currentPath end];
     }
     _currentPath = [[RNSketchData alloc]
                     initWithId: pathId
-                    strokeColor: [UIColor colorWithHexString: strokeColor]
+                    strokeColor: strokeColor
                     strokeWidth: strokeWidth];
     [_paths addObject: _currentPath];
+    [self invalidate: YES];
 }
 
-- (void) addPath:(int) pathId strokeColor:(NSString*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
+- (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
     bool exist = false;
     for(int i=0; i<_paths.count; i++) {
         if (((RNSketchData*)_paths[i]).pathId == pathId) {
@@ -66,10 +66,10 @@
     if (!exist) {
         [_paths addObject: [[RNSketchData alloc]
                             initWithId: pathId
-                            strokeColor: [UIColor colorWithHexString: strokeColor]
+                            strokeColor: strokeColor
                             strokeWidth: strokeWidth
                             points: points]];
-        [self invalidate];
+        [self invalidate: YES];
     }
 }
 
@@ -84,13 +84,13 @@
     
     if (index > -1) {
         [_paths removeObjectAtIndex: index];
-        [self invalidate];
+        [self invalidate: YES];
     }
 }
 
 - (void)addPointX: (float)x Y: (float)y {
     _currentPoints = [_currentPath addPoint: CGPointMake(x, y)];
-    [self invalidate];
+    [self invalidate: NO];
 }
 
 - (void)endPath {
@@ -103,7 +103,7 @@
     [_paths removeAllObjects];
     _currentPath = nil;
     _currentPoints = nil;
-    [self invalidate];
+    [self invalidate: YES];
 }
 
 - (void) saveImageOfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
@@ -144,23 +144,16 @@
 }
 
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo: (void *) contextInfo {
-    if (error) {
-        [_eventDispatcher sendInputEventWithName:@"topChange"
-                                            body: @{ @"target": self.reactTag,
-                                                     @"success": @NO, }];
-    } else {
-        [_eventDispatcher sendInputEventWithName:@"topChange"
-                                            body: @{ @"target": self.reactTag,
-                                                     @"success": @YES, }];
+    if (_onChange) {
+        _onChange(@{ @"success": error != nil ? @NO : @YES });
     }
 }
 
-- (void) invalidate {
+- (void) invalidate:(BOOL)shouldDispatchEvent {
     dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [_eventDispatcher sendInputEventWithName:@"topChange"
-                                            body: @{ @"target": self.reactTag,
-                                                     @"pathsUpdate": @(_paths.count) }];
+        if (_onChange && shouldDispatchEvent) {
+            _onChange(@{ @"pathsUpdate": @(_paths.count) });
+        }
         
         delegate.currentPoints = _currentPoints;
         delegate.paths = _paths;

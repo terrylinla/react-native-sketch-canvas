@@ -13,6 +13,7 @@ import ReactNative, {
   Dimensions,
   Platform,
   ViewPropTypes,
+  processColor
 } from 'react-native'
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
@@ -33,7 +34,6 @@ class SketchCanvas extends React.Component {
     onStrokeChanged: PropTypes.func,
     onStrokeEnd: PropTypes.func,
     onSketchSaved: PropTypes.func,
-    onBase64: PropTypes.func,
     user: PropTypes.string,
 
     touchEnabled: PropTypes.bool,
@@ -48,7 +48,6 @@ class SketchCanvas extends React.Component {
     onStrokeChanged: () => {},
     onStrokeEnd: () => {},
     onSketchSaved: () => {},
-    onBase64: () => {},
     user: null,
 
     touchEnabled: true,
@@ -128,7 +127,7 @@ class SketchCanvas extends React.Component {
     if (Platform.OS === 'ios') {
       SketchCanvasManager.transferToBase64(imageType, transparent, callback)
     } else {
-      UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.getBase64, [ imageType, transparent ])
+      NativeModules.SketchCanvasModule.transferToBase64(this._handle, imageType, transparent, callback)
     }
   }
 
@@ -145,7 +144,7 @@ class SketchCanvas extends React.Component {
         const e = evt.nativeEvent
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
         this._path = {
-          id: parseInt(Math.random() * 100000000), color: this.props.strokeColor, 
+          id: parseInt(Math.random() * 100000000), color: processColor(this.props.strokeColor), 
           width: this.props.strokeWidth, data: []
         }
         
@@ -222,8 +221,6 @@ class SketchCanvas extends React.Component {
             this.props.onPathsChange(e.nativeEvent.pathsUpdate)
           } else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
-          } else if (e.nativeEvent.hasOwnProperty('base64')) {
-            this.props.onBase64(e.nativeEvent.base64)
           }
         }}
       />

@@ -20,6 +20,7 @@ export default class extends React.Component {
     onInfoPressed: PropTypes.func,
     onUndoPressed: PropTypes.func,
     onClearPressed: PropTypes.func,
+    onPathsChange: PropTypes.func,
     user: PropTypes.string,
 
     closeComponent: PropTypes.node,
@@ -53,6 +54,7 @@ export default class extends React.Component {
     onInfoPressed: () => {},
     onUndoPressed: () => {},
     onClearPressed: () => {},
+    onPathsChange: () => {},
     user: null,
 
     closeComponent: null,
@@ -207,6 +209,7 @@ export default class extends React.Component {
           user={this.props.user}
           strokeWidth={this.state.strokeWidth}
           onSketchSaved={success => this.props.onSketchSaved(success)}
+          onPathsChange={this.props.onPathsChange}
         />
         <View style={{ flexDirection: 'row' }}>
           <FlatList

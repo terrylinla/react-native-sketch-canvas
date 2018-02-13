@@ -112,6 +112,9 @@ export default class example extends Component {
                 Alert.alert('Image saved!')
                 // Alert.alert(String(success))
               }}
+              onPathsChange={(pathsCount) => {
+                console.log('pathsCount', pathsCount)
+              }}
             />
           </View>
         }
@@ -153,8 +156,8 @@ export default class example extends Component {
                 onStrokeEnd={() => {
                   this.setState({ message: 'End' })
                 }}
-                onBase64={(base64) => {
-                  console.log(base64) // For Android
+                onPathsChange={(pathsCount) => {
+                  console.log('pathsCount', pathsCount)
                 }}
               />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -175,7 +178,7 @@ export default class example extends Component {
                   console.log(this.canvas.getPaths())
                   Alert.alert(JSON.stringify(this.canvas.getPaths()))
                   this.canvas.getBase64('jpg', false, (err, result) => {
-                    console.log(result) // For iOS
+                    console.log(result)
                   })
                 }}>
                   <Text style={{color: 'white'}}>Get Paths</Text>
@@ -240,6 +243,9 @@ export default class example extends Component {
               onStrokeEnd={(path) => {
                 this.canvas2.addPath(path)
               }}
+              onPathsChange={(pathsCount) => {
+                console.log('pathsCount(user1)', pathsCount)
+              }}
             />
             <RNSketchCanvas
               ref={ref => this.canvas2=ref}
@@ -288,6 +294,9 @@ export default class example extends Component {
               }}
               onStrokeEnd={(path) => {
                 this.canvas1.addPath(path)
+              }}
+              onPathsChange={(pathsCount) => {
+                console.log('pathsCount(user2)', pathsCount)
               }}
             />
           </View>

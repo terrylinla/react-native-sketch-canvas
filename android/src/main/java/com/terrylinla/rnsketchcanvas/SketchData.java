@@ -11,15 +11,15 @@ public class SketchData {
     public int id, strokeColor, strokeWidth;
     public Path path;
 
-    public SketchData(int id, String strokeColor, int strokeWidth) {
+    public SketchData(int id, int strokeColor, int strokeWidth) {
         this.id = id;
-        this.strokeColor = (Color.parseColor(strokeColor));
+        this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
     }
 
-    public SketchData(int id, String strokeColor, int strokeWidth, ArrayList<PointF> points) {
+    public SketchData(int id, int strokeColor, int strokeWidth, ArrayList<PointF> points) {
         this.id = id;
-        this.strokeColor = (Color.parseColor(strokeColor));
+        this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
         this.points.addAll(points);
     }

@@ -39,20 +39,21 @@ public class SketchCanvas extends View {
     public void clear() {
         this._paths.clear();
         this._currentPath = null;
-        invalidateCanvas();
+        invalidateCanvas(true);
     }
 
-    public void newPath(int id, String strokeColor, int strokeWidth) {
+    public void newPath(int id, int strokeColor, int strokeWidth) {
         this._currentPath = new SketchData(id, strokeColor, strokeWidth);
         this._paths.add(this._currentPath);
+        invalidateCanvas(true);
     }
 
     public void addPoint(float x, float y) {
         this._currentPath.addPoint(new PointF(x, y));
-        invalidateCanvas();
+        invalidateCanvas(false);
     }
 
-    public void addPath(int id, String strokeColor, int strokeWidth, ArrayList<PointF> points) {
+    public void addPath(int id, int strokeColor, int strokeWidth, ArrayList<PointF> points) {
         boolean exist = false;
         for(SketchData data: this._paths) {
             if (data.id == id) {
@@ -63,7 +64,7 @@ public class SketchCanvas extends View {
 
         if (!exist) {
             this._paths.add(new SketchData(id, strokeColor, strokeWidth, points));
-            invalidateCanvas();
+            invalidateCanvas(true);
         }
     }
 
@@ -78,7 +79,7 @@ public class SketchCanvas extends View {
 
         if (index > -1) {
             this._paths.remove(index);
-            invalidateCanvas();
+            invalidateCanvas(true);
         }
     }
 
@@ -129,7 +130,7 @@ public class SketchCanvas extends View {
         }
     }
 
-    public void getBase64(String format, boolean transparent) {
+    public String getBase64(String format, boolean transparent) {
         WritableMap event = Arguments.createMap();
         Bitmap  bitmap = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
@@ -139,24 +140,13 @@ public class SketchCanvas extends View {
             canvas.drawARGB(255, 255, 255, 255);
         }
         this.drawPath(canvas);
-
-        try {
-            ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
-            bitmap.compress(
-                format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 
-                format.equals("png") ? 100 : 90, 
-                byteArrayOS);
-            event.putString("base64", Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT));
-        } catch (Exception e) {
-            e.printStackTrace();
-            this.onSaved(false);
-            event.putString("base64", null);
-        }   
-
-        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            getId(),
-            "topChange",
-            event);
+ 
+        ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+        bitmap.compress(
+            format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 
+            format.equals("png") ? 100 : 90, 
+            byteArrayOS);
+        return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
     }
 
     @Override  
@@ -165,14 +155,16 @@ public class SketchCanvas extends View {
         this.drawPath(canvas);
     }
 
-    private void invalidateCanvas() {
-      WritableMap event = Arguments.createMap();
-      event.putInt("pathsUpdate", this._paths.size());
-      mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-          getId(),
-          "topChange",
-          event);
-      invalidate();
+    private void invalidateCanvas(boolean shouldDispatchEvent) {
+        if (shouldDispatchEvent) {
+            WritableMap event = Arguments.createMap();
+            event.putInt("pathsUpdate", this._paths.size());
+            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                getId(),
+                "topChange",
+                event);
+        }
+        invalidate();
     }
 
     private void drawPath(Canvas canvas) {

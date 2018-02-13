@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		DE06DF7D1F336A75005E4998 /* RNSketchCanvasDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE06DF7C1F336A75005E4998 /* RNSketchCanvasDelegate.m */; };
 		DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */ = {isa = PBXBuildFile; fileRef = DE0C997F1F32D596001BDE8B /* RNSketchData.m */; };
-		DE0C99831F32E00A001BDE8B /* UIColor+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = DE0C99821F32E00A001BDE8B /* UIColor+HexString.m */; };
 		DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB694861F322F2A00DC6841 /* RNSketchCanvasManager.m */; };
 		DEFBA25D1F322B6000A4545C /* RNSketchCanvas.m in Sources */ = {isa = PBXBuildFile; fileRef = DEFBA25C1F322B6000A4545C /* RNSketchCanvas.m */; };
 		DEFBA25E1F322B6000A4545C /* RNSketchCanvas.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = DEFBA25B1F322B6000A4545C /* RNSketchCanvas.h */; };
@@ -33,8 +32,6 @@
 		DE06DF7C1F336A75005E4998 /* RNSketchCanvasDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNSketchCanvasDelegate.m; sourceTree = "<group>"; };
 		DE0C997E1F32D596001BDE8B /* RNSketchData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSketchData.h; sourceTree = "<group>"; };
 		DE0C997F1F32D596001BDE8B /* RNSketchData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNSketchData.m; sourceTree = "<group>"; };
-		DE0C99811F32E00A001BDE8B /* UIColor+HexString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+HexString.h"; sourceTree = "<group>"; };
-		DE0C99821F32E00A001BDE8B /* UIColor+HexString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+HexString.m"; sourceTree = "<group>"; };
 		DEB694851F322F2A00DC6841 /* RNSketchCanvasManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSketchCanvasManager.h; sourceTree = "<group>"; };
 		DEB694861F322F2A00DC6841 /* RNSketchCanvasManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNSketchCanvasManager.m; sourceTree = "<group>"; };
 		DEFBA2581F322B6000A4545C /* libRNSketchCanvas.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNSketchCanvas.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -78,8 +75,6 @@
 				DEFBA25C1F322B6000A4545C /* RNSketchCanvas.m */,
 				DE0C997E1F32D596001BDE8B /* RNSketchData.h */,
 				DE0C997F1F32D596001BDE8B /* RNSketchData.m */,
-				DE0C99811F32E00A001BDE8B /* UIColor+HexString.h */,
-				DE0C99821F32E00A001BDE8B /* UIColor+HexString.m */,
 				DE06DF7B1F336A75005E4998 /* RNSketchCanvasDelegate.h */,
 				DE06DF7C1F336A75005E4998 /* RNSketchCanvasDelegate.m */,
 			);
@@ -146,7 +141,6 @@
 				DE06DF7D1F336A75005E4998 /* RNSketchCanvasDelegate.m in Sources */,
 				DEFBA25D1F322B6000A4545C /* RNSketchCanvas.m in Sources */,
 				DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */,
-				DE0C99831F32E00A001BDE8B /* UIColor+HexString.m in Sources */,
 				DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
