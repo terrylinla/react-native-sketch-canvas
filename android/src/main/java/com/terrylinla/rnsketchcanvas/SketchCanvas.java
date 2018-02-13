@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Color;
 import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.graphics.PointF;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -172,11 +173,20 @@ public class SketchCanvas extends View {
             paint.setStyle(Paint.Style.STROKE);
 
             if (path.path != null) {
-                canvas.drawPath(path.path, paint);    
+
+                // draw initial dot
+                PointF origin = path.points.get(0);
+                canvas.drawPoint(origin.x, origin.y, paint);
+
+                // draw path
+                canvas.drawPath(path.path, paint);
             } else {
                 Path canvasPath = new Path();
                 for(PointF p: path.points) {
-                    if (canvasPath.isEmpty()) canvasPath.moveTo(p.x, p.y);
+                    if (canvasPath.isEmpty()) {
+                      canvas.drawPoint(p.x, p.y, paint);
+                      canvasPath.moveTo(p.x, p.y);
+                    }
                     else canvasPath.lineTo(p.x, p.y);
                 }
 
