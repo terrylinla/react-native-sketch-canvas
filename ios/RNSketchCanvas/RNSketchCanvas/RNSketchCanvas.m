@@ -37,6 +37,7 @@
         _layer = [CAShapeLayer layer];
         _layer.frame = bounds;
         _layer.delegate = delegate;
+        _layer.contentsScale = [UIScreen mainScreen].scale;
 
         [self.layer addSublayer: _layer];
     }
@@ -107,7 +108,7 @@
 
 - (void) saveImageOfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
     CGRect rect = self.frame;
-    UIGraphicsBeginImageContext(rect.size);
+    UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     if ([type isEqualToString: @"png"] && !transparent) {
         CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -125,7 +126,8 @@
 
 - (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
     CGRect rect = self.frame;
-    UIGraphicsBeginImageContext(rect.size);
+    
+    UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     if ([type isEqualToString: @"png"] && !transparent) {
         CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
