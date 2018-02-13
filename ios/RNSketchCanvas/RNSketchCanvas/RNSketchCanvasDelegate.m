@@ -15,16 +15,23 @@
         RNSketchData *data = _paths[index];
         bool first = true;
         CGContextSetLineWidth(context, (float)data.strokeWidth);
+        CGContextSetLineCap(context, kCGLineCapRound);
         CGContextSetStrokeColorWithColor(context, [data.strokeColor CGColor]);
         
         if (data.cgPoints) {
-            CGContextAddLines(context, data.cgPoints, data.pointCount);
+            if (data.pointCount > 1) {
+                CGContextAddLines(context, data.cgPoints, data.pointCount);
+            } else if (data.pointCount == 1) {
+                CGPoint p = data.cgPoints[0];
+                CGContextMoveToPoint(context, p.x, p.y);
+                CGContextAddLineToPoint(context, p.x, p.y);
+            }
         } else {
             for (int i=0; i<_currentPoints.count; i++) {
                 CGPoint point = [_currentPoints[i] CGPointValue];
                 if (first)  CGContextMoveToPoint(context, point.x, point.y);
-                else  CGContextAddLineToPoint(context, point.x, point.y);
                 first = false;
+                CGContextAddLineToPoint(context, point.x, point.y);
             }
         }
         

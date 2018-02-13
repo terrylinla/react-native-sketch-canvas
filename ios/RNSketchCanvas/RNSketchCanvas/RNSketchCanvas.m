@@ -157,6 +157,11 @@
 
 - (void) invalidate {
     dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [_eventDispatcher sendInputEventWithName:@"topChange"
+                                            body: @{ @"target": self.reactTag,
+                                                     @"pathsUpdate": @(_paths.count) }];
+        
         delegate.currentPoints = _currentPoints;
         delegate.paths = _paths;
         [_layer setNeedsDisplay];

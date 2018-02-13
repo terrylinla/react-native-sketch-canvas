@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Color;
 import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.graphics.PointF;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -38,7 +39,7 @@ public class SketchCanvas extends View {
     public void clear() {
         this._paths.clear();
         this._currentPath = null;
-        invalidate();
+        invalidateCanvas();
     }
 
     public void newPath(int id, String strokeColor, int strokeWidth) {
@@ -48,7 +49,7 @@ public class SketchCanvas extends View {
 
     public void addPoint(float x, float y) {
         this._currentPath.addPoint(new PointF(x, y));
-        invalidate();
+        invalidateCanvas();
     }
 
     public void addPath(int id, String strokeColor, int strokeWidth, ArrayList<PointF> points) {
@@ -62,8 +63,8 @@ public class SketchCanvas extends View {
 
         if (!exist) {
             this._paths.add(new SketchData(id, strokeColor, strokeWidth, points));
-            invalidate();
-        } 
+            invalidateCanvas();
+        }
     }
 
     public void deletePath(int id) {
@@ -77,7 +78,7 @@ public class SketchCanvas extends View {
 
         if (index > -1) {
             this._paths.remove(index);
-            invalidate();
+            invalidateCanvas();
         }
     }
 
@@ -164,6 +165,16 @@ public class SketchCanvas extends View {
         this.drawPath(canvas);
     }
 
+    private void invalidateCanvas() {
+      WritableMap event = Arguments.createMap();
+      event.putInt("pathsUpdate", this._paths.size());
+      mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+          getId(),
+          "topChange",
+          event);
+      invalidate();
+    }
+
     private void drawPath(Canvas canvas) {
         for(SketchData path: this._paths) {
             Paint paint = new Paint();
@@ -172,11 +183,20 @@ public class SketchCanvas extends View {
             paint.setStyle(Paint.Style.STROKE);
 
             if (path.path != null) {
-                canvas.drawPath(path.path, paint);    
+
+                // draw initial dot
+                PointF origin = path.points.get(0);
+                canvas.drawPoint(origin.x, origin.y, paint);
+
+                // draw path
+                canvas.drawPath(path.path, paint);
             } else {
                 Path canvasPath = new Path();
                 for(PointF p: path.points) {
-                    if (canvasPath.isEmpty()) canvasPath.moveTo(p.x, p.y);
+                    if (canvasPath.isEmpty()) {
+                      canvas.drawPoint(p.x, p.y, paint);
+                      canvasPath.moveTo(p.x, p.y);
+                    }
                     else canvasPath.lineTo(p.x, p.y);
                 }
 
