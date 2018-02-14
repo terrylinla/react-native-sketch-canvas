@@ -91,10 +91,10 @@ class SketchCanvas extends React.Component {
         return `${coor[0] * this._screenScale * this._size.width / data.size.width },${coor[1] * this._screenScale * this._size.height / data.size.height }`;
       })
       if (Platform.OS === 'ios') {
-        SketchCanvasManager.addPath(data.path.id, data.path.color, data.path.width, pathData)
+        SketchCanvasManager.addPath(data.path.id, processColor(data.path.color), data.path.width, pathData)
       } else {
         UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPath, [
-          data.path.id, data.path.color, data.path.width, pathData
+          data.path.id, processColor(data.path.color), data.path.width, pathData
         ])
       }
     } else {
@@ -144,19 +144,19 @@ class SketchCanvas extends React.Component {
         const e = evt.nativeEvent
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
         this._path = {
-          id: parseInt(Math.random() * 100000000), color: processColor(this.props.strokeColor), 
+          id: parseInt(Math.random() * 100000000), color: this.props.strokeColor, 
           width: this.props.strokeWidth, data: []
         }
         
         if (Platform.OS === 'ios') {
-          SketchCanvasManager.newPath(this._path.id, this._path.color, this._path.width)
+          SketchCanvasManager.newPath(this._path.id, processColor(this._path.color), this._path.width)
           SketchCanvasManager.addPoint(
             parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
             parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
           )
         } else {
           UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.newPath, [
-            this._path.id, this._path.color, this._path.width,
+            this._path.id, processColor(this._path.color), this._path.width,
           ])
           UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
             parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),

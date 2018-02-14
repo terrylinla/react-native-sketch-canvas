@@ -173,6 +173,8 @@ public class SketchCanvas extends View {
             paint.setColor(path.strokeColor); 
             paint.setStrokeWidth(path.strokeWidth);
             paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setAntiAlias(true);
 
             if (path.path != null) {
 
@@ -184,12 +186,15 @@ public class SketchCanvas extends View {
                 canvas.drawPath(path.path, paint);
             } else {
                 Path canvasPath = new Path();
+                PointF previousPoint = null;
                 for(PointF p: path.points) {
                     if (canvasPath.isEmpty()) {
                       canvas.drawPoint(p.x, p.y, paint);
                       canvasPath.moveTo(p.x, p.y);
+                    } else {
+                      canvasPath.quadTo((previousPoint.x) / 1, (previousPoint.y) / 1, p.x, p.y);
                     }
-                    else canvasPath.lineTo(p.x, p.y);
+                    previousPoint = p;
                 }
 
                 canvas.drawPath(canvasPath, paint);
