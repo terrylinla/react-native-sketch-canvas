@@ -52,7 +52,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     @Override
     public Map<String,Integer> getCommandsMap() {
         Map<String, Integer> map = new HashMap<>();
-        
+
         map.put("addPoint", COMMAND_ADD_POINT);
         map.put("newPath", COMMAND_NEW_PATH);
         map.put("clear", COMMAND_CLEAR);
@@ -66,7 +66,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @Override
     protected void addEventEmitters(ThemedReactContext reactContext, SketchCanvas view) {
-        
+
     }
 
     @Override
@@ -77,7 +77,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 return;
             }
             case COMMAND_NEW_PATH: {
-                view.newPath(args.getInt(0), args.getInt(1), args.getInt(2));
+                view.newPath(args.getInt(0), args.getInt(1), (float)args.getDouble(2));
                 return;
             }
             case COMMAND_CLEAR: {
@@ -91,7 +91,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                     String[] coor = path.getString(i).split(",");
                     pointPath.add(new PointF(Float.parseFloat(coor[0]), Float.parseFloat(coor[1])));
                 }
-                view.addPath(args.getInt(0), args.getInt(1), args.getInt(2), pointPath);
+                view.addPath(args.getInt(0), args.getInt(1), (float)args.getDouble(2), pointPath);
                 return;
             }
             case COMMAND_DELETE_PATH: {
