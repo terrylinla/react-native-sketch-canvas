@@ -14,7 +14,15 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
     return CGPointMake((p1.x + p2.x) * 0.5, (p1.y + p2.y) * 0.5);
 }
 
-- (void)drawCurveFromPoints:(NSArray *)points inContext:(CGContextRef)context {
+- (void)drawCurveFromPoints:(CGPoint *)points pointsCount:(NSInteger)pointsCount inContext:(CGContextRef)context {
+    NSMutableArray *pointsArray = [NSMutableArray new];
+    for (int i = 0; i < pointsCount; i++) {
+        [pointsArray addObject:[NSValue valueWithCGPoint:points[i]]];
+    }
+    [self drawCurveFromPointsArray:pointsArray context:context];
+}
+
+- (void)drawCurveFromPointsArray:(NSArray *)points context:(CGContextRef)context {
     for (int i = 0; i < points.count; i++) {
         
         CGPoint currentPoint = [points[i] CGPointValue];
@@ -51,8 +59,7 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
         
         if (data.cgPoints) {
             if (data.pointCount > 1) {
-                CGContextAddLines(context, data.cgPoints, data.pointCount);
-                CGContextStrokePath(context);
+                [self drawCurveFromPoints:data.cgPoints pointsCount:data.pointCount inContext:context];
             } else if (data.pointCount == 1) {
                 CGPoint p = data.cgPoints[0];
                 CGContextMoveToPoint(context, p.x, p.y);
@@ -60,7 +67,7 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
                 CGContextStrokePath(context);
             }
         } else {
-            [self drawCurveFromPoints:_currentPoints inContext:context];
+            [self drawCurveFromPointsArray:_currentPoints context:context];
         }
     }
 }
