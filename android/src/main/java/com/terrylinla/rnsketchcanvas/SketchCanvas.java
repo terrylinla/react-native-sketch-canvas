@@ -24,14 +24,14 @@ import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
-public class SketchCanvas extends View {  
-  
+public class SketchCanvas extends View {
+
     private ArrayList<SketchData> _paths = new ArrayList<SketchData>();
     private SketchData _currentPath = null;
 
     private ThemedReactContext mContext;
-    
-    public SketchCanvas(ThemedReactContext context) {  
+
+    public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
     }
@@ -106,18 +106,18 @@ public class SketchCanvas extends View {
             }
             this.drawPath(canvas);
 
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + 
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
                 File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
             try {
                 bitmap.compress(
-                    format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 
-                    format.equals("png") ? 100 : 90, 
+                    format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                    format.equals("png") ? 100 : 90,
                     new FileOutputStream(file));
                 this.onSaved(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 this.onSaved(false);
-            }   
+            }
         } else {
             Log.e("SketchCanvas", "Failed to create folder!");
             this.onSaved(false);
@@ -140,17 +140,17 @@ public class SketchCanvas extends View {
             canvas.drawARGB(255, 255, 255, 255);
         }
         this.drawPath(canvas);
- 
+
         ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
         bitmap.compress(
-            format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 
-            format.equals("png") ? 100 : 90, 
+            format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+            format.equals("png") ? 100 : 90,
             byteArrayOS);
         return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
     }
 
-    @Override  
-    protected void onDraw(Canvas canvas) {  
+    @Override
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         this.drawPath(canvas);
     }
@@ -170,10 +170,11 @@ public class SketchCanvas extends View {
     private void drawPath(Canvas canvas) {
         for(SketchData path: this._paths) {
             Paint paint = new Paint();
-            paint.setColor(path.strokeColor); 
+            paint.setColor(path.strokeColor);
             paint.setStrokeWidth(path.strokeWidth);
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setStrokeJoin(Paint.Join.ROUND);
             paint.setAntiAlias(true);
 
             if (path.path != null) {
@@ -185,6 +186,7 @@ public class SketchCanvas extends View {
                 // draw path
                 canvas.drawPath(path.path, paint);
             } else {
+                // TODO: centralize path making with SketchData.java:end()
                 Path canvasPath = new Path();
                 PointF previousPoint = null;
                 for(PointF p: path.points) {
@@ -192,7 +194,9 @@ public class SketchCanvas extends View {
                       canvas.drawPoint(p.x, p.y, paint);
                       canvasPath.moveTo(p.x, p.y);
                     } else {
-                      canvasPath.quadTo((previousPoint.x) / 1, (previousPoint.y) / 1, p.x, p.y);
+                      float midX = (previousPoint.x + p.x) / 2;
+                      float midY = (previousPoint.y + p.y) / 2;
+                      canvasPath.quadTo(previousPoint.x, previousPoint.y, midX, midY);
                     }
                     previousPoint = p;
                 }
@@ -201,4 +205,4 @@ public class SketchCanvas extends View {
             }
         }
     }
-}  
+}
