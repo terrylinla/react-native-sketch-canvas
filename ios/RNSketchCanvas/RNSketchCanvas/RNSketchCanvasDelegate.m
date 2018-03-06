@@ -23,7 +23,7 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
         if (i == 1) {
             previousPoint = [points[i - 1] CGPointValue];
             tertiaryPoint = [points[i - 1] CGPointValue];
-        } else {
+        } else if (i >= 2) {
             previousPoint = [points[i - 1] CGPointValue];
             tertiaryPoint = [points[i - 2] CGPointValue];
         }
