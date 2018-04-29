@@ -174,6 +174,7 @@ public class SketchCanvas extends View {
             paint.setStrokeWidth(path.strokeWidth);
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setStrokeJoin(Paint.Join.ROUND);
             paint.setAntiAlias(true);
 
             if (path.path != null) {
@@ -185,6 +186,7 @@ public class SketchCanvas extends View {
                 // draw path
                 canvas.drawPath(path.path, paint);
             } else {
+                // TODO: centralize path making with SketchData.java:end()
                 Path canvasPath = new Path();
                 PointF previousPoint = null;
                 for(PointF p: path.points) {
@@ -192,7 +194,9 @@ public class SketchCanvas extends View {
                       canvas.drawPoint(p.x, p.y, paint);
                       canvasPath.moveTo(p.x, p.y);
                     } else {
-                      canvasPath.quadTo((previousPoint.x) / 1, (previousPoint.y) / 1, p.x, p.y);
+                      float midX = (previousPoint.x + p.x) / 2;
+                      float midY = (previousPoint.y + p.y) / 2;
+                      canvasPath.quadTo(previousPoint.x, previousPoint.y, midX, midY);
                     }
                     previousPoint = p;
                 }

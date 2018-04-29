@@ -30,10 +30,18 @@ public class SketchData {
     }
 
     public void end() {
+        // TODO: centralize path making with SketchCanvas.java:drawPath()
         Path canvasPath = new Path();
+        PointF previousPoint = null;
         for(PointF p: this.points) {
-            if (canvasPath.isEmpty()) canvasPath.moveTo(p.x, p.y);
-            else canvasPath.lineTo(p.x, p.y);
+            if (canvasPath.isEmpty()) {
+              canvasPath.moveTo(p.x, p.y);
+            } else {
+              float midX = (previousPoint.x + p.x) / 2;
+              float midY = (previousPoint.y + p.y) / 2;
+              canvasPath.quadTo(previousPoint.x, previousPoint.y, midX, midY);
+            }
+            previousPoint = p;
         }
 
         this.path = canvasPath;
