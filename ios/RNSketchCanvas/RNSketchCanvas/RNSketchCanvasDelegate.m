@@ -53,9 +53,12 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
 - (void)drawLayer:(CALayer *)layer inContext:(CGContextRef)context {
     for (int index=0; index<_paths.count; index++) {
         RNSketchData *data = _paths[index];
+        bool isErase = [self isSameColor:data.strokeColor color:[UIColor clearColor]];
         CGContextSetLineWidth(context, (float)data.strokeWidth);
         CGContextSetLineCap(context, kCGLineCapRound);
+        CGContextSetLineJoin(context, kCGLineJoinRound);
         CGContextSetStrokeColorWithColor(context, [data.strokeColor CGColor]);
+        CGContextSetBlendMode(context, isErase ? kCGBlendModeClear : kCGBlendModeNormal);
         
         if (data.cgPoints) {
             if (data.pointCount > 1) {
@@ -70,6 +73,17 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
             [self drawCurveFromPointsArray:_currentPoints context:context];
         }
     }
+}
+
+- (BOOL)isSameColor:(UIColor *)color1 color:(UIColor *)color2 {
+    CGFloat red1, green1, blue1, alpha1;
+    [color1 getRed:&red1 green:&green1 blue:&blue1 alpha:&alpha1];
+    CGFloat red2, green2, blue2, alpha2;
+    [color2 getRed:&red2 green:&green2 blue:&blue2 alpha:&alpha2];
+    if (red1 == red2 && green1 == green2 && blue1 == blue2 && alpha1 == alpha2) {
+        return true;
+    }
+    return false;
 }
 
 @end
