@@ -24,14 +24,14 @@ import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
-public class SketchCanvas extends View {  
-  
+public class SketchCanvas extends View {
+
     private ArrayList<SketchData> _paths = new ArrayList<SketchData>();
     private SketchData _currentPath = null;
 
     private ThemedReactContext mContext;
-    
-    public SketchCanvas(ThemedReactContext context) {  
+
+    public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
     }
@@ -42,7 +42,7 @@ public class SketchCanvas extends View {
         invalidateCanvas(true);
     }
 
-    public void newPath(int id, int strokeColor, int strokeWidth) {
+    public void newPath(int id, int strokeColor, float strokeWidth) {
         this._currentPath = new SketchData(id, strokeColor, strokeWidth);
         this._paths.add(this._currentPath);
         invalidateCanvas(true);
@@ -53,7 +53,7 @@ public class SketchCanvas extends View {
         invalidateCanvas(false);
     }
 
-    public void addPath(int id, int strokeColor, int strokeWidth, ArrayList<PointF> points) {
+    public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         boolean exist = false;
         for(SketchData data: this._paths) {
             if (data.id == id) {
@@ -106,18 +106,18 @@ public class SketchCanvas extends View {
             }
             this.drawPath(canvas);
 
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + 
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
                 File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
             try {
                 bitmap.compress(
-                    format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 
-                    format.equals("png") ? 100 : 90, 
+                    format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                    format.equals("png") ? 100 : 90,
                     new FileOutputStream(file));
                 this.onSaved(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 this.onSaved(false);
-            }   
+            }
         } else {
             Log.e("SketchCanvas", "Failed to create folder!");
             this.onSaved(false);
@@ -140,17 +140,17 @@ public class SketchCanvas extends View {
             canvas.drawARGB(255, 255, 255, 255);
         }
         this.drawPath(canvas);
- 
+
         ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
         bitmap.compress(
-            format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 
-            format.equals("png") ? 100 : 90, 
+            format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+            format.equals("png") ? 100 : 90,
             byteArrayOS);
         return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
     }
 
-    @Override  
-    protected void onDraw(Canvas canvas) {  
+    @Override
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         this.drawPath(canvas);
     }
@@ -170,7 +170,7 @@ public class SketchCanvas extends View {
     private void drawPath(Canvas canvas) {
         for(SketchData path: this._paths) {
             Paint paint = new Paint();
-            paint.setColor(path.strokeColor); 
+            paint.setColor(path.strokeColor);
             paint.setStrokeWidth(path.strokeWidth);
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeCap(Paint.Cap.ROUND);
@@ -201,4 +201,4 @@ public class SketchCanvas extends View {
             }
         }
     }
-}  
+}
