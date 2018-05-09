@@ -132,13 +132,29 @@ class SketchCanvas extends React.Component {
   }
 
   componentWillMount() {
+    const requiredToches = 1;
     this.panResponder = PanResponder.create({
-      // Ask to be the responder:
-      onStartShouldSetPanResponder: (evt, gestureState) => true,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
-      onMoveShouldSetPanResponder: (evt, gestureState) => true,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
-
+      	// Ask to be the responder:
+		onStartShouldSetPanResponder: (evt, gestureState) => {
+			const r = evt.nativeEvent.touches.length === requiredToches;
+			// console.log('onStartShouldSetPanResponder ', r, gestureState.numberActiveTouches,evt.nativeEvent.touches.length, evt.nativeEvent, gestureState);
+			return false;
+		},
+		onStartShouldSetPanResponderCapture: (evt, gestureState) => {
+			const r = evt.nativeEvent.touches.length === requiredToches;
+			// console.log('onStartShouldSetPanResponderCapture ', r, gestureState.numberActiveTouches,evt.nativeEvent.touches.length, evt.nativeEvent, gestureState);
+			return false;
+		},
+		onMoveShouldSetPanResponder: (evt, gestureState) => {
+			const r = evt.nativeEvent.touches.length === requiredToches;
+			// console.log('onMoveShouldSetPanResponder ', r, gestureState.numberActiveTouches,evt.nativeEvent.touches.length, evt.nativeEvent, gestureState);
+			return r;
+		},
+		onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+			const r = evt.nativeEvent.touches.length === requiredToches;
+			// console.log('onMoveShouldSetPanResponderCapture ', r, gestureState.numberActiveTouches,evt.nativeEvent.touches.length, evt.nativeEvent, gestureState);
+			return r;
+		},
       onPanResponderGrant: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
         const e = evt.nativeEvent
