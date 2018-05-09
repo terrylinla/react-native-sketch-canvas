@@ -13,6 +13,7 @@ Features
 * Can serialize path data to JSON. So it can sync other devices or someone else and continue to edit.
 * Save drawing to a non-transparent image (png or jpg) or a transparent image (png only)
 * Use vector concept. So sketches won't be cropped in different sizes of canvas.
+* Support translucent colors and eraser (NEW!)
 
 
 ## Installation
@@ -71,7 +72,7 @@ AppRegistry.registerComponent('example', () => example);
 | Prop  | Type | Description |
 | :------------ |:---------------:| :---------------| 
 | style | `object` | Styles to be applied on canvas component |
-| strokeColor | `string` | The color of stroke  |
+| strokeColor | `string` | Set the color of stroke, which can be #RRGGBB or #RRGGBBAA. If strokeColor is set to #00000000, it will automatically become an eraser. <br/>NOTE: Once an eraser path is sent to Android, Android View will disable hardware acceleration automatically. It might reduce the canvas performance afterward. |
 | strokeWidth | `number` | The thickness of stroke |
 | onStrokeStart | `function` | An optional function called when user's finger touches the canvas (starts to draw) |
 | onStrokeChanged | `function` | An optional function called when user's finger moves |
@@ -122,7 +123,7 @@ export default class example extends Component {
             closeComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Close</Text></View>}
             undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
             clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
-            infoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Info</Text></View>}
+            eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
             strokeComponent={color => (
               <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
             )}
@@ -186,12 +187,11 @@ AppRegistry.registerComponent('example', () => example);
 | onStrokeEnd | `function` | See [above](#properties) |
 | onPathsChange | `function` | See [above](#properties) |
 | onClosePressed | `function` | An optional function called when user taps closeComponent |
-| onInfoPressed | `function` | An optional function called when user taps infoComponent |
 | onUndoPressed | `function` | An optional function that accepts a argument `id` (the deleted id of path) and is called when user taps "undo" |
 | onClearPressed | `function` | An optional function called when user taps clearComponent |
 | user | `string` | See [above](#properties) |
 | closeComponent | `component` | An optional component for closing |
-| infoComponent | `component` | An optional component for showing info |
+| eraseComponent | `component` | An optional component for eraser |
 | undoComponent | `component` | An optional component for undoing |
 | clearComponent | `component` | An optional component for clearing |
 | saveComponent | `component` | An optional component for saving |

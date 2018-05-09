@@ -13,6 +13,8 @@ import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.PointF;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.util.Log;
 import android.os.Environment;
 import android.util.Base64;
@@ -30,6 +32,7 @@ public class SketchCanvas extends View {
     private SketchData _currentPath = null;
 
     private ThemedReactContext mContext;
+    private boolean _disableHardwareAccelerated = false;
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
@@ -45,6 +48,11 @@ public class SketchCanvas extends View {
     public void newPath(int id, int strokeColor, float strokeWidth) {
         this._currentPath = new SketchData(id, strokeColor, strokeWidth);
         this._paths.add(this._currentPath);
+        boolean isErase = strokeColor == Color.TRANSPARENT;
+        if (isErase && this._disableHardwareAccelerated == false) {
+            this._disableHardwareAccelerated = true;
+            this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
         invalidateCanvas(true);
     }
 
@@ -64,6 +72,11 @@ public class SketchCanvas extends View {
 
         if (!exist) {
             this._paths.add(new SketchData(id, strokeColor, strokeWidth, points));
+            boolean isErase = strokeColor == Color.TRANSPARENT;
+            if (isErase && this._disableHardwareAccelerated == false) {
+                this._disableHardwareAccelerated = true;
+                this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            }
             invalidateCanvas(true);
         }
     }
@@ -170,38 +183,27 @@ public class SketchCanvas extends View {
     private void drawPath(Canvas canvas) {
         for(SketchData path: this._paths) {
             Paint paint = new Paint();
+            boolean isErase = path.strokeColor == Color.TRANSPARENT;
             paint.setColor(path.strokeColor);
             paint.setStrokeWidth(path.strokeWidth);
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeCap(Paint.Cap.ROUND);
             paint.setStrokeJoin(Paint.Join.ROUND);
             paint.setAntiAlias(true);
+            paint.setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
 
             if (path.path != null) {
 
-                // draw initial dot
-                PointF origin = path.points.get(0);
-                canvas.drawPoint(origin.x, origin.y, paint);
+                if (path.points.size() == 1) {
+                    // draw if only 1 point
+                    PointF origin = path.points.get(0);
+                    canvas.drawPoint(origin.x, origin.y, paint);
+                }
 
                 // draw path
                 canvas.drawPath(path.path, paint);
             } else {
-                // TODO: centralize path making with SketchData.java:end()
-                Path canvasPath = new Path();
-                PointF previousPoint = null;
-                for(PointF p: path.points) {
-                    if (canvasPath.isEmpty()) {
-                      canvas.drawPoint(p.x, p.y, paint);
-                      canvasPath.moveTo(p.x, p.y);
-                    } else {
-                      float midX = (previousPoint.x + p.x) / 2;
-                      float midY = (previousPoint.y + p.y) / 2;
-                      canvasPath.quadTo(previousPoint.x, previousPoint.y, midX, midY);
-                    }
-                    previousPoint = p;
-                }
-
-                canvas.drawPath(canvasPath, paint);
+                canvas.drawPath(path.evaluatePath(), paint);
             }
         }
     }

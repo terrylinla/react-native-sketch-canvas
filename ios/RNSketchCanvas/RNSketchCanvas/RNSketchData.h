@@ -11,9 +11,9 @@
 
 @interface RNSketchData : NSObject
 
-@property CGPoint* cgPoints;
-@property int pointCount, pathId, strokeWidth;
+@property int pathId, strokeWidth;
 @property UIColor* strokeColor;
+@property UIBezierPath *path;
 
 - (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points: (NSArray*) points;
 - (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth;

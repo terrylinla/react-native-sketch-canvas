@@ -5,16 +5,18 @@
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
+#import "Utility.h"
 
 @implementation RNSketchCanvas
 {
     RCTEventDispatcher *_eventDispatcher;
     NSMutableArray *_paths;
     RNSketchData *_currentPath;
-    NSArray *_currentPoints;
     
-    CAShapeLayer* _layer;
+    CAShapeLayer *_layer;
     RNSketchCanvasDelegate *delegate;
+    
+    CGRect _dirty;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -23,6 +25,7 @@
     if (self) {
         _eventDispatcher = eventDispatcher;
         _paths = [NSMutableArray new];
+        _dirty = CGRectZero; //CGRectMake(0, 0, 0, 0);
     }
     return self;
 }
@@ -37,6 +40,8 @@
         _layer.frame = bounds;
         _layer.delegate = delegate;
         _layer.contentsScale = [UIScreen mainScreen].scale;
+        
+        delegate.paths = _paths;
 
         [self.layer addSublayer: _layer];
     }
@@ -51,7 +56,6 @@
                     strokeColor: strokeColor
                     strokeWidth: strokeWidth];
     [_paths addObject: _currentPath];
-    [self invalidate: YES];
 }
 
 - (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
@@ -64,12 +68,12 @@
     }
     
     if (!exist) {
-        [_paths addObject: [[RNSketchData alloc]
-                            initWithId: pathId
-                            strokeColor: strokeColor
-                            strokeWidth: strokeWidth
-                            points: points]];
-        [self invalidate: YES];
+        RNSketchData *data = [[RNSketchData alloc] initWithId: pathId
+                                                  strokeColor: strokeColor
+                                                  strokeWidth: strokeWidth
+                                                       points: points];
+        [_paths addObject: data];
+        [self invalidate];
     }
 }
 
@@ -84,30 +88,43 @@
     
     if (index > -1) {
         [_paths removeObjectAtIndex: index];
-        [self invalidate: YES];
+        [self invalidate];
     }
 }
 
 - (void)addPointX: (float)x Y: (float)y {
-    _currentPoints = [_currentPath addPoint: CGPointMake(x, y)];
-    [self invalidate: NO];
+    [_currentPath addPoint: CGPointMake(x, y)];
+    if (CGRectIsEmpty(_dirty)) {
+        _dirty = CGRectMake(x, y, 1, 1);
+        [self invalidateInRect: CGRectMake(x - _currentPath.strokeWidth, y -_currentPath.strokeWidth,
+                                           2 * _currentPath.strokeWidth, 2 * _currentPath.strokeWidth)];
+    } else {
+        _dirty = CGRectMake(
+                            MIN(x, CGRectGetMinX(_dirty)),
+                            MIN(y, CGRectGetMinY(_dirty)),
+                            MAX(x, CGRectGetMaxX(_dirty)) - MIN(x, CGRectGetMinX(_dirty)),
+                            MAX(y, CGRectGetMaxY(_dirty)) - MIN(y, CGRectGetMinY(_dirty))
+                            );
+        [self invalidateInRect: CGRectInset(_dirty, -_currentPath.strokeWidth * 2, -_currentPath.strokeWidth * 2)];
+    }
 }
 
 - (void)endPath {
     if (_currentPath) {
         [_currentPath end];
+        _currentPath = nil;
+        [self invalidate];
     }
 }
 
 - (void) clear {
     [_paths removeAllObjects];
     _currentPath = nil;
-    _currentPoints = nil;
-    [self invalidate: YES];
+    [self invalidate];
 }
 
 - (void) saveImageOfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
-    CGRect rect = self.frame;
+    CGRect rect = _layer.frame;
     UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     if ([type isEqualToString: @"png"] && !transparent) {
@@ -125,8 +142,7 @@
 }
 
 - (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
-    CGRect rect = self.frame;
-    
+    CGRect rect = _layer.frame;
     UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     if ([type isEqualToString: @"png"] && !transparent) {
@@ -149,17 +165,21 @@
     }
 }
 
-- (void) invalidate:(BOOL)shouldDispatchEvent {
+- (void) invalidate {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (_onChange && shouldDispatchEvent) {
+        if (_onChange) {
             _onChange(@{ @"pathsUpdate": @(_paths.count) });
         }
-        
-        delegate.currentPoints = _currentPoints;
-        delegate.paths = _paths;
         [_layer setNeedsDisplay];
     });
 }
+
+- (void) invalidateInRect: (CGRect) rect {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [_layer setNeedsDisplayInRect: rect ];
+    });
+}
+
 
 
 #pragma CALayerDelegate

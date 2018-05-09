@@ -17,14 +17,13 @@ export default class extends React.Component {
     onStrokeChanged: PropTypes.func,
     onStrokeEnd: PropTypes.func,
     onClosePressed: PropTypes.func,
-    onInfoPressed: PropTypes.func,
     onUndoPressed: PropTypes.func,
     onClearPressed: PropTypes.func,
     onPathsChange: PropTypes.func,
     user: PropTypes.string,
 
     closeComponent: PropTypes.node,
-    infoComponent: PropTypes.node,
+    eraseComponent: PropTypes.node,
     undoComponent: PropTypes.node,
     clearComponent: PropTypes.node,
     saveComponent: PropTypes.node,
@@ -51,14 +50,13 @@ export default class extends React.Component {
     onStrokeChanged: () => {},
     onStrokeEnd: () => {},
     onClosePressed: () => {},
-    onInfoPressed: () => {},
     onUndoPressed: () => {},
     onClearPressed: () => {},
     onPathsChange: () => {},
     user: null,
 
     closeComponent: null,
-    infoComponent: null,
+    eraseComponent: null,
     undoComponent: null,
     clearComponent: null,
     saveComponent: null,
@@ -85,6 +83,7 @@ export default class extends React.Component {
       { color: '#800000' },
       { color: '#008000' },
       { color: '#808000' } ],
+    alphlaValues: [ '33', '77', 'AA', 'FF' ],
     defaultStrokeIndex: 0,
     defaultStrokeWidth: 3,
 
@@ -101,12 +100,14 @@ export default class extends React.Component {
     super(props)
 
     this.state = {
-      color: props.strokeColors[props.defaultStrokeIndex],
+      color: props.strokeColors[props.defaultStrokeIndex].color,
       strokeWidth: props.defaultStrokeWidth,
+      alpha: 'FF'
     }
 
     this._colorChanged = false
     this._strokeWidthStep = props.strokeWidthStep
+    this._alphaStep = -1
   }
 
   clear() {
@@ -144,11 +145,22 @@ export default class extends React.Component {
 
   _renderItem = ({item, index}) => (
     <TouchableOpacity style={{ marginHorizontal: 2.5 }} onPress={() => {
-      this.setState({ color: item })
-      this._colorChanged = true
+      if (this.state.color === item.color) {
+        const index = this.props.alphlaValues.indexOf(this.state.alpha)
+        if (this._alphaStep < 0) {
+          this._alphaStep = index === 0 ? 1 : -1
+          this.setState({ alpha: this.props.alphlaValues[index + this._alphaStep] })
+        } else {
+          this._alphaStep = index === this.props.alphlaValues.length - 1 ? -1 : 1
+          this.setState({ alpha: this.props.alphlaValues[index + this._alphaStep] })
+        }
+      } else {
+        this.setState({ color: item.color })
+        this._colorChanged = true
+      }
     }}>
-      { this.state.color.color !== item.color && this.props.strokeComponent && this.props.strokeComponent(item.color) }
-      { this.state.color.color === item.color && this.props.strokeSelectedComponent && this.props.strokeSelectedComponent(item.color, index, this._colorChanged) }
+      { this.state.color !== item.color && this.props.strokeComponent && this.props.strokeComponent(item.color) }
+      { this.state.color === item.color && this.props.strokeSelectedComponent && this.props.strokeSelectedComponent(item.color + this.state.alpha, index, this._colorChanged) }
     </TouchableOpacity>
   )
 
@@ -167,9 +179,9 @@ export default class extends React.Component {
               </TouchableOpacity>)
             }
 
-            { this.props.infoComponent && (
-              <TouchableOpacity onPress={() => { this.props.onInfoPressed() }}>
-                { this.props.infoComponent }
+            { this.props.eraseComponent && (
+              <TouchableOpacity onPress={() => { this.setState({ color: '#00000000' }) }}>
+                { this.props.eraseComponent }
               </TouchableOpacity>)
             }
           </View>
@@ -202,7 +214,7 @@ export default class extends React.Component {
         <SketchCanvas
           ref={ref => this._sketchCanvas = ref}
           style={this.props.canvasStyle} 
-          strokeColor={this.state.color.color}
+          strokeColor={this.state.color + (this.state.color.length === 9 ? '' : this.state.alpha)}
           onStrokeStart={this.props.onStrokeStart}
           onStrokeChanged={this.props.onStrokeChanged}
           onStrokeEnd={this.props.onStrokeEnd}
@@ -214,7 +226,7 @@ export default class extends React.Component {
         <View style={{ flexDirection: 'row' }}>
           <FlatList
             data={this.props.strokeColors}
-            extraData={this.state.color}
+            extraData={this.state}
             keyExtractor={() => Math.ceil(Math.random() * 10000000)}
             renderItem={this._renderItem}
             horizontal

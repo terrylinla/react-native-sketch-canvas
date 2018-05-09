@@ -12,7 +12,6 @@
 
 @interface RNSketchCanvasDelegate : NSObject<CALayerDelegate>
 
-@property (strong, nonatomic) NSMutableArray *paths;
-@property (strong, nonatomic) NSArray *currentPoints;
+@property (strong, nonatomic) NSArray* paths;
 
 @end

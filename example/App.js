@@ -77,10 +77,7 @@ export default class example extends Component {
               onClearPressed={() => {
                 // Alert.alert('do something')
               }}
-              infoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Info</Text></View>}
-              onInfoPressed={() => {
-                // Alert.alert('some info')
-              }}
+              eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
               )}
@@ -210,6 +207,7 @@ export default class example extends Component {
               onClearPressed={() => {
                 this.canvas2.clear()
               }}
+              eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
               )}
@@ -262,6 +260,7 @@ export default class example extends Component {
               onClearPressed={() => {
                 this.canvas1.clear()
               }}
+              eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
               )}
