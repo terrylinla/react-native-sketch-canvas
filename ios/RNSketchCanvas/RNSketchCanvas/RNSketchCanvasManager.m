@@ -3,6 +3,7 @@
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
+#import <React/RCTUIManager.h>
 
 @implementation RNSketchCanvasManager
 
@@ -19,70 +20,91 @@ RCT_EXPORT_VIEW_PROPERTY(onChange, RCTBubblingEventBlock);
 
 #pragma mark - Lifecycle
 
-- (instancetype)init
-{
-    if ((self = [super init])) {
-        self.sketchCanvasView = nil;
-    }
-
-    return self;
-}
-
 - (UIView *)view
 {
-    if (!self.sketchCanvasView) {
-        self.sketchCanvasView = [[RNSketchCanvas alloc] initWithEventDispatcher: self.bridge.eventDispatcher];
-    }
-
-    return self.sketchCanvasView;
+    return [[RNSketchCanvas alloc] initWithEventDispatcher: self.bridge.eventDispatcher];
 }
 
 #pragma mark - Exported methods
 
 
-RCT_EXPORT_METHOD(save:(NSString*) type withTransparentBackground:(BOOL) transparent)
+RCT_EXPORT_METHOD(save:(nonnull NSNumber *)reactTag type:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent)
 {
-    [self.sketchCanvasView saveImageOfType: type withTransparentBackground: transparent];
+    // folder and filename params are not yet used on iOS
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas saveImageOfType: type withTransparentBackground: transparent];
+    }];
 }
 
-RCT_EXPORT_METHOD(addPoint: (float)x : (float)y)
+RCT_EXPORT_METHOD(addPoint:(nonnull NSNumber *)reactTag x: (float)x y: (float)y)
 {
-    [self.sketchCanvasView addPointX:x Y:y];
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas addPointX:x Y:y];
+    }];
 }
 
-RCT_EXPORT_METHOD(addPath: (int) pathId strokeColor: (UIColor*) strokeColor strokeWidth: (int) strokeWidth points: (NSArray*) points)
+RCT_EXPORT_METHOD(addPath:(nonnull NSNumber *)reactTag pathId: (int) pathId strokeColor: (UIColor*) strokeColor strokeWidth: (int) strokeWidth points: (NSArray*) points)
 {
     NSMutableArray *cgPoints = [[NSMutableArray alloc] initWithCapacity: points.count];
     for (NSString *coor in points) {
         NSArray *coorInNumber = [coor componentsSeparatedByString: @","];
         [cgPoints addObject: [NSValue valueWithCGPoint: CGPointMake([coorInNumber[0] floatValue], [coorInNumber[1] floatValue])]];
     }
-    [self.sketchCanvasView addPath: pathId strokeColor: strokeColor strokeWidth: strokeWidth points: cgPoints];
+
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas addPath: pathId strokeColor: strokeColor strokeWidth: strokeWidth points: cgPoints];
+    }];
 }
 
-RCT_EXPORT_METHOD(newPath: (int) pathId strokeColor: (UIColor*) strokeColor strokeWidth: (int) strokeWidth)
+RCT_EXPORT_METHOD(newPath:(nonnull NSNumber *)reactTag pathId: (int) pathId strokeColor: (UIColor*) strokeColor strokeWidth: (int) strokeWidth)
 {
-    [self.sketchCanvasView newPath: pathId strokeColor: strokeColor strokeWidth: strokeWidth];
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas newPath: pathId strokeColor: strokeColor strokeWidth: strokeWidth];
+    }];
 }
 
-RCT_EXPORT_METHOD(deletePath: (int) pathId)
+RCT_EXPORT_METHOD(deletePath:(nonnull NSNumber *)reactTag pathId: (int) pathId)
 {
-    [self.sketchCanvasView deletePath: pathId];
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas deletePath: pathId];
+    }];
 }
 
-RCT_EXPORT_METHOD(endPath)
+RCT_EXPORT_METHOD(endPath:(nonnull NSNumber *)reactTag)
 {
-    [self.sketchCanvasView endPath];
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas endPath];
+    }];
 }
 
-RCT_EXPORT_METHOD(clear)
+RCT_EXPORT_METHOD(clear:(nonnull NSNumber *)reactTag)
 {
-    [self.sketchCanvasView clear];
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas clear];
+    }];
 }
 
-RCT_EXPORT_METHOD(transferToBase64: (NSString*) type withTransparentBackground:(BOOL) transparent :(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(transferToBase64:(nonnull NSNumber *)reactTag type: (NSString*) type withTransparentBackground:(BOOL) transparent :(RCTResponseSenderBlock)callback)
 {
-    callback(@[[NSNull null], [self.sketchCanvasView transferToBase64OfType: type withTransparentBackground: transparent]]);
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        callback(@[[NSNull null], [canvas transferToBase64OfType: type withTransparentBackground: transparent]]);
+    }];
+}
+
+#pragma mark - Utils
+
+- (void)runCanvas:(nonnull NSNumber *)reactTag block:(void (^)(RNSketchCanvas *canvas))block {
+    [self.bridge.uiManager addUIBlock:
+     ^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RNSketchCanvas *> *viewRegistry){
+
+         RNSketchCanvas *view = viewRegistry[reactTag];
+         if (!view || ![view isKindOfClass:[RNSketchCanvas class]]) {
+             RCTLogError(@"Cannot find RNSketchCanvas with tag #%@", reactTag);
+             return;
+         }
+
+         block(view);
+     }];
 }
 
 @end
