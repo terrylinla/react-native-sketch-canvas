@@ -244,4 +244,3 @@ AppRegistry.registerComponent('example', () => example);
 The source code includes 3 examples, using build-in UI components, using with only canvas, and sync between two canvases.
 
 Check full example app in the [example](./example) folder 
-> **Note:** The example which showing synchronization between two canvases only works on Android device. For iOS, only one canvas can be shown at the same time. So if the path data can be transmitted to another device via internet, it still works.
