@@ -11,14 +11,17 @@
 
 @interface RNSketchData : NSObject
 
-@property int pathId, strokeWidth;
-@property UIColor* strokeColor;
-@property UIBezierPath *path;
+@property (nonatomic, readonly) int pathId;
+@property (nonatomic, readonly) CGFloat strokeWidth;
+@property (nonatomic, readonly) UIColor* strokeColor;
+@property (nonatomic, readonly) NSArray<NSValue*> *points;
 
 - (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points: (NSArray*) points;
 - (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth;
 
-- (NSArray*)addPoint:(CGPoint) point;
-- (void)end;
+- (CGRect)addPoint:(CGPoint) point;
+
+- (void)drawLastPointInContext:(CGContextRef)context;
+- (void)drawInContext:(CGContextRef)context;
 
 @end

@@ -9,80 +9,90 @@
 #import "RNSketchData.h"
 #import "Utility.h"
 
-@implementation RNSketchData
-{
-    NSMutableArray* _points;
-}
+@interface RNSketchData ()
 
-- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth
-{
+@property (nonatomic, readwrite) int pathId;
+@property (nonatomic, readwrite) CGFloat strokeWidth;
+@property (nonatomic, readwrite) UIColor* strokeColor;
+@property (nonatomic, readwrite) NSMutableArray<NSValue*> *points;
+
+@end
+
+@implementation RNSketchData
+
+- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
     self = [super init];
     if (self) {
         _pathId = pathId;
         _strokeColor = strokeColor;
         _strokeWidth = strokeWidth;
         _points = [[NSMutableArray alloc] init];
-        _path = [UIBezierPath new];
     }
     return self;
 }
 
-- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points: (NSArray*) points
-{
+- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points: (NSArray*) points {
     self = [super init];
     if (self) {
         _pathId = pathId;
         _strokeColor = strokeColor;
         _strokeWidth = strokeWidth;
         _points = [points mutableCopy];
-        _path = [self evaluatePath];
     }
     return self;
 }
 
-- (void)addPoint:(CGPoint) point {
+- (CGRect)addPoint:(CGPoint) point {
+    NSValue *lastPointValue = _points.lastObject;
     [_points addObject: [NSValue valueWithCGPoint: point]];
-    if (_points.count == 1) {
-        [Utility addPointToPath: _path toPoint: point tertiaryPoint: point previousPoint: point];
-    } else if (_points.count == 2) {
-        [Utility addPointToPath: _path
-                        toPoint: point
-                  tertiaryPoint: [_points[0] CGPointValue]
-                  previousPoint: [_points[0] CGPointValue]];
-    } else {
-        [Utility addPointToPath: _path
-                        toPoint: point
-                  tertiaryPoint: [_points[_points.count - 3] CGPointValue]
-                  previousPoint:[_points[_points.count - 2] CGPointValue]];
+
+    CGRect updateRect = CGRectMake(point.x, point.y, 0, 0);
+
+    if (lastPointValue) {
+        CGPoint lastPoint = lastPointValue.CGPointValue;
+        updateRect = CGRectUnion(updateRect, CGRectMake(lastPoint.x, lastPoint.y, 0, 0));
+    }
+    updateRect = CGRectInset(updateRect, -_strokeWidth * 2, -_strokeWidth * 2);
+
+    return updateRect;
+}
+
+- (void)drawLastPointInContext:(CGContextRef)context {
+    NSUInteger pointsCount = _points.count;
+    if (pointsCount < 1) {
+        return;
+    };
+
+    CGPoint fromPoint = _points[pointsCount - (pointsCount > 1 ? 2 : 1)].CGPointValue;
+    CGPoint toPoint = _points[pointsCount - 1].CGPointValue;
+
+    [self drawSegmentInContext:context from:fromPoint to:toPoint];
+}
+- (void)drawInContext:(CGContextRef)context {
+    NSValue *prevPointValue;
+    for (NSValue *pointValue in _points) {
+        if (!prevPointValue) {
+            prevPointValue = pointValue;
+            continue;
+        }
+
+        [self drawSegmentInContext:context from:prevPointValue.CGPointValue to:pointValue.CGPointValue];
+        prevPointValue = pointValue;
     }
 }
 
-- (void)end {
-}
+- (void)drawSegmentInContext:(CGContextRef)context from:(CGPoint)fromPoint to:(CGPoint)toPoint {
+    BOOL isErase = [Utility isSameColor:_strokeColor color:[UIColor clearColor]];
 
-- (UIBezierPath*) evaluatePath {
-    UIBezierPath *path = [UIBezierPath new];
-    CGPoint* points = malloc(sizeof(CGPoint) * _points.count);
-    if (_points.count >= 1) {
-        points[0] = [_points[0] CGPointValue];
-        [Utility addPointToPath: path toPoint: points[0] tertiaryPoint: points[0] previousPoint: points[0]];
-    }
-    if (_points.count >= 2) {
-        points[1] = [_points[1] CGPointValue];
-        [Utility addPointToPath: path
-                        toPoint: [_points[1] CGPointValue]
-                  tertiaryPoint: [_points[0] CGPointValue]
-                  previousPoint: [_points[0] CGPointValue]];
-    }
-    for (int i = 2; i < _points.count; i++) {
-        points[i] = [_points[i] CGPointValue];
-        CGPoint currentPoint = points[i];
-        CGPoint previousPoint = points[i - 1];
-        CGPoint tertiaryPoint = points[i - 2];
-        [Utility addPointToPath: path toPoint: currentPoint tertiaryPoint: tertiaryPoint previousPoint: previousPoint];
-    }
-    free(points);
-    return path;
+    CGContextSetStrokeColorWithColor(context, _strokeColor.CGColor);
+    CGContextSetLineWidth(context, _strokeWidth);
+    CGContextSetLineCap(context, kCGLineCapRound);
+    CGContextSetLineJoin(context, kCGLineJoinRound);
+    CGContextSetBlendMode(context, isErase ? kCGBlendModeClear : kCGBlendModeNormal);
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, fromPoint.x, fromPoint.y);
+    CGContextAddLineToPoint(context, toPoint.x, toPoint.y);
+    CGContextStrokePath(context);
 }
 
 @end
