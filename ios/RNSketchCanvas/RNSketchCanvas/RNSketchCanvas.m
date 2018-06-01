@@ -110,7 +110,7 @@
         [data drawInContext:_drawingContext];
         [self setFrozenImageNeedsUpdate];
         [self setNeedsDisplay];
-//        [self invalidate];
+        [self notifyPathsUpdate];
     }
 }
 
@@ -127,7 +127,7 @@
         [_paths removeObjectAtIndex: index];
         _needsFullRedraw = YES;
         [self setNeedsDisplay];
-//        [self invalidate];
+        [self notifyPathsUpdate];
     }
 }
 
@@ -150,44 +150,41 @@
     _currentPath = nil;
     _needsFullRedraw = YES;
     [self setNeedsDisplay];
-//    [self invalidate];
+    [self notifyPathsUpdate];
+}
+
+- (UIImage*)createImageWithTransparentBackground: (BOOL) transparent {
+    CGRect rect = self.bounds;
+    UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    if (!transparent) {
+        CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
+        CGContextFillRect(context, rect);
+    }
+    CGContextDrawImage(context, rect, _frozenImage);
+    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return img;
 }
 
 - (void) saveImageOfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
-//    CGRect rect = _layer.frame;
-//    UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
-//    CGContextRef context = UIGraphicsGetCurrentContext();
-//    if ([type isEqualToString: @"png"] && !transparent) {
-//        CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
-//        CGContextFillRect(context, CGRectMake(0, 0, rect.size.width, rect.size.height));
-//    }
-//    [_layer renderInContext:context];
-//    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
-//    UIGraphicsEndImageContext();
-//    if ([type isEqualToString: @"jpg"]) {
-//        UIImageWriteToSavedPhotosAlbum(img, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-//    } else {
-//        UIImageWriteToSavedPhotosAlbum([UIImage imageWithData: UIImagePNGRepresentation(img)], self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-//    }
+    UIImage *img = [self createImageWithTransparentBackground:transparent];
+    if ([type isEqualToString: @"png"]) {
+        img = [UIImage imageWithData: UIImagePNGRepresentation(img)];
+    }
+    UIImageWriteToSavedPhotosAlbum(img, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
 }
 
 - (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
-//    CGRect rect = _layer.frame;
-//    UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
-//    CGContextRef context = UIGraphicsGetCurrentContext();
-//    if ([type isEqualToString: @"png"] && !transparent) {
-//        CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
-//        CGContextFillRect(context, CGRectMake(0, 0, rect.size.width, rect.size.height));
-//    }
-//    [_layer renderInContext:context];
-//    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
-//    UIGraphicsEndImageContext();
-//    if ([type isEqualToString: @"jpg"]) {
-//        return [UIImageJPEGRepresentation(img, 0.9) base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
-//    } else {
-//        return [UIImagePNGRepresentation(img) base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
-//    }
-    return @"";
+    UIImage *img = [self createImageWithTransparentBackground:transparent];
+    NSData *data;
+    if ([type isEqualToString: @"jpg"]) {
+        data = UIImageJPEGRepresentation(img, 0.9);
+    } else {
+        data = UIImagePNGRepresentation(img);
+    }
+    return [data base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
 }
 
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo: (void *) contextInfo {
@@ -196,16 +193,10 @@
     }
 }
 
-//- (void) invalidate {
-//    if (_onChange) {
-//        _onChange(@{ @"pathsUpdate": @(_paths.count) });
-//    }
-//    [_layer setNeedsDisplay];
-//}
-//
-//- (void) invalidateInRect: (CGRect) rect {
-//    [_layer setNeedsDisplayInRect: rect ];
-//}
-
+- (void)notifyPathsUpdate {
+    if (_onChange) {
+        _onChange(@{ @"pathsUpdate": @(_paths.count) });
+    }
+}
 
 @end
