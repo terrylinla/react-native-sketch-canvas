@@ -1,30 +1,26 @@
 package com.terrylinla.rnsketchcanvas;
 
-import com.facebook.react.bridge.WritableMap;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.PorterDuff;
+import android.graphics.Rect;
+import android.os.Environment;
+import android.util.Base64;
+import android.util.Log;
+import android.view.View;
+
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 
-import android.view.View;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Color;
-import android.graphics.Path;
-import android.graphics.PathMeasure;
-import android.graphics.PointF;
-import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.util.Log;
-import android.os.Environment;
-import android.util.Base64;
-
-import java.io.FileOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
-
-import javax.annotation.Nullable;
 
 public class SketchCanvas extends View {
 
@@ -34,6 +30,12 @@ public class SketchCanvas extends View {
     private ThemedReactContext mContext;
     private boolean _disableHardwareAccelerated = false;
 
+    private Paint mPaint = new Paint();
+    private Bitmap mDrawingBitmap = null;
+    private Canvas mDrawingCanvas = null;
+
+    private boolean mNeedsFullRedraw = true;
+
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
@@ -42,6 +44,7 @@ public class SketchCanvas extends View {
     public void clear() {
         this._paths.clear();
         this._currentPath = null;
+        mNeedsFullRedraw = true;
         invalidateCanvas(true);
     }
 
@@ -57,8 +60,11 @@ public class SketchCanvas extends View {
     }
 
     public void addPoint(float x, float y) {
-        this._currentPath.addPoint(new PointF(x, y));
-        invalidateCanvas(false);
+        Rect updateRect = this._currentPath.addPoint(new PointF(x, y));
+
+        this._currentPath.drawLastPoint(mDrawingCanvas);
+
+        invalidate(updateRect);
     }
 
     public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
@@ -71,12 +77,14 @@ public class SketchCanvas extends View {
         }
 
         if (!exist) {
-            this._paths.add(new SketchData(id, strokeColor, strokeWidth, points));
+            SketchData newPath = new SketchData(id, strokeColor, strokeWidth, points);
+            this._paths.add(newPath);
             boolean isErase = strokeColor == Color.TRANSPARENT;
             if (isErase && this._disableHardwareAccelerated == false) {
                 this._disableHardwareAccelerated = true;
                 this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             }
+            newPath.draw(mDrawingCanvas);
             invalidateCanvas(true);
         }
     }
@@ -92,6 +100,7 @@ public class SketchCanvas extends View {
 
         if (index > -1) {
             this._paths.remove(index);
+            mNeedsFullRedraw = true;
             invalidateCanvas(true);
         }
     }
@@ -117,7 +126,7 @@ public class SketchCanvas extends View {
             } else {
                 canvas.drawARGB(255, 255, 255, 255);
             }
-            this.drawPath(canvas);
+            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
 
             File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
                 File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
@@ -139,7 +148,7 @@ public class SketchCanvas extends View {
 
     public void end() {
         if (this._currentPath != null) {
-            this._currentPath.end();
+            this._currentPath = null;
         }
     }
 
@@ -152,7 +161,7 @@ public class SketchCanvas extends View {
         } else {
             canvas.drawARGB(255, 255, 255, 255);
         }
-        this.drawPath(canvas);
+        canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
 
         ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
         bitmap.compress(
@@ -163,9 +172,32 @@ public class SketchCanvas extends View {
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+
+        mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                Bitmap.Config.ARGB_8888);
+        mDrawingCanvas = new Canvas(mDrawingBitmap);
+
+        mNeedsFullRedraw = true;
+        invalidate();
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        this.drawPath(canvas);
+
+        if (mNeedsFullRedraw && mDrawingCanvas != null) {
+            mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+            for(SketchData path: this._paths) {
+                path.draw(mDrawingCanvas);
+            }
+            mNeedsFullRedraw = false;
+        }
+
+        if (mDrawingBitmap != null) {
+            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+        }
     }
 
     private void invalidateCanvas(boolean shouldDispatchEvent) {
@@ -178,33 +210,5 @@ public class SketchCanvas extends View {
                 event);
         }
         invalidate();
-    }
-
-    private void drawPath(Canvas canvas) {
-        for(SketchData path: this._paths) {
-            Paint paint = new Paint();
-            boolean isErase = path.strokeColor == Color.TRANSPARENT;
-            paint.setColor(path.strokeColor);
-            paint.setStrokeWidth(path.strokeWidth);
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeCap(Paint.Cap.ROUND);
-            paint.setStrokeJoin(Paint.Join.ROUND);
-            paint.setAntiAlias(true);
-            paint.setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
-
-            if (path.path != null) {
-
-                if (path.points.size() == 1) {
-                    // draw if only 1 point
-                    PointF origin = path.points.get(0);
-                    canvas.drawPoint(origin.x, origin.y, paint);
-                }
-
-                // draw path
-                canvas.drawPath(path.path, paint);
-            } else {
-                canvas.drawPath(path.evaluatePath(), paint);
-            }
-        }
     }
 }

@@ -1,22 +1,27 @@
 package com.terrylinla.rnsketchcanvas;
 
-import android.graphics.PointF;
+import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Path;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 
 import java.util.ArrayList;
 
 public class SketchData {
-    public ArrayList<PointF> points = new ArrayList<PointF>();
-    public int id, strokeColor;
-    public float strokeWidth;
-    public Path path;
+    public final ArrayList<PointF> points = new ArrayList<PointF>();
+    public final int id, strokeColor;
+    public final float strokeWidth;
+
+    private Paint mPaint;
 
     public SketchData(int id, int strokeColor, float strokeWidth) {
         this.id = id;
         this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
-        this.path = new Path();
     }
 
     public SketchData(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
@@ -24,49 +29,78 @@ public class SketchData {
         this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
         this.points.addAll(points);
-        this.path = evaluatePath();
     }
 
-    public void addPoint(PointF p) {
+    public Rect addPoint(PointF p) {
         this.points.add(p);
-        if (this.points.size() == 1) {
-            addPointToPath(this.path, p, p, p);
-        } else if (this.points.size() == 2) {
-            addPointToPath(this.path, this.points.get(0), this.points.get(0), p);
-        } else {
-            addPointToPath(this.path, 
-                this.points.get(this.points.size() - 3), 
-                this.points.get(this.points.size() - 2),
-                p);
+
+        RectF updateRect = new RectF(p.x, p.y, p.x, p.y);
+        if (points.size() > 1) {
+            PointF prevPoint = points.get(points.size() - 2);
+            updateRect.union(prevPoint.x, prevPoint.y);
         }
+        updateRect.inset(-strokeWidth * 2, -strokeWidth * 2);
+
+        Rect integralRect = new Rect();
+        updateRect.roundOut(integralRect);
+
+        return integralRect;
     }
 
-    public void end() {
+    public void drawLastPoint(Canvas canvas) {
+        int pointsCount = points.size();
+        if (pointsCount < 1) {
+            return;
+        } else if (pointsCount < 2) {
+            drawPoint(canvas, points.get(0));
+            return;
+        }
+
+        PointF fromPoint = points.get(pointsCount - 2);
+        PointF toPoint = points.get(pointsCount - 1);
+
+        drawLine(canvas, fromPoint, toPoint);
     }
 
-    public Path evaluatePath() {
-        Path canvasPath = new Path();
-        PointF tertiaryPoint = null, previousPoint = null;
-        for(PointF p: this.points) {
-            if (tertiaryPoint == null && previousPoint == null) {
-                // first point
-                addPointToPath(canvasPath, p, p, p);
-            } else if (tertiaryPoint == null) {
-                // second point
-                addPointToPath(canvasPath, previousPoint, previousPoint, p);
-            } else {
-                addPointToPath(canvasPath, tertiaryPoint, previousPoint, p);
+    public void draw(Canvas canvas) {
+        if (points.size() == 1) {
+            drawPoint(canvas, points.get(0));
+            return;
+        }
+
+        PointF prevPoint = null;
+        for (PointF point: points) {
+            if (prevPoint == null) {
+                prevPoint = point;
+                continue;
             }
-            tertiaryPoint = previousPoint;
-            previousPoint = p;
+
+            drawLine(canvas, prevPoint, point);
+            prevPoint = point;
         }
-        return canvasPath;
     }
 
-    private void addPointToPath(Path path, PointF tPoint, PointF pPoint, PointF point) {
-        PointF mid1 = new PointF((pPoint.x + tPoint.x) * 0.5f, (pPoint.y + tPoint.y) * 0.5f);
-        PointF mid2 = new PointF((point.x + pPoint.x) * 0.5f, (point.y + pPoint.y) * 0.5f);
-        path.moveTo(mid1.x, mid1.y);
-        path.quadTo(pPoint.x, pPoint.y, mid2.x, mid2.y);
+    private Paint getPaint() {
+        if (mPaint == null) {
+            boolean isErase = strokeColor == Color.TRANSPARENT;
+
+            mPaint = new Paint();
+            mPaint.setColor(strokeColor);
+            mPaint.setStrokeWidth(strokeWidth);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeCap(Paint.Cap.ROUND);
+            mPaint.setStrokeJoin(Paint.Join.ROUND);
+            mPaint.setAntiAlias(true);
+            mPaint.setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
+        }
+        return mPaint;
+    }
+
+    private void drawPoint(Canvas canvas, PointF point) {
+        canvas.drawPoint(point.x, point.y, getPaint());
+    }
+
+    private void drawLine(Canvas canvas, PointF fromPoint, PointF toPoint) {
+        canvas.drawLine(fromPoint.x, fromPoint.y, toPoint.x, toPoint.y, getPaint());
     }
 }
