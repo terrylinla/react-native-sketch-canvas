@@ -58,11 +58,12 @@
     [super layoutSubviews];
 
     if (!CGSizeEqualToSize(self.bounds.size, _lastSize)) {
+        _lastSize = self.bounds.size;
         CGContextRelease(_drawingContext);
         _drawingContext = nil;
         [self createDrawingContext];
-
-        _lastSize = self.bounds.size;
+        _needsFullRedraw = YES;
+        [self setNeedsDisplay];
     }
 }
 
