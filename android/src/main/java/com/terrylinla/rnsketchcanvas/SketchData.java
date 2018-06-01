@@ -32,7 +32,7 @@ public class SketchData {
     }
 
     public Rect addPoint(PointF p) {
-        this.points.add(p);
+        points.add(p);
 
         RectF updateRect = new RectF(p.x, p.y, p.x, p.y);
         if (points.size() > 1) {

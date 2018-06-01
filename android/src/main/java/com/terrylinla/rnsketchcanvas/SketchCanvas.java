@@ -24,11 +24,11 @@ import java.util.ArrayList;
 
 public class SketchCanvas extends View {
 
-    private ArrayList<SketchData> _paths = new ArrayList<SketchData>();
-    private SketchData _currentPath = null;
+    private ArrayList<SketchData> mPaths = new ArrayList<SketchData>();
+    private SketchData mCurrentPath = null;
 
     private ThemedReactContext mContext;
-    private boolean _disableHardwareAccelerated = false;
+    private boolean mDisableHardwareAccelerated = false;
 
     private Paint mPaint = new Paint();
     private Bitmap mDrawingBitmap = null;
@@ -42,34 +42,34 @@ public class SketchCanvas extends View {
     }
 
     public void clear() {
-        this._paths.clear();
-        this._currentPath = null;
+        mPaths.clear();
+        mCurrentPath = null;
         mNeedsFullRedraw = true;
         invalidateCanvas(true);
     }
 
     public void newPath(int id, int strokeColor, float strokeWidth) {
-        this._currentPath = new SketchData(id, strokeColor, strokeWidth);
-        this._paths.add(this._currentPath);
+        mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
+        mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
-        if (isErase && this._disableHardwareAccelerated == false) {
-            this._disableHardwareAccelerated = true;
-            this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        if (isErase && mDisableHardwareAccelerated == false) {
+            mDisableHardwareAccelerated = true;
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
         invalidateCanvas(true);
     }
 
     public void addPoint(float x, float y) {
-        Rect updateRect = this._currentPath.addPoint(new PointF(x, y));
+        Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
 
-        this._currentPath.drawLastPoint(mDrawingCanvas);
+        mCurrentPath.drawLastPoint(mDrawingCanvas);
 
         invalidate(updateRect);
     }
 
     public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         boolean exist = false;
-        for(SketchData data: this._paths) {
+        for(SketchData data: mPaths) {
             if (data.id == id) {
                 exist = true;
                 break;
@@ -78,11 +78,11 @@ public class SketchCanvas extends View {
 
         if (!exist) {
             SketchData newPath = new SketchData(id, strokeColor, strokeWidth, points);
-            this._paths.add(newPath);
+            mPaths.add(newPath);
             boolean isErase = strokeColor == Color.TRANSPARENT;
-            if (isErase && this._disableHardwareAccelerated == false) {
-                this._disableHardwareAccelerated = true;
-                this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            if (isErase && mDisableHardwareAccelerated == false) {
+                mDisableHardwareAccelerated = true;
+                setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             }
             newPath.draw(mDrawingCanvas);
             invalidateCanvas(true);
@@ -91,15 +91,15 @@ public class SketchCanvas extends View {
 
     public void deletePath(int id) {
         int index = -1;
-        for(int i=0; i<this._paths.size(); i++) {
-            if (this._paths.get(i).id == id) {
+        for(int i = 0; i<mPaths.size(); i++) {
+            if (mPaths.get(i).id == id) {
                 index = i;
                 break;
             }
         }
 
         if (index > -1) {
-            this._paths.remove(index);
+            mPaths.remove(index);
             mNeedsFullRedraw = true;
             invalidateCanvas(true);
         }
@@ -119,7 +119,7 @@ public class SketchCanvas extends View {
         boolean success = true;
         if (!f.exists())   success = f.mkdirs();
         if (success) {
-            Bitmap  bitmap = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
+            Bitmap  bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             if (format.equals("png")) {
                 canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
@@ -135,26 +135,26 @@ public class SketchCanvas extends View {
                     format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
                     format.equals("png") ? 100 : 90,
                     new FileOutputStream(file));
-                this.onSaved(true);
+                onSaved(true);
             } catch (Exception e) {
                 e.printStackTrace();
-                this.onSaved(false);
+                onSaved(false);
             }
         } else {
             Log.e("SketchCanvas", "Failed to create folder!");
-            this.onSaved(false);
+            onSaved(false);
         }
     }
 
     public void end() {
-        if (this._currentPath != null) {
-            this._currentPath = null;
+        if (mCurrentPath != null) {
+            mCurrentPath = null;
         }
     }
 
     public String getBase64(String format, boolean transparent) {
         WritableMap event = Arguments.createMap();
-        Bitmap  bitmap = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap  bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         if (format.equals("png")) {
             canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
@@ -189,7 +189,7 @@ public class SketchCanvas extends View {
 
         if (mNeedsFullRedraw && mDrawingCanvas != null) {
             mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-            for(SketchData path: this._paths) {
+            for(SketchData path: mPaths) {
                 path.draw(mDrawingCanvas);
             }
             mNeedsFullRedraw = false;
@@ -203,7 +203,7 @@ public class SketchCanvas extends View {
     private void invalidateCanvas(boolean shouldDispatchEvent) {
         if (shouldDispatchEvent) {
             WritableMap event = Arguments.createMap();
-            event.putInt("pathsUpdate", this._paths.size());
+            event.putInt("pathsUpdate", mPaths.size());
             mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                 getId(),
                 "topChange",
