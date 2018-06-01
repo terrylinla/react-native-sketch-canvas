@@ -69,7 +69,7 @@
     [self drawSegmentInContext:context from:fromPoint to:toPoint];
 }
 - (void)drawInContext:(CGContextRef)context {
-    NSValue *prevPointValue;
+    NSValue *prevPointValue = _points.count == 1 ? _points[0] : nil;
     for (NSValue *pointValue in _points) {
         if (!prevPointValue) {
             prevPointValue = pointValue;
