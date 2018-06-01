@@ -107,7 +107,8 @@
                                                   strokeWidth: strokeWidth
                                                        points: points];
         [_paths addObject: data];
-        _needsFullRedraw = YES;
+        [data drawInContext:_drawingContext];
+        [self setFrozenImageNeedsUpdate];
         [self setNeedsDisplay];
 //        [self invalidate];
     }
