@@ -3,6 +3,7 @@ package com.terrylinla.rnsketchcanvas;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -17,6 +18,10 @@ public class SketchData {
     public final float strokeWidth;
 
     private Paint mPaint;
+
+    public static PointF midPoint(PointF p1, PointF p2) {
+        return new PointF((p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f);
+    }
 
     public SketchData(int id, int strokeColor, float strokeWidth) {
         this.id = id;
@@ -34,11 +39,30 @@ public class SketchData {
     public Rect addPoint(PointF p) {
         points.add(p);
 
-        RectF updateRect = new RectF(p.x, p.y, p.x, p.y);
-        if (points.size() > 1) {
-            PointF prevPoint = points.get(points.size() - 2);
-            updateRect.union(prevPoint.x, prevPoint.y);
+        RectF updateRect;
+
+        int pointsCount = points.size();
+        if (pointsCount >= 3) {
+            PointF a = points.get(pointsCount - 3);
+            PointF b = points.get(pointsCount - 2);
+            PointF c = p;
+            PointF prevMid = midPoint(a, b);
+            PointF currentMid = midPoint(b, c);
+
+            updateRect = new RectF(prevMid.x, prevMid.y, prevMid.x, prevMid.y);
+            updateRect.union(b.x, b.y);
+            updateRect.union(currentMid.x, currentMid.y);
+        } else if (pointsCount >= 2) {
+            PointF a = points.get(pointsCount - 2);
+            PointF b = p;
+            PointF mid = midPoint(a, b);
+
+            updateRect = new RectF(a.x, a.y, a.x, a.y);
+            updateRect.union(mid.x, mid.y);
+        } else {
+            updateRect = new RectF(p.x, p.y, p.x, p.y);
         }
+
         updateRect.inset(-strokeWidth * 2, -strokeWidth * 2);
 
         Rect integralRect = new Rect();
@@ -51,32 +75,15 @@ public class SketchData {
         int pointsCount = points.size();
         if (pointsCount < 1) {
             return;
-        } else if (pointsCount < 2) {
-            drawPoint(canvas, points.get(0));
-            return;
         }
 
-        PointF fromPoint = points.get(pointsCount - 2);
-        PointF toPoint = points.get(pointsCount - 1);
-
-        drawLine(canvas, fromPoint, toPoint);
+        draw(canvas, pointsCount - 1);
     }
 
     public void draw(Canvas canvas) {
-        if (points.size() == 1) {
-            drawPoint(canvas, points.get(0));
-            return;
-        }
-
-        PointF prevPoint = null;
-        for (PointF point: points) {
-            if (prevPoint == null) {
-                prevPoint = point;
-                continue;
-            }
-
-            drawLine(canvas, prevPoint, point);
-            prevPoint = point;
+        int pointsCount = points.size();
+        for (int i = 0; i < pointsCount; i++) {
+            draw(canvas, i);
         }
     }
 
@@ -96,11 +103,50 @@ public class SketchData {
         return mPaint;
     }
 
+    private void draw(Canvas canvas, int pointIndex) {
+        int pointsCount = points.size();
+        if (pointIndex >= pointsCount) {
+            return;
+        }
+
+        if (pointsCount >= 3 && pointIndex >= 2) {
+            PointF a = points.get(pointIndex - 2);
+            PointF b = points.get(pointIndex - 1);
+            PointF c = points.get(pointIndex);
+            PointF prevMid = midPoint(a, b);
+            PointF currentMid = midPoint(b, c);
+
+            // Draw a curve
+            drawQuadCurve(canvas, prevMid, b, currentMid);
+        } else if (pointsCount >= 2 && pointIndex >= 1) {
+            PointF a = points.get(pointIndex - 1);
+            PointF b = points.get(pointIndex);
+            PointF mid = midPoint(a, b);
+
+            // Draw a line to the middle of points a and b
+            // This is so the next draw which uses a curve looks correct and continues from there
+            drawLine(canvas, a, mid);
+        } else if (pointsCount >= 1) {
+            PointF a = points.get(pointIndex);
+
+            // Draw a single point
+            drawPoint(canvas, a);
+        }
+    }
+
     private void drawPoint(Canvas canvas, PointF point) {
         canvas.drawPoint(point.x, point.y, getPaint());
     }
 
     private void drawLine(Canvas canvas, PointF fromPoint, PointF toPoint) {
         canvas.drawLine(fromPoint.x, fromPoint.y, toPoint.x, toPoint.y, getPaint());
+    }
+
+    private void drawQuadCurve(Canvas canvas, PointF startPoint, PointF controlPoint, PointF endPoint) {
+        Path path = new Path();
+        path.moveTo(startPoint.x, startPoint.y);
+        path.quadTo(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
+
+        canvas.drawPath(path, getPaint());
     }
 }
