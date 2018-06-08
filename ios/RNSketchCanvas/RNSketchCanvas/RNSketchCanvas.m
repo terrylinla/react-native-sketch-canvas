@@ -166,18 +166,14 @@
 }
 
 - (void) invalidate {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (_onChange) {
-            _onChange(@{ @"pathsUpdate": @(_paths.count) });
-        }
-        [_layer setNeedsDisplay];
-    });
+    if (_onChange) {
+        _onChange(@{ @"pathsUpdate": @(_paths.count) });
+    }
+    [_layer setNeedsDisplay];
 }
 
 - (void) invalidateInRect: (CGRect) rect {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [_layer setNeedsDisplayInRect: rect ];
-    });
+    [_layer setNeedsDisplayInRect: rect ];
 }
 
 

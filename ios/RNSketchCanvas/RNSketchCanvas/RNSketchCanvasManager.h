@@ -3,6 +3,4 @@
 
 @interface RNSketchCanvasManager : RCTViewManager
 
-@property (strong) RNSketchCanvas *sketchCanvasView;
-
 @end
