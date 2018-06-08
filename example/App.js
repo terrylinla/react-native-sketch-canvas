@@ -52,7 +52,6 @@ export default class example extends Component {
             }}>
               <Text style={{ alignSelf: 'center', marginTop: 15, fontSize: 18 }}>- Example 3 -</Text>
               <Text>Sync two canvases</Text>
-              <Text>(but support only one canvas per iOS device)</Text>
             </TouchableOpacity>
           </View>
         }
