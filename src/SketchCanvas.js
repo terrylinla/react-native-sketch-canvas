@@ -37,6 +37,7 @@ class SketchCanvas extends React.Component {
     user: PropTypes.string,
 
     touchEnabled: PropTypes.bool,
+    localSourceImagePath: PropTypes.string
   };
 
   static defaultProps = {
@@ -51,11 +52,11 @@ class SketchCanvas extends React.Component {
     user: null,
 
     touchEnabled: true,
+    localSourceImagePath: ''
   };
 
   constructor(props) {
     super(props)
-
     this._pathsToProcess = []
     this._paths = []
     this._path = null
@@ -194,10 +195,13 @@ class SketchCanvas extends React.Component {
         onChange={(e) => {
           if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
             this.props.onPathsChange(e.nativeEvent.pathsUpdate)
-          } else if (e.nativeEvent.hasOwnProperty('success')) {
+          } else if (e.nativeEvent.hasOwnProperty('success') && e.nativeEvent.hasOwnProperty('path')) {
+            this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
+          }else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
           }
         }}
+        localSourceImagePath={this.props.localSourceImagePath}
       />
     );
   }

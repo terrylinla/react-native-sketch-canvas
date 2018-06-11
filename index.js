@@ -41,6 +41,8 @@ export default class extends React.Component {
 
     savePreference: PropTypes.func,
     onSketchSaved: PropTypes.func,
+
+    localSourceImagePath: PropTypes.string,
   };
 
   static defaultProps = {
@@ -222,6 +224,7 @@ export default class extends React.Component {
           strokeWidth={this.state.strokeWidth}
           onSketchSaved={success => this.props.onSketchSaved(success)}
           onPathsChange={this.props.onPathsChange}
+          localSourceImagePath={this.props.localSourceImagePath}
         />
         <View style={{ flexDirection: 'row' }}>
           <FlatList
