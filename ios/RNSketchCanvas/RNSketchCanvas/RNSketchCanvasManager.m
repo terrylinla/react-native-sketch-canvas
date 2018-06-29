@@ -40,9 +40,8 @@ RCT_CUSTOM_VIEW_PROPERTY(localSourceImagePath, NSString, RNSketchCanvas)
 
 RCT_EXPORT_METHOD(save:(nonnull NSNumber *)reactTag type:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent)
 {
-    // folder and filename params are not yet used on iOS
     [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
-        [canvas saveImageOfType: type withTransparentBackground: transparent];
+        [canvas saveImageOfType: type folder: folder filename: filename withTransparentBackground: transparent];
     }];
 }
 

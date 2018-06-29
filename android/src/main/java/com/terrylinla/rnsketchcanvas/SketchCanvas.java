@@ -48,17 +48,19 @@ public class SketchCanvas extends View {
 
     public boolean openImageFile(String localFilePath) {
 
-        BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-        Bitmap bitmap = BitmapFactory.decodeFile(localFilePath, bitmapOptions);
-        if(bitmap != null) {
-            backgroundImage = bitmap;
-            originalImagePath = localFilePath;
-            mOriginalHeight = bitmap.getHeight();
-            mOriginalWidth = bitmap.getWidth();
+        if(localFilePath != null) {
+            BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+            Bitmap bitmap = BitmapFactory.decodeFile(localFilePath, bitmapOptions);
+            if(bitmap != null) {
+                backgroundImage = bitmap;
+                originalImagePath = localFilePath;
+                mOriginalHeight = bitmap.getHeight();
+                mOriginalWidth = bitmap.getWidth();
 
-            invalidateCanvas(true);
+                invalidateCanvas(true);
 
-            return true;
+                return true;
+            }
         }
         return false;
     }
@@ -163,11 +165,11 @@ public class SketchCanvas extends View {
                 this.onSaved(true, file.getPath());
             } catch (Exception e) {
                 e.printStackTrace();
-                this.onSaved(false, "");
+                this.onSaved(false, null);
             }
         } else {
             Log.e("SketchCanvas", "Failed to create folder!");
-            this.onSaved(false, "");
+            this.onSaved(false, null);
         }
     }
 

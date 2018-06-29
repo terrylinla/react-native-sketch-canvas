@@ -52,7 +52,7 @@ class SketchCanvas extends React.Component {
     user: null,
 
     touchEnabled: true,
-    localSourceImagePath: ''
+    localSourceImagePath: null
   };
 
   constructor(props) {

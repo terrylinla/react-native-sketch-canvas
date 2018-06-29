@@ -15,7 +15,7 @@
 - (void)addPointX: (float)x Y: (float)y;
 - (void)endPath;
 - (void)clear;
-- (void)saveImageOfType: (NSString*) type withTransparentBackground: (BOOL) transparent;
+- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent;
 - (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent;
 
 @end

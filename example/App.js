@@ -27,7 +27,7 @@ export default class example extends Component {
       color: '#FF0000',
       thickness: 5,
       message: '',
-      photoPath: ''
+      photoPath: null
     }
   }
 
@@ -35,7 +35,6 @@ export default class example extends Component {
     if (this.camera) {
       const options = { quality: 0.5, base64: true };
       const data = await this.camera.takePictureAsync(options)
-      console.log(data.uri);
       this.setState({
         photoPath: data.uri.replace('file://', '')
       })  
@@ -123,9 +122,8 @@ export default class example extends Component {
                   imageType: 'png'
                 }
               }}
-              onSketchSaved={success => {
-                Alert.alert('Image saved!')
-                // Alert.alert(String(success))
+              onSketchSaved={(success, path) => {
+                Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
               }}
               onPathsChange={(pathsCount) => {
                 console.log('pathsCount', pathsCount)
@@ -253,8 +251,8 @@ export default class example extends Component {
                   imageType: 'jpg'
                 }
               }}
-              onSketchSaved={success => {
-                Alert.alert(String(success))
+              onSketchSaved={(success, path) => {
+                Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
               }}
               onStrokeEnd={(path) => {
                 this.canvas2.addPath(path)
@@ -306,8 +304,8 @@ export default class example extends Component {
                   imageType: 'jpg'
                 }
               }}
-              onSketchSaved={success => {
-                Alert.alert(String(success))
+              onSketchSaved={(success, path) => {
+                Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
               }}
               onStrokeEnd={(path) => {
                 this.canvas1.addPath(path)
@@ -321,7 +319,7 @@ export default class example extends Component {
 
         {
           this.state.example === 4 &&
-          (this.state.photoPath.length === 0 ?
+          (this.state.photoPath === null ?
             <View style={styles.cameraContainer}>
               <RNCamera
                   ref={ref => {
@@ -390,9 +388,8 @@ export default class example extends Component {
                     imageType: 'png'
                   }
                 }}
-                onSketchSaved={success => {
-                  Alert.alert('Image saved!')
-                  // Alert.alert(String(success))
+                onSketchSaved={(success, path) => {
+                  Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
                 }}
                 onPathsChange={(pathsCount) => {
                   console.log('pathsCount', pathsCount)
@@ -409,7 +406,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    // alignItems: 'center',
+    alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
   strokeColorButton: {
@@ -442,7 +439,8 @@ const styles = StyleSheet.create({
   cameraContainer: {
     flex: 1,
     flexDirection: 'column',
-    backgroundColor: 'black'
+    backgroundColor: 'black',
+    alignSelf: 'stretch'
   },
   preview: {
     flex: 1,

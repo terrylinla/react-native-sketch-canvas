@@ -23,12 +23,14 @@
 
 -(BOOL)openSketchFile:(NSString *)localFilePath
 {
-    UIImage *image = [UIImage imageWithContentsOfFile:localFilePath];
-    if(image) {
-        backgroundImage = image;
-        [self setNeedsDisplay];
-        
-        return YES;
+    if (localFilePath) {
+        UIImage *image = [UIImage imageWithContentsOfFile:localFilePath];
+        if(image) {
+            backgroundImage = image;
+            [self setNeedsDisplay];
+            
+            return YES;
+        }
     }
     return NO;
 }
@@ -137,7 +139,7 @@
     [self invalidate];
 }
 
-- (void) saveImageOfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
+-(void) saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent {
     if(!backgroundImage) {
         CGRect rect = _layer.frame;
         UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
@@ -149,10 +151,33 @@
         [_layer renderInContext:context];
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
-        if ([type isEqualToString: @"jpg"]) {
-            UIImageWriteToSavedPhotosAlbum(img, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+        
+        if (folder != nil && filename != nil) {
+            NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];
+            NSError * error = nil;
+            [[NSFileManager defaultManager] createDirectoryAtPath:[tempDir path]
+                                      withIntermediateDirectories:YES
+                                                       attributes:nil
+                                                            error:&error];
+            if (error == nil) {
+                NSURL *fileURL = [[tempDir URLByAppendingPathComponent: filename] URLByAppendingPathExtension: type];
+                NSData *imageData = [type isEqualToString: @"png"] ? UIImagePNGRepresentation(img) : UIImageJPEGRepresentation(img, 1.0);
+                [imageData writeToURL:fileURL atomically:YES];
+                
+                if (_onChange) {
+                    _onChange(@{ @"success": @YES, @"path": [fileURL path]});
+                }
+            } else {
+                if (_onChange) {
+                    _onChange(@{ @"success": @NO, @"path": [NSNull null]});
+                }
+            }
         } else {
-            UIImageWriteToSavedPhotosAlbum([UIImage imageWithData: UIImagePNGRepresentation(img)], self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+            if ([type isEqualToString: @"jpg"]) {
+                UIImageWriteToSavedPhotosAlbum(img, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+            } else {
+                UIImageWriteToSavedPhotosAlbum([UIImage imageWithData: UIImagePNGRepresentation(img)], self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+            }
         }
     } 
     else {
@@ -172,17 +197,32 @@
         UIImage* img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
-        NSURL *tempDir = [NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES];
-        NSString *fileName = [NSString stringWithFormat:@"img%@.jpeg", [[NSUUID UUID] UUIDString]];
-        NSURL *fileURL = [tempDir URLByAppendingPathComponent:fileName];
-        
-        NSLog(@"fileURL: %@", [fileURL path]);
-        
-        NSData *imageData = UIImageJPEGRepresentation(img,  1.0);
-        [imageData writeToURL:fileURL atomically:YES];
-        
-        if (_onChange) {
-            _onChange(@{ @"success": @YES, @"path": [fileURL path]});
+        if (folder != nil && filename != nil) {
+            NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];
+            NSError * error = nil;
+            [[NSFileManager defaultManager] createDirectoryAtPath:[tempDir path]
+                                      withIntermediateDirectories:YES
+                                                       attributes:nil
+                                                            error:&error];
+            if (error == nil) {
+                NSURL *fileURL = [[tempDir URLByAppendingPathComponent: filename] URLByAppendingPathExtension: type];
+                NSData *imageData = [type isEqualToString: @"png"] ? UIImagePNGRepresentation(img) : UIImageJPEGRepresentation(img, 1.0);
+                [imageData writeToURL:fileURL atomically:YES];
+                
+                if (_onChange) {
+                    _onChange(@{ @"success": @YES, @"path": [fileURL path]});
+                }
+            } else {
+                if (_onChange) {
+                    _onChange(@{ @"success": @NO, @"path": [NSNull null]});
+                }
+            }
+        } else {
+            if ([type isEqualToString: @"jpg"]) {
+                UIImageWriteToSavedPhotosAlbum(img, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+            } else {
+                UIImageWriteToSavedPhotosAlbum([UIImage imageWithData: UIImagePNGRepresentation(img)], self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+            }
         }
     }
 }
@@ -233,7 +273,7 @@
     UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     if ([type isEqualToString: @"jpg"]) {
-        return [UIImageJPEGRepresentation(img, 0.9) base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
+        return [UIImageJPEGRepresentation(img, 1.0) base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
     } else {
         return [UIImagePNGRepresentation(img) base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
     }
