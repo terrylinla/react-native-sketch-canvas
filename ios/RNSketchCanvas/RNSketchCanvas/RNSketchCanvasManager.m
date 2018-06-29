@@ -18,6 +18,16 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_VIEW_PROPERTY(onChange, RCTBubblingEventBlock);
 
+#pragma mark - Props
+RCT_CUSTOM_VIEW_PROPERTY(localSourceImagePath, NSString, RNSketchCanvas)
+{
+    RNSketchCanvas *currentView = !view ? defaultView : view;
+    NSString *localFilePath = [RCTConvert NSString:json];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [currentView openSketchFile:localFilePath];
+    });
+}
+
 #pragma mark - Lifecycle
 
 - (UIView *)view
