@@ -248,4 +248,4 @@ The source code includes 3 examples, using build-in UI components, using with on
 Check full example app in the [example](./example) folder 
 
 ## Troubleshooting
-Please refer [[Link here|Troubleshooting]].
+Please refer  [here](https://github.com/terrylinla/react-native-sketch-canvas/wiki/Troubleshooting).
