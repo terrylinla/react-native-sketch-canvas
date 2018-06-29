@@ -38,6 +38,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     public static SketchCanvas Canvas = null;
 
+    private static final String PROPS_IMAGE_PATH = "localSourceImagePath";
+
     @Override
     public String getName() {
         return "RNSketchCanvas";
@@ -47,6 +49,11 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     protected SketchCanvas createViewInstance(ThemedReactContext context) {
         SketchCanvasManager.Canvas = new SketchCanvas(context);
         return SketchCanvasManager.Canvas;
+    }
+
+    @ReactProp(name = PROPS_IMAGE_PATH)
+    public void setLocalSourceImagePath(SketchCanvas viewContainer, String localSourceImagePath) {
+        viewContainer.openImageFile(localSourceImagePath);
     }
 
     @Override
