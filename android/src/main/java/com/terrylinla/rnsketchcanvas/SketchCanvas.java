@@ -1,6 +1,7 @@
 package com.terrylinla.rnsketchcanvas;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -36,9 +37,33 @@ public class SketchCanvas extends View {
 
     private boolean mNeedsFullRedraw = true;
 
+    private int mOriginalWidth;
+    private int mOriginalHeight;
+    Bitmap mBackgroundImage;
+    String mOriginalImagePath;
+
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
+    }
+
+    public boolean openImageFile(String localFilePath) {
+
+        if(localFilePath != null) {
+            BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+            Bitmap bitmap = BitmapFactory.decodeFile(localFilePath, bitmapOptions);
+            if(bitmap != null) {
+                mBackgroundImage = bitmap;
+                mOriginalImagePath = localFilePath;
+                mOriginalHeight = bitmap.getHeight();
+                mOriginalWidth = bitmap.getWidth();
+
+                invalidateCanvas(true);
+
+                return true;
+            }
+        }
+        return false;
     }
 
     public void clear() {
@@ -105,9 +130,10 @@ public class SketchCanvas extends View {
         }
     }
 
-    public void onSaved(boolean success) {
+    public void onSaved(boolean success, String path) {
         WritableMap event = Arguments.createMap();
         event.putBoolean("success", success);
+        event.putString("path", path);
         mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
             getId(),
             "topChange",
@@ -126,7 +152,17 @@ public class SketchCanvas extends View {
             } else {
                 canvas.drawARGB(255, 255, 255, 255);
             }
+
+            if (mBackgroundImage != null) {
+                Rect dstRect = new Rect();
+                canvas.getClipBounds(dstRect);
+                canvas.drawBitmap(mBackgroundImage, null, dstRect, null);
+            }
             canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+
+            if (mBackgroundImage != null) {
+                bitmap = Bitmap.createScaledBitmap(bitmap, mOriginalWidth, mOriginalHeight, false);
+            }
 
             File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
                 File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
@@ -135,14 +171,14 @@ public class SketchCanvas extends View {
                     format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
                     format.equals("png") ? 100 : 90,
                     new FileOutputStream(file));
-                onSaved(true);
+                this.onSaved(true, file.getPath());
             } catch (Exception e) {
                 e.printStackTrace();
-                onSaved(false);
+                onSaved(false, null);
             }
         } else {
             Log.e("SketchCanvas", "Failed to create folder!");
-            onSaved(false);
+            onSaved(false, null);
         }
     }
 
@@ -193,6 +229,12 @@ public class SketchCanvas extends View {
                 path.draw(mDrawingCanvas);
             }
             mNeedsFullRedraw = false;
+        }
+
+        if (mBackgroundImage != null) {
+            Rect dstRect = new Rect();
+            canvas.getClipBounds(dstRect);
+            canvas.drawBitmap(mBackgroundImage, null, dstRect, null);
         }
 
         if (mDrawingBitmap != null) {

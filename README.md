@@ -13,7 +13,8 @@ Features
 * Can serialize path data to JSON. So it can sync other devices or someone else and continue to edit.
 * Save drawing to a non-transparent image (png or jpg) or a transparent image (png only)
 * Use vector concept. So sketches won't be cropped in different sizes of canvas.
-* Support translucent colors and eraser (NEW!)
+* Support translucent colors and eraser.
+* Support drawing on an image (Thanks to diego-caceres-galvan)
 
 
 ## Installation
@@ -77,10 +78,11 @@ AppRegistry.registerComponent('example', () => example);
 | onStrokeStart | `function` | An optional function called when user's finger touches the canvas (starts to draw) |
 | onStrokeChanged | `function` | An optional function called when user's finger moves |
 | onStrokeEnd | `function` | An optional function called when user's finger leaves the canvas (end drawing) |
-| onSketchSaved | `function` | An optional function which accpets 1 argument `success`, true if image is saved successfully |
+| onSketchSaved | `function` | An optional function which accpets 2 arguments `success` and `path`. If `success` is true, image is saved successfully and the saved image path might be in second argument. In Android, image path will always be returned. In iOS, image is saved to camera roll or file system, path will be set to null or image location respectively. |
 | onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
 | user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
 | touchEnabled | `bool` | If false, disable touching. Default is true.  |
+| localSourceImagePath | `string` | Require a path which contains an image. If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan) |
 
 #### Methods
 -------------
@@ -90,7 +92,7 @@ AppRegistry.registerComponent('example', () => example);
 | undo() | Delete the latest path. Can undo multiple times. |
 | addPath(path) | Add a path (see [below](#objects)) to canvas.  |
 | deletePath(id) | Delete a path with its `id` |
-| save(imageType, transparent, folder, filename) | Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to /sdcard/Pictures/`folder`/`filename` (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll. (`folder` and `filename` are ignored automatically)  |
+| save(imageType, transparent, folder, filename) | Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to **/sdcard/Pictures/`folder`/`filename`** (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll or file system. If `folder` and `filename` are set, image will save to **temporary directory/`folder`/`filename`** (which is NSTemporaryDirectory())  |
 | getPaths() | Get the paths that drawn on the canvas |
 | getBase64(imageType, transparent, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
 
@@ -244,3 +246,6 @@ AppRegistry.registerComponent('example', () => example);
 The source code includes 3 examples, using build-in UI components, using with only canvas, and sync between two canvases.
 
 Check full example app in the [example](./example) folder 
+
+## Troubleshooting
+Please refer  [here](https://github.com/terrylinla/react-native-sketch-canvas/wiki/Troubleshooting).
