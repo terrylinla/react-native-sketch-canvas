@@ -83,6 +83,8 @@ AppRegistry.registerComponent('example', () => example);
 | user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
 | touchEnabled | `bool` | If false, disable touching. Default is true.  |
 | localSourceImagePath | `string` | Require a path which contains an image. If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan) |
+| permissionDialogTitle | `string` | Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set |
+| permissionDialogMessage | `string` | Android Only: Provide a Dialog Message for the Image Saving PermissionDialog. Defaults to empty string if not set |
 
 #### Methods
 -------------
