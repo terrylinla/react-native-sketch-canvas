@@ -29,6 +29,11 @@ public class MainApplication extends Application implements ReactApplication {
             new SketchCanvasPackage()
       );
     }
+
+    @Override
+    protected String getJSMainModuleName() {
+      return "index";
+    }
   };
 
   @Override

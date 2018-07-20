@@ -7,16 +7,16 @@
     "test": "jest"
   },
   "dependencies": {
-    "react": "16.2.0",
-    "react-native": "0.52.0",
-    "react-native-camera": "1.0.3",
+    "react": "16.3.1",
+    "react-native": "0.55.4",
+    "react-native-camera": "1.1.4",
     "@terrylinla/react-native-sketch-canvas": "file:.."
   },
   "devDependencies": {
-    "babel-jest": "22.1.0",
+    "babel-jest": "23.4.0",
     "babel-preset-react-native": "4.0.0",
-    "jest": "22.1.0",
-    "react-test-renderer": "16.2.0"
+    "jest": "23.4.1",
+    "react-test-renderer": "16.3.1"
   },
   "jest": {
     "preset": "react-native"
