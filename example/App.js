@@ -119,7 +119,7 @@ export default class example extends Component {
                 return {
                   folder: "RNSketchCanvas",
                   filename: String(Math.ceil(Math.random() * 100000000)),
-                  transparent: true,
+                  transparent: false,
                   imageType: "png"
                 }
               }}
