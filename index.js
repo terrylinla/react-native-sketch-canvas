@@ -248,7 +248,7 @@ export default class extends React.Component {
           <FlatList
             data={this.props.strokeColors}
             extraData={this.state}
-            keyExtractor={() => Math.ceil(Math.random() * 10000000)}
+            keyExtractor={() => Math.ceil(Math.random() * 10000000).toString()}
             renderItem={this._renderItem}
             horizontal
             showsHorizontalScrollIndicator={false}
