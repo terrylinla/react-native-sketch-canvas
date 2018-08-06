@@ -84,6 +84,8 @@ AppRegistry.registerComponent('example', () => example);
 | user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
 | touchEnabled | `bool` | If false, disable touching. Default is true.  |
 | localSourceImage | `object` | Require an object (see [below](#objects)) which consists of `filename`, `directory`(optional) and `mode`(optional). If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan))([Here](#background-image) for details) |
+| permissionDialogTitle | `string` | Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set |
+| permissionDialogMessage | `string` | Android Only: Provide a Dialog Message for the Image Saving PermissionDialog. Defaults to empty string if not set |
 
 #### Methods
 -------------
@@ -304,10 +306,10 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 -------------
 1. For non-transparent path, both Android and iOS performances are good. Because when drawing non-transparent path, only last segment is drawn on canvas, no matter how long the path is, CPU usage is stable at about 20% and 15% in Android and iOS respectively. 
 2. For transparent path, CPU usage stays at around 25% in Android, however, in iOS, CPU usage grows to 100% :(.
-* Android<br/>
+* Android (https://youtu.be/gXdCEN6Enmk)<br/>
 <img src="https://i.imgur.com/YQ2wVMc.jpg" height="400" />
 <img src="https://i.imgur.com/CuIar4h.jpg" height="400" />
-* iOS<br/>
+* iOS (https://youtu.be/_jO4ky400Eo)<br/>
 <img src="https://i.imgur.com/AwkFu94.png" height="400" />
 <img src="https://i.imgur.com/UDcaiaz.png" height="400" />
 

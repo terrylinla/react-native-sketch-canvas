@@ -8,6 +8,7 @@ import ReactNative, {
   ViewPropTypes,
 } from 'react-native'
 import SketchCanvas from './src/SketchCanvas'
+import { requestPermissions } from './src/handlePermissions';
 
 export default class RNSketchCanvas extends React.Component {
   static propTypes = {
@@ -31,7 +32,7 @@ export default class RNSketchCanvas extends React.Component {
     strokeSelectedComponent: PropTypes.func,
     strokeWidthComponent: PropTypes.func,
 
-    strokeColors: PropTypes.arrayOf(PropTypes.shape({ color: PropTypes.string})),
+    strokeColors: PropTypes.arrayOf(PropTypes.shape({ color: PropTypes.string })),
     defaultStrokeIndex: PropTypes.number,
     defaultStrokeWidth: PropTypes.number,
 
@@ -43,18 +44,21 @@ export default class RNSketchCanvas extends React.Component {
     onSketchSaved: PropTypes.func,
 
     localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.string }),
+
+    permissionDialogTitle: PropTypes.string,
+    permissionDialogMessage: PropTypes.string,
   };
 
   static defaultProps = {
     containerStyle: null,
     canvasStyle: null,
-    onStrokeStart: () => {},
-    onStrokeChanged: () => {},
-    onStrokeEnd: () => {},
-    onClosePressed: () => {},
-    onUndoPressed: () => {},
-    onClearPressed: () => {},
-    onPathsChange: () => {},
+    onStrokeStart: () => { },
+    onStrokeChanged: () => { },
+    onStrokeEnd: () => { },
+    onClosePressed: () => { },
+    onUndoPressed: () => { },
+    onClearPressed: () => { },
+    onPathsChange: () => { },
     user: null,
 
     closeComponent: null,
@@ -67,25 +71,25 @@ export default class RNSketchCanvas extends React.Component {
     strokeWidthComponent: null,
 
     strokeColors: [
-      { color: '#000000' }, 
-      { color: '#FF0000' }, 
-      { color: '#00FFFF' }, 
-      { color: '#0000FF' }, 
-      { color: '#0000A0' }, 
-      { color: '#ADD8E6' }, 
+      { color: '#000000' },
+      { color: '#FF0000' },
+      { color: '#00FFFF' },
+      { color: '#0000FF' },
+      { color: '#0000A0' },
+      { color: '#ADD8E6' },
       { color: '#800080' },
       { color: '#FFFF00' },
       { color: '#00FF00' },
       { color: '#FF00FF' },
-      { color: '#FFFFFF' }, 
-      { color: '#C0C0C0' }, 
-      { color: '#808080' }, 
-      { color: '#FFA500' }, 
+      { color: '#FFFFFF' },
+      { color: '#C0C0C0' },
+      { color: '#808080' },
+      { color: '#FFA500' },
       { color: '#A52A2A' },
       { color: '#800000' },
       { color: '#008000' },
-      { color: '#808000' } ],
-    alphlaValues: [ '33', '77', 'AA', 'FF' ],
+      { color: '#808000' }],
+    alphlaValues: ['33', '77', 'AA', 'FF'],
     defaultStrokeIndex: 0,
     defaultStrokeWidth: 3,
 
@@ -94,9 +98,12 @@ export default class RNSketchCanvas extends React.Component {
     strokeWidthStep: 3,
 
     savePreference: null,
-    onSketchSaved: () => {},
+    onSketchSaved: () => { },
 
-    localSourceImage: null
+    localSourceImage: null,
+
+    permissionDialogTitle: '',
+    permissionDialogMessage: '',
   };
 
 
@@ -143,13 +150,13 @@ export default class RNSketchCanvas extends React.Component {
   }
 
   nextStrokeWidth() {
-    if ((this.state.strokeWidth >= this.props.maxStrokeWidth && this._strokeWidthStep > 0) || 
-        (this.state.strokeWidth <= this.props.minStrokeWidth && this._strokeWidthStep < 0))
+    if ((this.state.strokeWidth >= this.props.maxStrokeWidth && this._strokeWidthStep > 0) ||
+      (this.state.strokeWidth <= this.props.minStrokeWidth && this._strokeWidthStep < 0))
       this._strokeWidthStep = -this._strokeWidthStep
     this.setState({ strokeWidth: this.state.strokeWidth + this._strokeWidthStep })
   }
 
-  _renderItem = ({item, index}) => (
+  _renderItem = ({ item, index }) => (
     <TouchableOpacity style={{ marginHorizontal: 2.5 }} onPress={() => {
       if (this.state.color === item.color) {
         const index = this.props.alphlaValues.indexOf(this.state.alpha)
@@ -165,8 +172,8 @@ export default class RNSketchCanvas extends React.Component {
         this._colorChanged = true
       }
     }}>
-      { this.state.color !== item.color && this.props.strokeComponent && this.props.strokeComponent(item.color) }
-      { this.state.color === item.color && this.props.strokeSelectedComponent && this.props.strokeSelectedComponent(item.color + this.state.alpha, index, this._colorChanged) }
+      {this.state.color !== item.color && this.props.strokeComponent && this.props.strokeComponent(item.color)}
+      {this.state.color === item.color && this.props.strokeSelectedComponent && this.props.strokeSelectedComponent(item.color + this.state.alpha, index, this._colorChanged)}
     </TouchableOpacity>
   )
 
@@ -174,52 +181,59 @@ export default class RNSketchCanvas extends React.Component {
     this._colorChanged = false
   }
 
+  async componentDidMount() {
+    const isStoragePermissionAuthorized = await requestPermissions(
+      this.props.permissionDialogTitle,
+      this.props.permissionDialogMessage,
+    );
+  }
+
   render() {
     return (
       <View style={this.props.containerStyle}>
         <View style={{ flexDirection: 'row' }}>
           <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'flex-start' }}>
-            { this.props.closeComponent && (
+            {this.props.closeComponent && (
               <TouchableOpacity onPress={() => { this.props.onClosePressed() }}>
-                { this.props.closeComponent }
+                {this.props.closeComponent}
               </TouchableOpacity>)
             }
 
-            { this.props.eraseComponent && (
+            {this.props.eraseComponent && (
               <TouchableOpacity onPress={() => { this.setState({ color: '#00000000' }) }}>
-                { this.props.eraseComponent }
+                {this.props.eraseComponent}
               </TouchableOpacity>)
             }
           </View>
           <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'flex-end' }}>
-            { this.props.strokeWidthComponent && (
+            {this.props.strokeWidthComponent && (
               <TouchableOpacity onPress={() => { this.nextStrokeWidth() }}>
                 {this.props.strokeWidthComponent(this.state.strokeWidth)}
               </TouchableOpacity>)
             }
-              
-            { this.props.undoComponent && (
-              <TouchableOpacity onPress={() => {this.props.onUndoPressed(this.undo())}}>
-                { this.props.undoComponent }
+
+            {this.props.undoComponent && (
+              <TouchableOpacity onPress={() => { this.props.onUndoPressed(this.undo()) }}>
+                {this.props.undoComponent}
               </TouchableOpacity>)
             }
 
-            { this.props.clearComponent && (
+            {this.props.clearComponent && (
               <TouchableOpacity onPress={() => { this.clear(); this.props.onClearPressed() }}>
-                { this.props.clearComponent }
+                {this.props.clearComponent}
               </TouchableOpacity>)
             }
 
-            { this.props.saveComponent && (
+            {this.props.saveComponent && (
               <TouchableOpacity onPress={() => { this.save() }}>
-                { this.props.saveComponent }
+                {this.props.saveComponent}
               </TouchableOpacity>)
             }
           </View>
         </View>
         <SketchCanvas
           ref={ref => this._sketchCanvas = ref}
-          style={this.props.canvasStyle} 
+          style={this.props.canvasStyle}
           strokeColor={this.state.color + (this.state.color.length === 9 ? '' : this.state.alpha)}
           onStrokeStart={this.props.onStrokeStart}
           onStrokeChanged={this.props.onStrokeChanged}
@@ -229,12 +243,14 @@ export default class RNSketchCanvas extends React.Component {
           onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
           onPathsChange={this.props.onPathsChange}
           localSourceImage={this.props.localSourceImage}
+          permissionDialogTitle={this.props.permissionDialogTitle}
+          permissionDialogMessage={this.props.permissionDialogMessage}
         />
         <View style={{ flexDirection: 'row' }}>
           <FlatList
             data={this.props.strokeColors}
             extraData={this.state}
-            keyExtractor={() => Math.ceil(Math.random() * 10000000)}
+            keyExtractor={() => Math.ceil(Math.random() * 10000000).toString()}
             renderItem={this._renderItem}
             horizontal
             showsHorizontalScrollIndicator={false}

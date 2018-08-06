@@ -31,7 +31,7 @@ export default class example extends Component {
     }
   }
 
-  takePicture = async function() {
+  takePicture = async function () {
     if (this.camera) {
       const options = { quality: 0.5, base64: true };
       const data = await this.camera.takePictureAsync(options)
@@ -88,19 +88,19 @@ export default class example extends Component {
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
               onStrokeEnd={data => {
               }}
-              closeComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Close</Text></View>}
+              closeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View>}
               onClosePressed={() => {
                 this.setState({ example: 0 })
               }}
-              undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
+              undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
               onUndoPressed={(id) => {
                 // Alert.alert('do something')
               }}
-              clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
+              clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
               onClearPressed={() => {
                 // Alert.alert('do something')
               }}
-              eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
+              eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
               )}
@@ -111,21 +111,22 @@ export default class example extends Component {
               }}
               strokeWidthComponent={(w) => {
                 return (<View style={styles.strokeWidthButton}>
-                  <View  style={{
-                  backgroundColor: 'white', marginHorizontal: 2.5,
-                  width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
+                  <View style={{
+                    backgroundColor: 'white', marginHorizontal: 2.5,
+                    width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
                   }} />
                 </View>
-              )}}
+                )
+              }}
               defaultStrokeIndex={0}
               defaultStrokeWidth={5}
-              saveComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Save</Text></View>}
+              saveComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Save</Text></View>}
               savePreference={() => {
                 return {
-                  folder: 'RNSketchCanvas',
+                  folder: "RNSketchCanvas",
                   filename: String(Math.ceil(Math.random() * 100000000)),
                   transparent: false,
-                  imageType: 'png'
+                  imageType: "png"
                 }
               }}
               onSketchSaved={(success, path) => {
@@ -146,25 +147,25 @@ export default class example extends Component {
                 <TouchableOpacity style={styles.functionButton} onPress={() => {
                   this.setState({ example: 0 })
                 }}>
-                  <Text style={{color: 'white'}}>Close</Text>
+                  <Text style={{ color: 'white' }}>Close</Text>
                 </TouchableOpacity>
-                <View style={{flexDirection: 'row'}}>
+                <View style={{ flexDirection: 'row' }}>
                   <TouchableOpacity style={styles.functionButton} onPress={() => {
                     this.setState({ thickness: 10 })
                   }}>
-                    <Text style={{color: 'white'}}>Thick</Text>
+                    <Text style={{ color: 'white' }}>Thick</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.functionButton} onPress={() => {
                     this.setState({ thickness: 5 })
                   }}>
-                    <Text style={{color: 'white'}}>Thin</Text>
+                    <Text style={{ color: 'white' }}>Thin</Text>
                   </TouchableOpacity>
                 </View>
               </View>
               <SketchCanvas
                 localSourceImage={{ filename: 'whale.png', directory: SketchCanvas.MAIN_BUNDLE, mode: 'AspectFit' }}
                 // localSourceImage={{ filename: 'bulb.png', directory: RNSketchCanvas.MAIN_BUNDLE }}
-                ref={ref => this.canvas=ref}
+                ref={ref => this.canvas = ref}
                 style={{ flex: 1 }}
                 strokeColor={this.state.color}
                 strokeWidth={this.state.thickness}
@@ -182,27 +183,27 @@ export default class example extends Component {
                 }}
               />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{flexDirection: 'row'}}>
-                  <TouchableOpacity style={[styles.functionButton, {backgroundColor: 'red'}]} onPress={() => {
+                <View style={{ flexDirection: 'row' }}>
+                  <TouchableOpacity style={[styles.functionButton, { backgroundColor: 'red' }]} onPress={() => {
                     this.setState({ color: '#FF0000' })
                   }}>
-                    <Text style={{color: 'white'}}>Red</Text>
+                    <Text style={{ color: 'white' }}>Red</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={[styles.functionButton, {backgroundColor: 'black'}]} onPress={() => {
+                  <TouchableOpacity style={[styles.functionButton, { backgroundColor: 'black' }]} onPress={() => {
                     this.setState({ color: '#000000' })
                   }}>
-                    <Text style={{color: 'white'}}>Black</Text>
+                    <Text style={{ color: 'white' }}>Black</Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={{marginRight: 8, fontSize: 20}}>{ this.state.message }</Text>
-                <TouchableOpacity style={[styles.functionButton, {backgroundColor: 'black', width: 90}]} onPress={() => {
+                <Text style={{ marginRight: 8, fontSize: 20 }}>{this.state.message}</Text>
+                <TouchableOpacity style={[styles.functionButton, { backgroundColor: 'black', width: 90 }]} onPress={() => {
                   console.log(this.canvas.getPaths())
                   Alert.alert(JSON.stringify(this.canvas.getPaths()))
                   this.canvas.getBase64('jpg', false, true, true, (err, result) => {
                     console.log(result)
                   })
                 }}>
-                  <Text style={{color: 'white'}}>Get Paths</Text>
+                  <Text style={{ color: 'white' }}>Get Paths</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -213,25 +214,25 @@ export default class example extends Component {
           this.state.example === 3 &&
           <View style={{ flex: 1, flexDirection: 'column' }}>
             <RNSketchCanvas
-              ref={ref => this.canvas1=ref}
+              ref={ref => this.canvas1 = ref}
               user={'user1'}
               containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
               onStrokeEnd={data => {
               }}
-              closeComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Close</Text></View>}
+              closeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View>}
               onClosePressed={() => {
                 this.setState({ example: 0 })
               }}
-              undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
+              undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
               onUndoPressed={(id) => {
                 this.canvas2.deletePath(id)
               }}
-              clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
+              clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
               onClearPressed={() => {
                 this.canvas2.clear()
               }}
-              eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
+              eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
               )}
@@ -242,15 +243,16 @@ export default class example extends Component {
               }}
               strokeWidthComponent={(w) => {
                 return (<View style={styles.strokeWidthButton}>
-                  <View  style={{
-                  backgroundColor: 'white', marginHorizontal: 2.5,
-                  width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
+                  <View style={{
+                    backgroundColor: 'white', marginHorizontal: 2.5,
+                    width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
                   }} />
                 </View>
-              )}}
+                )
+              }}
               defaultStrokeIndex={0}
               defaultStrokeWidth={5}
-              saveComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Save</Text></View>}
+              saveComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Save</Text></View>}
               savePreference={() => {
                 return {
                   folder: 'RNSketchCanvas',
@@ -270,21 +272,21 @@ export default class example extends Component {
               }}
             />
             <RNSketchCanvas
-              ref={ref => this.canvas2=ref}
+              ref={ref => this.canvas2 = ref}
               user={'user2'}
               containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
               onStrokeEnd={data => {
               }}
-              undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
+              undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
               onUndoPressed={(id) => {
                 this.canvas1.deletePath(id)
               }}
-              clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
+              clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
               onClearPressed={() => {
                 this.canvas1.clear()
               }}
-              eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
+              eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
               )}
@@ -295,15 +297,16 @@ export default class example extends Component {
               }}
               strokeWidthComponent={(w) => {
                 return (<View style={styles.strokeWidthButton}>
-                  <View  style={{
-                  backgroundColor: 'white', marginHorizontal: 2.5,
-                  width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
+                  <View style={{
+                    backgroundColor: 'white', marginHorizontal: 2.5,
+                    width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
                   }} />
                 </View>
-              )}}
+                )
+              }}
               defaultStrokeIndex={0}
               defaultStrokeWidth={5}
-              saveComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Save</Text></View>}
+              saveComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Save</Text></View>}
               savePreference={() => {
                 return {
                   folder: 'RNSketchCanvas',
@@ -330,24 +333,24 @@ export default class example extends Component {
           (this.state.photoPath === null ?
             <View style={styles.cameraContainer}>
               <RNCamera
-                  ref={ref => {
-                    this.camera = ref;
-                  }}
-                  style = {styles.preview}
-                  type={RNCamera.Constants.Type.back}
-                  flashMode={RNCamera.Constants.FlashMode.on}
-                  permissionDialogTitle={'Permission to use camera'}
-                  permissionDialogMessage={'We need your permission to use your camera phone'}
+                ref={ref => {
+                  this.camera = ref;
+                }}
+                style={styles.preview}
+                type={RNCamera.Constants.Type.back}
+                flashMode={RNCamera.Constants.FlashMode.on}
+                permissionDialogTitle={'Permission to use camera'}
+                permissionDialogMessage={'We need your permission to use your camera phone'}
               />
-              <View style={{flex: 0, flexDirection: 'row', justifyContent: 'center',}}>
-              <TouchableOpacity
+              <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center', }}>
+                <TouchableOpacity
                   onPress={this.takePicture.bind(this)}
-                  style = {styles.capture}
-              >
-                  <Text style={{fontSize: 14}}> SNAP </Text>
-              </TouchableOpacity>
+                  style={styles.capture}
+                >
+                  <Text style={{ fontSize: 14 }}> SNAP </Text>
+                </TouchableOpacity>
               </View>
-            </View> 
+            </View>
             :
             <View style={{ flex: 1, flexDirection: 'row' }}>
               <RNSketchCanvas
@@ -356,19 +359,19 @@ export default class example extends Component {
                 canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
                 onStrokeEnd={data => {
                 }}
-                closeComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Close</Text></View>}
+                closeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View>}
                 onClosePressed={() => {
                   this.setState({ example: 0 })
                 }}
-                undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
+                undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
                 onUndoPressed={(id) => {
                   // Alert.alert('do something')
                 }}
-                clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
+                clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
                 onClearPressed={() => {
                   // Alert.alert('do something')
                 }}
-                eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
+                eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
                 strokeComponent={color => (
                   <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
                 )}
@@ -379,15 +382,16 @@ export default class example extends Component {
                 }}
                 strokeWidthComponent={(w) => {
                   return (<View style={styles.strokeWidthButton}>
-                    <View  style={{
-                    backgroundColor: 'white', marginHorizontal: 2.5,
-                    width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
+                    <View style={{
+                      backgroundColor: 'white', marginHorizontal: 2.5,
+                      width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
                     }} />
                   </View>
-                )}}
+                  )
+                }}
                 defaultStrokeIndex={0}
                 defaultStrokeWidth={5}
-                saveComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Save</Text></View>}
+                saveComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Save</Text></View>}
                 savePreference={() => {
                   return {
                     folder: 'RNSketchCanvas',
@@ -403,7 +407,7 @@ export default class example extends Component {
                   console.log('pathsCount', pathsCount)
                 }}
               />
-            </View> )
+            </View>)
         }
 
         {

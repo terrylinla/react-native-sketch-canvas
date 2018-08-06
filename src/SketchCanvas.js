@@ -15,6 +15,7 @@ import ReactNative, {
   ViewPropTypes,
   processColor
 } from 'react-native'
+import { requestPermissions } from './handlePermissions';
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
   nativeOnly: {
@@ -37,22 +38,29 @@ class SketchCanvas extends React.Component {
     user: PropTypes.string,
 
     touchEnabled: PropTypes.bool,
-    localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.string })
+    localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.string }),
+
+    permissionDialogTitle: PropTypes.string,
+    permissionDialogMessage: PropTypes.string,
   };
 
   static defaultProps = {
     style: null,
     strokeColor: '#000000',
     strokeWidth: 3,
-    onPathsChange: () => {},
-    onStrokeStart: () => {},
-    onStrokeChanged: () => {},
-    onStrokeEnd: () => {},
-    onSketchSaved: () => {},
+    onPathsChange: () => { },
+    onStrokeStart: () => { },
+    onStrokeChanged: () => { },
+    onStrokeEnd: () => { },
+    onSketchSaved: () => { },
     user: null,
 
     touchEnabled: true,
-    localSourceImage: null
+
+    localSourceImage: null,
+
+    permissionDialogTitle: '',
+    permissionDialogMessage: '',
   };
 
   constructor(props) {
@@ -76,7 +84,7 @@ class SketchCanvas extends React.Component {
   undo() {
     let lastId = -1;
     this._paths.forEach(d => lastId = d.drawer === this.props.user ? d.path.id : lastId)
-    if (lastId >= 0)  this.deletePath(lastId)
+    if (lastId >= 0) this.deletePath(lastId)
     return lastId
   }
 
@@ -85,10 +93,10 @@ class SketchCanvas extends React.Component {
       if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data)
       const pathData = data.path.data.map(p => {
         const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2))
-        return `${coor[0] * this._screenScale * this._size.width / data.size.width },${coor[1] * this._screenScale * this._size.height / data.size.height }`;
+        return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
       })
       UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPath, [
-        data.path.id, processColor(data.path.color), data.path.width * this._screenScale , pathData
+        data.path.id, processColor(data.path.color), data.path.width * this._screenScale, pathData
       ])
     } else {
       this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data)
@@ -97,11 +105,11 @@ class SketchCanvas extends React.Component {
 
   deletePath(id) {
     this._paths = this._paths.filter(p => p.path.id !== id)
-    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deletePath, [ id ])
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deletePath, [id])
   }
 
   save(imageType, transparent, folder, filename, includeImage, cropToImageSize) {
-    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.save, [ imageType, folder, filename, transparent, includeImage, cropToImageSize ])
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.save, [imageType, folder, filename, transparent, includeImage, cropToImageSize])
   }
 
   getPaths() {
@@ -114,6 +122,8 @@ class SketchCanvas extends React.Component {
     } else {
       NativeModules.SketchCanvasModule.transferToBase64(this._handle, imageType, transparent, includeImage, cropToImageSize, callback)
     }
+
+
   }
 
   componentWillMount() {
@@ -179,6 +189,13 @@ class SketchCanvas extends React.Component {
     });
   }
 
+  async componentDidMount() {
+    const isStoragePermissionAuthorized = await requestPermissions(
+      this.props.permissionDialogTitle,
+      this.props.permissionDialogMessage,
+    );
+  }
+
   render() {
     return (
       <RNSketchCanvas
@@ -187,7 +204,7 @@ class SketchCanvas extends React.Component {
         }}
         style={this.props.style}
         onLayout={e => {
-          this._size={ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
+          this._size = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
           this._initialized = true
           this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
         }}
@@ -197,11 +214,13 @@ class SketchCanvas extends React.Component {
             this.props.onPathsChange(e.nativeEvent.pathsUpdate)
           } else if (e.nativeEvent.hasOwnProperty('success') && e.nativeEvent.hasOwnProperty('path')) {
             this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
-          }else if (e.nativeEvent.hasOwnProperty('success')) {
+          } else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
           }
         }}
         localSourceImage={this.props.localSourceImage}
+        permissionDialogTitle={this.props.permissionDialogTitle}
+        permissionDialogMessage={this.props.permissionDialogMessage}
       />
     );
   }
