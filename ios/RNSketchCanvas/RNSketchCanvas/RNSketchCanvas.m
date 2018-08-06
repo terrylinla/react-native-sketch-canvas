@@ -14,13 +14,13 @@
 
     CGSize _lastSize;
 
-    CGContextRef _drawingContext;
-    CGImageRef _frozenImage;
+    CGContextRef _drawingContext, _translucentDrawingContext;
+    CGImageRef _frozenImage, _translucentFrozenImage;
     BOOL _needsFullRedraw;
 
     UIImage *_backgroundImage;
     UIImage *_backgroundImageScaled;
-
+    NSString *_backgroundImageContentMode;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -54,10 +54,14 @@
     if (!_frozenImage) {
         _frozenImage = CGBitmapContextCreateImage(_drawingContext);
     }
+    
+    if (!_translucentFrozenImage && _currentPath.isTranslucent) {
+        _translucentFrozenImage = CGBitmapContextCreateImage(_translucentDrawingContext);
+    }
 
     if (_backgroundImage) {
         if (!_backgroundImageScaled) {
-            _backgroundImageScaled = [self scaleImage:_backgroundImage toSize:bounds.size];
+            _backgroundImageScaled = [self scaleImage:_backgroundImage toSize:bounds.size contentMode: _backgroundImageContentMode];
         }
 
         [_backgroundImageScaled drawInRect:bounds];
@@ -65,6 +69,10 @@
 
     if (_frozenImage) {
         CGContextDrawImage(context, bounds, _frozenImage);
+    }
+
+    if (_translucentFrozenImage && _currentPath.isTranslucent) {
+        CGContextDrawImage(context, bounds, _translucentFrozenImage);
     }
 }
 
@@ -89,22 +97,35 @@
     size.height *= scale;
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     _drawingContext = CGBitmapContextCreate(nil, size.width, size.height, 8, 0, colorSpace, kCGImageAlphaPremultipliedLast);
+    _translucentDrawingContext = CGBitmapContextCreate(nil, size.width, size.height, 8, 0, colorSpace, kCGImageAlphaPremultipliedLast);
     CGColorSpaceRelease(colorSpace);
 
     CGContextConcatCTM(_drawingContext, CGAffineTransformMakeScale(scale, scale));
+    CGContextConcatCTM(_translucentDrawingContext, CGAffineTransformMakeScale(scale, scale));
 }
 
 - (void)setFrozenImageNeedsUpdate {
     CGImageRelease(_frozenImage);
+    CGImageRelease(_translucentFrozenImage);
     _frozenImage = nil;
+    _translucentFrozenImage = nil;
 }
 
-- (BOOL)openSketchFile:(NSString *)localFilePath {
-    if (localFilePath) {
-        UIImage *image = [UIImage imageWithContentsOfFile:localFilePath];
+- (BOOL)openSketchFile:(NSString *)filename directory:(NSString*) directory contentMode:(NSString*)mode {
+    if (filename) {
+        UIImage *image = [UIImage imageWithContentsOfFile: [directory stringByAppendingPathComponent: filename]];
+        image = image ? image : [UIImage imageNamed: filename];
         if(image) {
+            if (image.imageOrientation != UIImageOrientationUp) {
+                UIGraphicsBeginImageContextWithOptions(image.size, NO, image.scale);
+                [image drawInRect:(CGRect){0, 0, image.size}];
+                UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+                image = normalizedImage;
+            }
             _backgroundImage = image;
             _backgroundImageScaled = nil;
+            _backgroundImageContentMode = mode;
             [self setNeedsDisplay];
 
             return YES;
@@ -164,13 +185,21 @@
     CGPoint newPoint = CGPointMake(x, y);
     CGRect updateRect = [_currentPath addPoint: newPoint];
 
-    [_currentPath drawLastPointInContext:_drawingContext];
+    if (_currentPath.isTranslucent) {
+        CGContextClearRect(_translucentDrawingContext, self.bounds);
+        [_currentPath drawInContext:_translucentDrawingContext];
+    } else {
+        [_currentPath drawLastPointInContext:_drawingContext];
+    }
 
     [self setFrozenImageNeedsUpdate];
     [self setNeedsDisplayInRect:updateRect];
 }
 
 - (void)endPath {
+    if (_currentPath.isTranslucent) {
+        [_currentPath drawInContext:_drawingContext];
+    }
     _currentPath = nil;
 }
 
@@ -182,35 +211,49 @@
     [self notifyPathsUpdate];
 }
 
-- (UIImage*)createImageWithTransparentBackground: (BOOL) transparent {
-    CGRect rect = self.bounds;
-    UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    if (!transparent) {
-        CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
-        CGContextFillRect(context, rect);
-    }
-    if (_backgroundImage) {
-        [_backgroundImage drawInRect:CGRectMake(0.f, 0.f, rect.size.width, rect.size.height)];
-    }
-    CGContextDrawImage(context, rect, _frozenImage);
-    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-
-    if (_backgroundImage) {
-        CGSize bgImageSize = _backgroundImage.size;
-        UIGraphicsBeginImageContextWithOptions(bgImageSize, NO, 0);
-        [img drawInRect:CGRectMake(0.f, 0.f, bgImageSize.width, bgImageSize.height)];
-        img = UIGraphicsGetImageFromCurrentImageContext();
+- (UIImage*)createImageWithTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize {
+    if (_backgroundImage && cropToImageSize) {
+        CGRect rect = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
+        UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 1);
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        if (!transparent) {
+            CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
+            CGContextFillRect(context, rect);
+        }
+        CGRect targetRect = [Utility fillImageWithSize:self.bounds.size toSize:rect.size contentMode:@"AspectFill"];
+        if (includeImage) {
+            [_backgroundImage drawInRect:rect];
+        }
+        CGContextDrawImage(context, targetRect, _frozenImage);
+        CGContextDrawImage(context, targetRect, _translucentFrozenImage);
+        UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
+        
+        return img;
+    } else {
+        CGRect rect = self.bounds;
+        UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        if (!transparent) {
+            CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
+            CGContextFillRect(context, rect);
+        }
+        if (_backgroundImage && includeImage) {
+            CGRect targetRect = [Utility fillImageWithSize:_backgroundImage.size toSize:rect.size contentMode:_backgroundImageContentMode];
+            [_backgroundImage drawInRect:targetRect];
+        }
+        CGContextDrawImage(context, rect, _frozenImage);
+        CGContextDrawImage(context, rect, _translucentFrozenImage);
+        UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
+        return img;
     }
-
-    return img;
 }
 
-- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent {
-    UIImage *img = [self createImageWithTransparentBackground:transparent];
-
+- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize {
+    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage cropToImageSize:cropToImageSize];
+    
     if (folder != nil && filename != nil) {
         NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];
         NSError * error = nil;
@@ -239,19 +282,14 @@
     }
 }
 
-- (UIImage *)scaleImage:(UIImage *)originalImage toSize:(CGSize)size
+- (UIImage *)scaleImage:(UIImage *)originalImage toSize:(CGSize)size contentMode: (NSString*)mode
 {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     CGContextRef context = CGBitmapContextCreate(NULL, size.width, size.height, 8, 0, colorSpace, kCGImageAlphaPremultipliedLast);
     CGContextClearRect(context, CGRectMake(0, 0, size.width, size.height));
-    
-    if (originalImage.imageOrientation == UIImageOrientationRight) {
-        CGContextRotateCTM(context, -M_PI_2);
-        CGContextTranslateCTM(context, -size.height, 0.0f);
-        CGContextDrawImage(context, CGRectMake(0, 0, size.height, size.width), originalImage.CGImage);
-    } else {
-        CGContextDrawImage(context, CGRectMake(0, 0, size.width, size.height), originalImage.CGImage);
-    }
+
+    CGRect targetRect = [Utility fillImageWithSize:originalImage.size toSize:size contentMode:mode];
+    CGContextDrawImage(context, targetRect, originalImage.CGImage);
     
     CGImageRef scaledImage = CGBitmapContextCreateImage(context);
     CGColorSpaceRelease(colorSpace);
@@ -263,8 +301,8 @@
     return image;
 }
 
-- (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
-    UIImage *img = [self createImageWithTransparentBackground:transparent];
+- (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize {
+    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage cropToImageSize:cropToImageSize];
     NSData *data = [self getImageData:img type:type];
     return [data base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
 }

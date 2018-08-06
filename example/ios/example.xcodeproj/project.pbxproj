@@ -39,6 +39,8 @@
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		9BAF033447834B8AB4271932 /* libRNCamera.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18F2FC02C69748DB9B72EC21 /* libRNCamera.a */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
+		DED6C3EC210B491000403623 /* whale.png in Resources */ = {isa = PBXBuildFile; fileRef = DED6C3C4210B490F00403623 /* whale.png */; };
+		DED6C3EE210B574C00403623 /* bulb.png in Resources */ = {isa = PBXBuildFile; fileRef = DED6C3ED210B574C00403623 /* bulb.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -361,6 +363,8 @@
 		A871C5FA87244217B6AC3763 /* RNSketchCanvas.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNSketchCanvas.xcodeproj; path = "../node_modules/@terrylinla/react-native-sketch-canvas/ios/RNSketchCanvas/RNSketchCanvas.xcodeproj"; sourceTree = "<group>"; };
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		BC24F124295148DA9D55F01F /* RNCamera.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNCamera.xcodeproj; path = "../node_modules/react-native-camera/ios/RNCamera.xcodeproj"; sourceTree = "<group>"; };
+		DED6C3C4210B490F00403623 /* whale.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whale.png; sourceTree = "<group>"; };
+		DED6C3ED210B574C00403623 /* bulb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bulb.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -586,6 +590,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				DE15AB7B20F49D450030CD2E /* Images */,
 				13B07FAE1A68108700A75B9A /* example */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* exampleTests */,
@@ -623,6 +628,15 @@
 				DA5AB03820CEE7FA00B93899 /* libRNCamera.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DE15AB7B20F49D450030CD2E /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				DED6C3C4210B490F00403623 /* whale.png */,
+				DED6C3ED210B574C00403623 /* bulb.png */,
+			);
+			path = Images;
 			sourceTree = "<group>";
 		};
 		DE172CCC200362EB00D2545C /* Recovered References */ = {
@@ -1109,7 +1123,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				DED6C3EE210B574C00403623 /* bulb.png in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
+				DED6C3EC210B491000403623 /* whale.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

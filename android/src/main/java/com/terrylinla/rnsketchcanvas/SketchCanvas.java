@@ -32,31 +32,35 @@ public class SketchCanvas extends View {
     private boolean mDisableHardwareAccelerated = false;
 
     private Paint mPaint = new Paint();
-    private Bitmap mDrawingBitmap = null;
-    private Canvas mDrawingCanvas = null;
+    private Bitmap mDrawingBitmap = null, mTranslucentDrawingBitmap = null;
+    private Canvas mDrawingCanvas = null, mTranslucentDrawingCanvas = null;
 
     private boolean mNeedsFullRedraw = true;
 
-    private int mOriginalWidth;
-    private int mOriginalHeight;
-    Bitmap mBackgroundImage;
-    String mOriginalImagePath;
+    private int mOriginalWidth, mOriginalHeight;
+    private Bitmap mBackgroundImage;
+    private String mContentMode;
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
     }
 
-    public boolean openImageFile(String localFilePath) {
-
-        if(localFilePath != null) {
+    public boolean openImageFile(String filename, String directory, String mode) {
+        if(filename != null) {
+            int res = mContext.getResources().getIdentifier(
+                filename.lastIndexOf('.') == -1 ? filename : filename.substring(0, filename.lastIndexOf('.')), 
+                "drawable", 
+                mContext.getPackageName());
             BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-            Bitmap bitmap = BitmapFactory.decodeFile(localFilePath, bitmapOptions);
+            Bitmap bitmap = res == 0 ? 
+                BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
+                BitmapFactory.decodeResource(mContext.getResources(), res);
             if(bitmap != null) {
                 mBackgroundImage = bitmap;
-                mOriginalImagePath = localFilePath;
                 mOriginalHeight = bitmap.getHeight();
                 mOriginalWidth = bitmap.getWidth();
+                mContentMode = mode;
 
                 invalidateCanvas(true);
 
@@ -87,8 +91,12 @@ public class SketchCanvas extends View {
     public void addPoint(float x, float y) {
         Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
 
-        mCurrentPath.drawLastPoint(mDrawingCanvas);
-
+        if (mCurrentPath.isTranslucent) {
+            mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+            mCurrentPath.draw(mTranslucentDrawingCanvas);
+        } else {
+            mCurrentPath.drawLastPoint(mDrawingCanvas);
+        }
         invalidate(updateRect);
     }
 
@@ -130,6 +138,16 @@ public class SketchCanvas extends View {
         }
     }
 
+    public void end() {
+        if (mCurrentPath != null) {
+            if (mCurrentPath.isTranslucent) {
+                mCurrentPath.draw(mDrawingCanvas);
+                mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+            }
+            mCurrentPath = null;
+        }
+    }
+
     public void onSaved(boolean success, String path) {
         WritableMap event = Arguments.createMap();
         event.putBoolean("success", success);
@@ -140,29 +158,11 @@ public class SketchCanvas extends View {
             event);
     }
 
-    public void save(String format, String folder, String filename, boolean transparent) {
+    public void save(String format, String folder, String filename, boolean transparent, boolean includeImage, boolean cropToImageSize) {
         File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + folder);
-        boolean success = true;
-        if (!f.exists())   success = f.mkdirs();
+        boolean success = f.exists() ? true : f.mkdirs();
         if (success) {
-            Bitmap  bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-            if (format.equals("png")) {
-                canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
-            } else {
-                canvas.drawARGB(255, 255, 255, 255);
-            }
-
-            if (mBackgroundImage != null) {
-                Rect dstRect = new Rect();
-                canvas.getClipBounds(dstRect);
-                canvas.drawBitmap(mBackgroundImage, null, dstRect, null);
-            }
-            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
-
-            if (mBackgroundImage != null) {
-                bitmap = Bitmap.createScaledBitmap(bitmap, mOriginalWidth, mOriginalHeight, false);
-            }
+            Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, cropToImageSize);
 
             File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
                 File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
@@ -182,24 +182,11 @@ public class SketchCanvas extends View {
         }
     }
 
-    public void end() {
-        if (mCurrentPath != null) {
-            mCurrentPath = null;
-        }
-    }
-
-    public String getBase64(String format, boolean transparent) {
+    public String getBase64(String format, boolean transparent, boolean includeImage, boolean cropToImageSize) {
         WritableMap event = Arguments.createMap();
-        Bitmap  bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        if (format.equals("png")) {
-            canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
-        } else {
-            canvas.drawARGB(255, 255, 255, 255);
-        }
-        canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
-
+        Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, cropToImageSize);
         ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+
         bitmap.compress(
             format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
             format.equals("png") ? 100 : 90,
@@ -214,7 +201,10 @@ public class SketchCanvas extends View {
         mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
                 Bitmap.Config.ARGB_8888);
         mDrawingCanvas = new Canvas(mDrawingBitmap);
-
+        mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                Bitmap.Config.ARGB_8888);
+        mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
+        
         mNeedsFullRedraw = true;
         invalidate();
     }
@@ -234,11 +224,17 @@ public class SketchCanvas extends View {
         if (mBackgroundImage != null) {
             Rect dstRect = new Rect();
             canvas.getClipBounds(dstRect);
-            canvas.drawBitmap(mBackgroundImage, null, dstRect, null);
+            canvas.drawBitmap(mBackgroundImage, null, 
+                Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode), 
+                null);
         }
 
         if (mDrawingBitmap != null) {
             canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+        }
+
+        if (mTranslucentDrawingBitmap != null && mCurrentPath != null && mCurrentPath.isTranslucent) {
+            canvas.drawBitmap(mTranslucentDrawingBitmap, 0, 0, mPaint);
         }
     }
 
@@ -252,5 +248,32 @@ public class SketchCanvas extends View {
                 event);
         }
         invalidate();
+    }
+
+    private Bitmap createImage(boolean transparent, boolean includeImage, boolean cropToImageSize) {
+        Bitmap bitmap = Bitmap.createBitmap(
+            mBackgroundImage != null && cropToImageSize ? mOriginalWidth : getWidth(),
+            mBackgroundImage != null && cropToImageSize ? mOriginalHeight : getHeight(), 
+            Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
+
+        if (mBackgroundImage != null && includeImage) {
+            Rect targetRect = new Rect();
+            Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), 
+                bitmap.getWidth(), bitmap.getHeight(), "AspectFit").roundOut(targetRect);
+            canvas.drawBitmap(mBackgroundImage, null, targetRect, null);
+        }
+
+
+        if (mBackgroundImage != null && cropToImageSize) {
+            Rect targetRect = new Rect();
+            Utility.fillImage(mDrawingBitmap.getWidth(), mDrawingBitmap.getHeight(), 
+                bitmap.getWidth(), bitmap.getHeight(), "AspectFill").roundOut(targetRect);
+            canvas.drawBitmap(mDrawingBitmap, null, targetRect, mPaint);
+        } else {
+            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+        }
+        return bitmap;
     }
 }

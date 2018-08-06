@@ -37,7 +37,7 @@ export default class example extends Component {
       const data = await this.camera.takePictureAsync(options)
       this.setState({
         photoPath: data.uri.replace('file://', '')
-      })  
+      })
     }
   };
 
@@ -70,6 +70,12 @@ export default class example extends Component {
             }}>
               <Text style={{ alignSelf: 'center', marginTop: 15, fontSize: 18 }}>- Example 4 -</Text>
               <Text>Take a photo first</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => {
+              this.setState({ example: 5 })
+            }}>
+              <Text style={{ alignSelf: 'center', marginTop: 15, fontSize: 18 }}>- Example 5 -</Text>
+              <Text>Load local image</Text>
             </TouchableOpacity>
           </View>
         }
@@ -156,6 +162,8 @@ export default class example extends Component {
                 </View>
               </View>
               <SketchCanvas
+                localSourceImage={{ filename: 'whale.png', directory: SketchCanvas.MAIN_BUNDLE, mode: 'AspectFit' }}
+                // localSourceImage={{ filename: 'bulb.png', directory: RNSketchCanvas.MAIN_BUNDLE }}
                 ref={ref => this.canvas=ref}
                 style={{ flex: 1 }}
                 strokeColor={this.state.color}
@@ -190,7 +198,7 @@ export default class example extends Component {
                 <TouchableOpacity style={[styles.functionButton, {backgroundColor: 'black', width: 90}]} onPress={() => {
                   console.log(this.canvas.getPaths())
                   Alert.alert(JSON.stringify(this.canvas.getPaths()))
-                  this.canvas.getBase64('jpg', false, (err, result) => {
+                  this.canvas.getBase64('jpg', false, true, true, (err, result) => {
                     console.log(result)
                   })
                 }}>
@@ -343,7 +351,7 @@ export default class example extends Component {
             :
             <View style={{ flex: 1, flexDirection: 'row' }}>
               <RNSketchCanvas
-                localSourceImagePath={this.state.photoPath}
+                localSourceImage={{ filename: this.state.photoPath, directory: null, mode: 'AspectFit' }}
                 containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
                 canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
                 onStrokeEnd={data => {
@@ -396,6 +404,68 @@ export default class example extends Component {
                 }}
               />
             </View> )
+        }
+
+        {
+          this.state.example === 5 &&
+          <View style={{ flex: 1, flexDirection: 'row' }}>
+            <RNSketchCanvas
+              localSourceImage={{ filename: 'whale.png', directory: SketchCanvas.MAIN_BUNDLE, mode: 'AspectFit' }}
+              // localSourceImage={{ filename: 'bulb.png', directory: RNSketchCanvas.MAIN_BUNDLE }}
+              containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
+              canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
+              onStrokeEnd={data => {
+              }}
+              closeComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Close</Text></View>}
+              onClosePressed={() => {
+                this.setState({ example: 0 })
+              }}
+              undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
+              onUndoPressed={(id) => {
+                // Alert.alert('do something')
+              }}
+              clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
+              onClearPressed={() => {
+                // Alert.alert('do something')
+              }}
+              eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
+              strokeComponent={color => (
+                <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
+              )}
+              strokeSelectedComponent={(color, index, changed) => {
+                return (
+                  <View style={[{ backgroundColor: color, borderWidth: 2 }, styles.strokeColorButton]} />
+                )
+              }}
+              strokeWidthComponent={(w) => {
+                return (<View style={styles.strokeWidthButton}>
+                  <View  style={{
+                  backgroundColor: 'white', marginHorizontal: 2.5,
+                  width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
+                  }} />
+                </View>
+              )}}
+              defaultStrokeIndex={0}
+              defaultStrokeWidth={5}
+              saveComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Save</Text></View>}
+              savePreference={() => {
+                return {
+                  folder: 'RNSketchCanvas',
+                  filename: String(Math.ceil(Math.random() * 100000000)),
+                  transparent: false,
+                  includeImage: false,
+                  cropToImageSize: false,
+                  imageType: 'jpg'
+                }
+              }}
+              onSketchSaved={(success, path) => {
+                Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
+              }}
+              onPathsChange={(pathsCount) => {
+                console.log('pathsCount', pathsCount)
+              }}
+            />
+          </View>
         }
       </View>
     );
