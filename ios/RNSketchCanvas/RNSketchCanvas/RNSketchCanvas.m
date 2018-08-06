@@ -1,7 +1,6 @@
 #import "RNSketchCanvasManager.h"
 #import "RNSketchCanvas.h"
 #import "RNSketchData.h"
-#import "RNSketchCanvasDelegate.h"
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
@@ -12,27 +11,16 @@
     RCTEventDispatcher *_eventDispatcher;
     NSMutableArray *_paths;
     RNSketchData *_currentPath;
-    
-    CAShapeLayer *_layer;
-    RNSketchCanvasDelegate *delegate;
-    
-    CGRect _dirty;
 
-    UIImage *backgroundImage;
-}
+    CGSize _lastSize;
 
--(BOOL)openSketchFile:(NSString *)localFilePath
-{
-    if (localFilePath) {
-        UIImage *image = [UIImage imageWithContentsOfFile:localFilePath];
-        if(image) {
-            backgroundImage = image;
-            [self setNeedsDisplay];
-            
-            return YES;
-        }
-    }
-    return NO;
+    CGContextRef _drawingContext, _translucentDrawingContext;
+    CGImageRef _frozenImage, _translucentFrozenImage;
+    BOOL _needsFullRedraw;
+
+    UIImage *_backgroundImage;
+    UIImage *_backgroundImageScaled;
+    NSString *_backgroundImageContentMode;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -41,32 +29,112 @@
     if (self) {
         _eventDispatcher = eventDispatcher;
         _paths = [NSMutableArray new];
-        _dirty = CGRectZero; //CGRectMake(0, 0, 0, 0);
+        _needsFullRedraw = YES;
+
+        self.backgroundColor = [UIColor clearColor];
+        self.clearsContextBeforeDrawing = YES;
     }
     return self;
 }
 
--(void)layoutSubviews {
-    [super layoutSubviews];
-    if (!_layer) {
-        CGRect bounds = self.bounds;
-        
-        delegate = [RNSketchCanvasDelegate new];
-        _layer = [CAShapeLayer layer];
-        _layer.frame = bounds;
-        _layer.delegate = delegate;
-        _layer.contentsScale = [UIScreen mainScreen].scale;
-        
-        delegate.paths = _paths;
+- (void)drawRect:(CGRect)rect {
+    CGContextRef context = UIGraphicsGetCurrentContext();
 
-        [self.layer addSublayer: _layer];
+    CGRect bounds = self.bounds;
+
+    if (_needsFullRedraw) {
+        [self setFrozenImageNeedsUpdate];
+        CGContextClearRect(_drawingContext, bounds);
+        for (RNSketchData *path in _paths) {
+            [path drawInContext:_drawingContext];
+        }
+        _needsFullRedraw = NO;
+    }
+
+    if (!_frozenImage) {
+        _frozenImage = CGBitmapContextCreateImage(_drawingContext);
+    }
+    
+    if (!_translucentFrozenImage && _currentPath.isTranslucent) {
+        _translucentFrozenImage = CGBitmapContextCreateImage(_translucentDrawingContext);
+    }
+
+    if (_backgroundImage) {
+        if (!_backgroundImageScaled) {
+            _backgroundImageScaled = [self scaleImage:_backgroundImage toSize:bounds.size contentMode: _backgroundImageContentMode];
+        }
+
+        [_backgroundImageScaled drawInRect:bounds];
+    }
+
+    if (_frozenImage) {
+        CGContextDrawImage(context, bounds, _frozenImage);
+    }
+
+    if (_translucentFrozenImage && _currentPath.isTranslucent) {
+        CGContextDrawImage(context, bounds, _translucentFrozenImage);
     }
 }
 
-- (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
-    if (_currentPath) {
-        [_currentPath end];
+- (void)layoutSubviews {
+    [super layoutSubviews];
+
+    if (!CGSizeEqualToSize(self.bounds.size, _lastSize)) {
+        _lastSize = self.bounds.size;
+        CGContextRelease(_drawingContext);
+        _drawingContext = nil;
+        [self createDrawingContext];
+        _needsFullRedraw = YES;
+        _backgroundImageScaled = nil;
+        [self setNeedsDisplay];
     }
+}
+
+- (void)createDrawingContext {
+    CGFloat scale = self.window.screen.scale;
+    CGSize size = self.bounds.size;
+    size.width *= scale;
+    size.height *= scale;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    _drawingContext = CGBitmapContextCreate(nil, size.width, size.height, 8, 0, colorSpace, kCGImageAlphaPremultipliedLast);
+    _translucentDrawingContext = CGBitmapContextCreate(nil, size.width, size.height, 8, 0, colorSpace, kCGImageAlphaPremultipliedLast);
+    CGColorSpaceRelease(colorSpace);
+
+    CGContextConcatCTM(_drawingContext, CGAffineTransformMakeScale(scale, scale));
+    CGContextConcatCTM(_translucentDrawingContext, CGAffineTransformMakeScale(scale, scale));
+}
+
+- (void)setFrozenImageNeedsUpdate {
+    CGImageRelease(_frozenImage);
+    CGImageRelease(_translucentFrozenImage);
+    _frozenImage = nil;
+    _translucentFrozenImage = nil;
+}
+
+- (BOOL)openSketchFile:(NSString *)filename directory:(NSString*) directory contentMode:(NSString*)mode {
+    if (filename) {
+        UIImage *image = [UIImage imageWithContentsOfFile: [directory stringByAppendingPathComponent: filename]];
+        image = image ? image : [UIImage imageNamed: filename];
+        if(image) {
+            if (image.imageOrientation != UIImageOrientationUp) {
+                UIGraphicsBeginImageContextWithOptions(image.size, NO, image.scale);
+                [image drawInRect:(CGRect){0, 0, image.size}];
+                UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+                image = normalizedImage;
+            }
+            _backgroundImage = image;
+            _backgroundImageScaled = nil;
+            _backgroundImageContentMode = mode;
+            [self setNeedsDisplay];
+
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
     _currentPath = [[RNSketchData alloc]
                     initWithId: pathId
                     strokeColor: strokeColor
@@ -89,7 +157,10 @@
                                                   strokeWidth: strokeWidth
                                                        points: points];
         [_paths addObject: data];
-        [self invalidate];
+        [data drawInContext:_drawingContext];
+        [self setFrozenImageNeedsUpdate];
+        [self setNeedsDisplay];
+        [self notifyPathsUpdate];
     }
 }
 
@@ -104,152 +175,121 @@
     
     if (index > -1) {
         [_paths removeObjectAtIndex: index];
-        [self invalidate];
+        _needsFullRedraw = YES;
+        [self setNeedsDisplay];
+        [self notifyPathsUpdate];
     }
 }
 
 - (void)addPointX: (float)x Y: (float)y {
-    [_currentPath addPoint: CGPointMake(x, y)];
-    if (CGRectIsEmpty(_dirty)) {
-        _dirty = CGRectMake(x, y, 1, 1);
-        [self invalidateInRect: CGRectMake(x - _currentPath.strokeWidth, y -_currentPath.strokeWidth,
-                                           2 * _currentPath.strokeWidth, 2 * _currentPath.strokeWidth)];
+    CGPoint newPoint = CGPointMake(x, y);
+    CGRect updateRect = [_currentPath addPoint: newPoint];
+
+    if (_currentPath.isTranslucent) {
+        CGContextClearRect(_translucentDrawingContext, self.bounds);
+        [_currentPath drawInContext:_translucentDrawingContext];
     } else {
-        _dirty = CGRectMake(
-                            MIN(x, CGRectGetMinX(_dirty)),
-                            MIN(y, CGRectGetMinY(_dirty)),
-                            MAX(x, CGRectGetMaxX(_dirty)) - MIN(x, CGRectGetMinX(_dirty)),
-                            MAX(y, CGRectGetMaxY(_dirty)) - MIN(y, CGRectGetMinY(_dirty))
-                            );
-        [self invalidateInRect: CGRectInset(_dirty, -_currentPath.strokeWidth * 2, -_currentPath.strokeWidth * 2)];
+        [_currentPath drawLastPointInContext:_drawingContext];
     }
+
+    [self setFrozenImageNeedsUpdate];
+    [self setNeedsDisplayInRect:updateRect];
 }
 
 - (void)endPath {
-    if (_currentPath) {
-        [_currentPath end];
-        _currentPath = nil;
-        [self invalidate];
+    if (_currentPath.isTranslucent) {
+        [_currentPath drawInContext:_drawingContext];
     }
+    _currentPath = nil;
 }
 
 - (void) clear {
     [_paths removeAllObjects];
     _currentPath = nil;
-    [self invalidate];
+    _needsFullRedraw = YES;
+    [self setNeedsDisplay];
+    [self notifyPathsUpdate];
 }
 
--(void) saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent {
-    if(!backgroundImage) {
-        CGRect rect = _layer.frame;
-        UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
+- (UIImage*)createImageWithTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize {
+    if (_backgroundImage && cropToImageSize) {
+        CGRect rect = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
+        UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 1);
         CGContextRef context = UIGraphicsGetCurrentContext();
-        if ([type isEqualToString: @"png"] && !transparent) {
+        if (!transparent) {
             CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
-            CGContextFillRect(context, CGRectMake(0, 0, rect.size.width, rect.size.height));
+            CGContextFillRect(context, rect);
         }
-        [_layer renderInContext:context];
+        CGRect targetRect = [Utility fillImageWithSize:self.bounds.size toSize:rect.size contentMode:@"AspectFill"];
+        if (includeImage) {
+            [_backgroundImage drawInRect:rect];
+        }
+        CGContextDrawImage(context, targetRect, _frozenImage);
+        CGContextDrawImage(context, targetRect, _translucentFrozenImage);
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
-        if (folder != nil && filename != nil) {
-            NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];
-            NSError * error = nil;
-            [[NSFileManager defaultManager] createDirectoryAtPath:[tempDir path]
-                                      withIntermediateDirectories:YES
-                                                       attributes:nil
-                                                            error:&error];
-            if (error == nil) {
-                NSURL *fileURL = [[tempDir URLByAppendingPathComponent: filename] URLByAppendingPathExtension: type];
-                NSData *imageData = [type isEqualToString: @"png"] ? UIImagePNGRepresentation(img) : UIImageJPEGRepresentation(img, 1.0);
-                [imageData writeToURL:fileURL atomically:YES];
-                
-                if (_onChange) {
-                    _onChange(@{ @"success": @YES, @"path": [fileURL path]});
-                }
-            } else {
-                if (_onChange) {
-                    _onChange(@{ @"success": @NO, @"path": [NSNull null]});
-                }
-            }
-        } else {
-            if ([type isEqualToString: @"jpg"]) {
-                UIImageWriteToSavedPhotosAlbum(img, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-            } else {
-                UIImageWriteToSavedPhotosAlbum([UIImage imageWithData: UIImagePNGRepresentation(img)], self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-            }
-        }
-    } 
-    else {
+        return img;
+    } else {
         CGRect rect = self.bounds;
-
-        UIGraphicsBeginImageContext(rect.size);
-        CGContextRef _context = UIGraphicsGetCurrentContext();
-        [backgroundImage drawInRect:CGRectMake(0.f, 0.f, rect.size.width, rect.size.height)];
-
-        [_layer renderInContext:_context];
-
-        UIImage *img_prev = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-
-        UIGraphicsBeginImageContextWithOptions( backgroundImage.size, NO, 0 );
-        [img_prev drawInRect:CGRectMake(0.f, 0.f, backgroundImage.size.width, backgroundImage.size.height)];
-        UIImage* img = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        if (!transparent) {
+            CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
+            CGContextFillRect(context, rect);
+        }
+        if (_backgroundImage && includeImage) {
+            CGRect targetRect = [Utility fillImageWithSize:_backgroundImage.size toSize:rect.size contentMode:_backgroundImageContentMode];
+            [_backgroundImage drawInRect:targetRect];
+        }
+        CGContextDrawImage(context, rect, _frozenImage);
+        CGContextDrawImage(context, rect, _translucentFrozenImage);
+        UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
-        if (folder != nil && filename != nil) {
-            NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];
-            NSError * error = nil;
-            [[NSFileManager defaultManager] createDirectoryAtPath:[tempDir path]
-                                      withIntermediateDirectories:YES
-                                                       attributes:nil
-                                                            error:&error];
-            if (error == nil) {
-                NSURL *fileURL = [[tempDir URLByAppendingPathComponent: filename] URLByAppendingPathExtension: type];
-                NSData *imageData = [type isEqualToString: @"png"] ? UIImagePNGRepresentation(img) : UIImageJPEGRepresentation(img, 1.0);
-                [imageData writeToURL:fileURL atomically:YES];
-                
-                if (_onChange) {
-                    _onChange(@{ @"success": @YES, @"path": [fileURL path]});
-                }
-            } else {
-                if (_onChange) {
-                    _onChange(@{ @"success": @NO, @"path": [NSNull null]});
-                }
-            }
-        } else {
-            if ([type isEqualToString: @"jpg"]) {
-                UIImageWriteToSavedPhotosAlbum(img, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-            } else {
-                UIImageWriteToSavedPhotosAlbum([UIImage imageWithData: UIImagePNGRepresentation(img)], self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-            }
-        }
+        return img;
     }
 }
 
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
-    if(backgroundImage != nil) {
-        UIImage * scaled = [self scaleImage: backgroundImage toSize:rect.size];
-        // Drawing code
-        [scaled drawInRect:rect];
+- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize {
+    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage cropToImageSize:cropToImageSize];
+    
+    if (folder != nil && filename != nil) {
+        NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];
+        NSError * error = nil;
+        [[NSFileManager defaultManager] createDirectoryAtPath:[tempDir path]
+                                  withIntermediateDirectories:YES
+                                                   attributes:nil
+                                                        error:&error];
+        if (error == nil) {
+            NSURL *fileURL = [[tempDir URLByAppendingPathComponent: filename] URLByAppendingPathExtension: type];
+            NSData *imageData = [self getImageData:img type:type];
+            [imageData writeToURL:fileURL atomically:YES];
+
+            if (_onChange) {
+                _onChange(@{ @"success": @YES, @"path": [fileURL path]});
+            }
+        } else {
+            if (_onChange) {
+                _onChange(@{ @"success": @NO, @"path": [NSNull null]});
+            }
+        }
+    } else {
+        if ([type isEqualToString: @"png"]) {
+            img = [UIImage imageWithData: UIImagePNGRepresentation(img)];
+        }
+        UIImageWriteToSavedPhotosAlbum(img, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
     }
 }
-    
-- (UIImage *)scaleImage:(UIImage *)originalImage toSize:(CGSize)size
+
+- (UIImage *)scaleImage:(UIImage *)originalImage toSize:(CGSize)size contentMode: (NSString*)mode
 {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     CGContextRef context = CGBitmapContextCreate(NULL, size.width, size.height, 8, 0, colorSpace, kCGImageAlphaPremultipliedLast);
     CGContextClearRect(context, CGRectMake(0, 0, size.width, size.height));
-    
-    if (originalImage.imageOrientation == UIImageOrientationRight) {
-        CGContextRotateCTM(context, -M_PI_2);
-        CGContextTranslateCTM(context, -size.height, 0.0f);
-        CGContextDrawImage(context, CGRectMake(0, 0, size.height, size.width), originalImage.CGImage);
-    } else {
-        CGContextDrawImage(context, CGRectMake(0, 0, size.width, size.height), originalImage.CGImage);
-    }
+
+    CGRect targetRect = [Utility fillImageWithSize:originalImage.size toSize:size contentMode:mode];
+    CGContextDrawImage(context, targetRect, originalImage.CGImage);
     
     CGImageRef scaledImage = CGBitmapContextCreateImage(context);
     CGColorSpaceRelease(colorSpace);
@@ -261,22 +301,20 @@
     return image;
 }
 
-- (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent {
-    CGRect rect = _layer.frame;
-    UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    if ([type isEqualToString: @"png"] && !transparent) {
-        CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
-        CGContextFillRect(context, CGRectMake(0, 0, rect.size.width, rect.size.height));
-    }
-    [_layer renderInContext:context];
-    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
+- (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize {
+    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage cropToImageSize:cropToImageSize];
+    NSData *data = [self getImageData:img type:type];
+    return [data base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
+}
+
+- (NSData*)getImageData:(UIImage*)img type:(NSString*) type {
+    NSData *data;
     if ([type isEqualToString: @"jpg"]) {
-        return [UIImageJPEGRepresentation(img, 1.0) base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
+        data = UIImageJPEGRepresentation(img, 1.0);
     } else {
-        return [UIImagePNGRepresentation(img) base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
+        data = UIImagePNGRepresentation(img);
     }
+    return data;
 }
 
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo: (void *) contextInfo {
@@ -285,20 +323,10 @@
     }
 }
 
-- (void) invalidate {
+- (void)notifyPathsUpdate {
     if (_onChange) {
         _onChange(@{ @"pathsUpdate": @(_paths.count) });
     }
-    [_layer setNeedsDisplay];
 }
-
-- (void) invalidateInRect: (CGRect) rect {
-    [_layer setNeedsDisplayInRect: rect ];
-}
-
-
-
-#pragma CALayerDelegate
-
 
 @end

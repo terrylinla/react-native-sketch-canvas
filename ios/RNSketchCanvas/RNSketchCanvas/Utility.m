@@ -14,23 +14,6 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
 
 @implementation Utility
 
-+ (void)drawPath:(UIBezierPath*)path
-       inContext:(CGContextRef)context
-     strokeWidth: (float)strokeWidth
-     strokeColor: (UIColor*)strokeColor {
-    
-    bool isErase = [Utility isSameColor:strokeColor color:[UIColor clearColor]];
-
-    CGContextSetLineWidth(context, strokeWidth);
-    CGContextSetLineCap(context, kCGLineCapRound);
-    CGContextSetLineJoin(context, kCGLineJoinRound);
-    CGContextSetStrokeColorWithColor(context, [strokeColor CGColor]);
-    CGContextSetBlendMode(context, isErase ? kCGBlendModeClear : kCGBlendModeNormal);
-
-    CGContextAddPath(context, path.CGPath);
-    CGContextStrokePath(context);
-}
-
 + (void)addPointToPath: (UIBezierPath*)path
                toPoint: (CGPoint)point
          tertiaryPoint: (CGPoint)tPoint
@@ -50,6 +33,28 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
         return true;
     }
     return false;
+}
+
++ (CGRect)fillImageWithSize:(CGSize)imgSize toSize:(CGSize)targetSize contentMode:(NSString*)mode {
+    CGFloat imageAspectRatio = imgSize.width / imgSize.height;
+    CGFloat targetAspectRatio = targetSize.width / targetSize.height;
+    switch ([@[@"AspectFill", @"AspectFit", @"ScaleToFill"] indexOfObject: mode]) {
+        case 0: {
+            CGFloat scaleFactor = targetAspectRatio < imageAspectRatio ? targetSize.height / imgSize.height : targetSize.width / imgSize.width;
+            CGFloat w = imgSize.width * scaleFactor, h = imgSize.height * scaleFactor;
+            return CGRectMake((targetSize.width - w) / 2, (targetSize.height - h) / 2, w, h);
+        }
+        case 1:
+        case NSNotFound:
+        default: {
+            CGFloat scaleFactor = targetAspectRatio > imageAspectRatio ? targetSize.height / imgSize.height : targetSize.width / imgSize.width;
+            CGFloat w = imgSize.width * scaleFactor, h = imgSize.height * scaleFactor;
+            return CGRectMake((targetSize.width - w) / 2, (targetSize.height - h) / 2, w, h);
+        }
+        case 2: {
+            return  CGRectMake(0, 0, targetSize.width, targetSize.height);
+        }
+    }
 }
 
 @end

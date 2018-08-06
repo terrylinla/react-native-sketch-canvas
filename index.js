@@ -9,7 +9,7 @@ import ReactNative, {
 } from 'react-native'
 import SketchCanvas from './src/SketchCanvas'
 
-export default class extends React.Component {
+export default class RNSketchCanvas extends React.Component {
   static propTypes = {
     containerStyle: ViewPropTypes.style,
     canvasStyle: ViewPropTypes.style,
@@ -42,7 +42,7 @@ export default class extends React.Component {
     savePreference: PropTypes.func,
     onSketchSaved: PropTypes.func,
 
-    localSourceImagePath: PropTypes.string,
+    localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.string }),
   };
 
   static defaultProps = {
@@ -96,7 +96,7 @@ export default class extends React.Component {
     savePreference: null,
     onSketchSaved: () => {},
 
-    localSourceImagePath: null
+    localSourceImage: null
   };
 
 
@@ -133,10 +133,12 @@ export default class extends React.Component {
   save() {
     if (this.props.savePreference) {
       const p = this.props.savePreference()
-      this._sketchCanvas.save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename)
+      this._sketchCanvas.save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename, p.includeImage, p.cropToImageSize)
     } else {
       const date = new Date()
-      this._sketchCanvas.save('png', '', false, date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + ('0' + date.getDate()).slice(-2) + ' ' + ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-' + ('0' + date.getSeconds()).slice(-2))
+      this._sketchCanvas.save('png', '', false, 
+        date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + ('0' + date.getDate()).slice(-2) + ' ' + ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-' + ('0' + date.getSeconds()).slice(-2),
+        true, true)
     }
   }
 
@@ -226,7 +228,7 @@ export default class extends React.Component {
           strokeWidth={this.state.strokeWidth}
           onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
           onPathsChange={this.props.onPathsChange}
-          localSourceImagePath={this.props.localSourceImagePath}
+          localSourceImage={this.props.localSourceImage}
         />
         <View style={{ flexDirection: 'row' }}>
           <FlatList
@@ -242,6 +244,11 @@ export default class extends React.Component {
     );
   }
 };
+
+RNSketchCanvas.MAIN_BUNDLE = SketchCanvas.MAIN_BUNDLE;
+RNSketchCanvas.DOCUMENT = SketchCanvas.DOCUMENT;
+RNSketchCanvas.LIBRARY = SketchCanvas.LIBRARY;
+RNSketchCanvas.CACHES = SketchCanvas.CACHES;
 
 export {
   SketchCanvas

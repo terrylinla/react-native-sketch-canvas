@@ -1,61 +1,66 @@
 package com.terrylinla.rnsketchcanvas;
 
-import com.facebook.react.bridge.WritableMap;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.PorterDuff;
+import android.graphics.Rect;
+import android.os.Environment;
+import android.util.Base64;
+import android.util.Log;
+import android.view.View;
+
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 
-import android.graphics.BitmapFactory;
-import android.graphics.Rect;
-import android.view.View;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Color;
-import android.graphics.Path;
-import android.graphics.PathMeasure;
-import android.graphics.PointF;
-import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.util.Log;
-import android.os.Environment;
-import android.util.Base64;
-
-import java.io.FileOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
-
-import javax.annotation.Nullable;
 
 public class SketchCanvas extends View {
 
-    private ArrayList<SketchData> _paths = new ArrayList<SketchData>();
-    private SketchData _currentPath = null;
+    private ArrayList<SketchData> mPaths = new ArrayList<SketchData>();
+    private SketchData mCurrentPath = null;
 
     private ThemedReactContext mContext;
-    private boolean _disableHardwareAccelerated = false;
+    private boolean mDisableHardwareAccelerated = false;
 
-    private int mOriginalWidth;
-    private int mOriginalHeight;
-    Bitmap backgroundImage;
-    String originalImagePath;
+    private Paint mPaint = new Paint();
+    private Bitmap mDrawingBitmap = null, mTranslucentDrawingBitmap = null;
+    private Canvas mDrawingCanvas = null, mTranslucentDrawingCanvas = null;
+
+    private boolean mNeedsFullRedraw = true;
+
+    private int mOriginalWidth, mOriginalHeight;
+    private Bitmap mBackgroundImage;
+    private String mContentMode;
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
     }
 
-    public boolean openImageFile(String localFilePath) {
-
-        if(localFilePath != null) {
+    public boolean openImageFile(String filename, String directory, String mode) {
+        if(filename != null) {
+            int res = mContext.getResources().getIdentifier(
+                filename.lastIndexOf('.') == -1 ? filename : filename.substring(0, filename.lastIndexOf('.')), 
+                "drawable", 
+                mContext.getPackageName());
             BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-            Bitmap bitmap = BitmapFactory.decodeFile(localFilePath, bitmapOptions);
+            Bitmap bitmap = res == 0 ? 
+                BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
+                BitmapFactory.decodeResource(mContext.getResources(), res);
             if(bitmap != null) {
-                backgroundImage = bitmap;
-                originalImagePath = localFilePath;
+                mBackgroundImage = bitmap;
                 mOriginalHeight = bitmap.getHeight();
                 mOriginalWidth = bitmap.getWidth();
+                mContentMode = mode;
 
                 invalidateCanvas(true);
 
@@ -66,30 +71,38 @@ public class SketchCanvas extends View {
     }
 
     public void clear() {
-        this._paths.clear();
-        this._currentPath = null;
+        mPaths.clear();
+        mCurrentPath = null;
+        mNeedsFullRedraw = true;
         invalidateCanvas(true);
     }
 
     public void newPath(int id, int strokeColor, float strokeWidth) {
-        this._currentPath = new SketchData(id, strokeColor, strokeWidth);
-        this._paths.add(this._currentPath);
+        mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
+        mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
-        if (isErase && this._disableHardwareAccelerated == false) {
-            this._disableHardwareAccelerated = true;
-            this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        if (isErase && mDisableHardwareAccelerated == false) {
+            mDisableHardwareAccelerated = true;
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
         invalidateCanvas(true);
     }
 
     public void addPoint(float x, float y) {
-        this._currentPath.addPoint(new PointF(x, y));
-        invalidateCanvas(false);
+        Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
+
+        if (mCurrentPath.isTranslucent) {
+            mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+            mCurrentPath.draw(mTranslucentDrawingCanvas);
+        } else {
+            mCurrentPath.drawLastPoint(mDrawingCanvas);
+        }
+        invalidate(updateRect);
     }
 
     public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         boolean exist = false;
-        for(SketchData data: this._paths) {
+        for(SketchData data: mPaths) {
             if (data.id == id) {
                 exist = true;
                 break;
@@ -97,28 +110,41 @@ public class SketchCanvas extends View {
         }
 
         if (!exist) {
-            this._paths.add(new SketchData(id, strokeColor, strokeWidth, points));
+            SketchData newPath = new SketchData(id, strokeColor, strokeWidth, points);
+            mPaths.add(newPath);
             boolean isErase = strokeColor == Color.TRANSPARENT;
-            if (isErase && this._disableHardwareAccelerated == false) {
-                this._disableHardwareAccelerated = true;
-                this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            if (isErase && mDisableHardwareAccelerated == false) {
+                mDisableHardwareAccelerated = true;
+                setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             }
+            newPath.draw(mDrawingCanvas);
             invalidateCanvas(true);
         }
     }
 
     public void deletePath(int id) {
         int index = -1;
-        for(int i=0; i<this._paths.size(); i++) {
-            if (this._paths.get(i).id == id) {
+        for(int i = 0; i<mPaths.size(); i++) {
+            if (mPaths.get(i).id == id) {
                 index = i;
                 break;
             }
         }
 
         if (index > -1) {
-            this._paths.remove(index);
+            mPaths.remove(index);
+            mNeedsFullRedraw = true;
             invalidateCanvas(true);
+        }
+    }
+
+    public void end() {
+        if (mCurrentPath != null) {
+            if (mCurrentPath.isTranslucent) {
+                mCurrentPath.draw(mDrawingCanvas);
+                mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+            }
+            mCurrentPath = null;
         }
     }
 
@@ -132,28 +158,11 @@ public class SketchCanvas extends View {
             event);
     }
 
-    public void save(String format, String folder, String filename, boolean transparent) {
+    public void save(String format, String folder, String filename, boolean transparent, boolean includeImage, boolean cropToImageSize) {
         File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + folder);
-        boolean success = true;
-        if (!f.exists())   success = f.mkdirs();
+        boolean success = f.exists() ? true : f.mkdirs();
         if (success) {
-            Bitmap  bitmap = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-            if (format.equals("png")) {
-                canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
-            } else {
-                canvas.drawARGB(255, 255, 255, 255);
-            }
-            if(backgroundImage != null) {
-                Rect dstRect = new Rect();
-                canvas.getClipBounds(dstRect);
-                canvas.drawBitmap(backgroundImage, null, dstRect, null);
-            }
-            this.drawPath(canvas);
-
-            if(backgroundImage != null) {
-                bitmap = Bitmap.createScaledBitmap(bitmap, mOriginalWidth, mOriginalHeight, false);
-            }
+            Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, cropToImageSize);
 
             File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
                 File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
@@ -165,32 +174,19 @@ public class SketchCanvas extends View {
                 this.onSaved(true, file.getPath());
             } catch (Exception e) {
                 e.printStackTrace();
-                this.onSaved(false, null);
+                onSaved(false, null);
             }
         } else {
             Log.e("SketchCanvas", "Failed to create folder!");
-            this.onSaved(false, null);
+            onSaved(false, null);
         }
     }
 
-    public void end() {
-        if (this._currentPath != null) {
-            this._currentPath.end();
-        }
-    }
-
-    public String getBase64(String format, boolean transparent) {
+    public String getBase64(String format, boolean transparent, boolean includeImage, boolean cropToImageSize) {
         WritableMap event = Arguments.createMap();
-        Bitmap  bitmap = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        if (format.equals("png")) {
-            canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
-        } else {
-            canvas.drawARGB(255, 255, 255, 255);
-        }
-        this.drawPath(canvas);
-
+        Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, cropToImageSize);
         ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+
         bitmap.compress(
             format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
             format.equals("png") ? 100 : 90,
@@ -199,20 +195,53 @@ public class SketchCanvas extends View {
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+
+        mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                Bitmap.Config.ARGB_8888);
+        mDrawingCanvas = new Canvas(mDrawingBitmap);
+        mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                Bitmap.Config.ARGB_8888);
+        mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
+        
+        mNeedsFullRedraw = true;
+        invalidate();
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(backgroundImage != null) {
+
+        if (mNeedsFullRedraw && mDrawingCanvas != null) {
+            mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+            for(SketchData path: mPaths) {
+                path.draw(mDrawingCanvas);
+            }
+            mNeedsFullRedraw = false;
+        }
+
+        if (mBackgroundImage != null) {
             Rect dstRect = new Rect();
             canvas.getClipBounds(dstRect);
-            canvas.drawBitmap(backgroundImage, null, dstRect, null);
+            canvas.drawBitmap(mBackgroundImage, null, 
+                Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode), 
+                null);
         }
-        this.drawPath(canvas);
+
+        if (mDrawingBitmap != null) {
+            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+        }
+
+        if (mTranslucentDrawingBitmap != null && mCurrentPath != null && mCurrentPath.isTranslucent) {
+            canvas.drawBitmap(mTranslucentDrawingBitmap, 0, 0, mPaint);
+        }
     }
 
     private void invalidateCanvas(boolean shouldDispatchEvent) {
         if (shouldDispatchEvent) {
             WritableMap event = Arguments.createMap();
-            event.putInt("pathsUpdate", this._paths.size());
+            event.putInt("pathsUpdate", mPaths.size());
             mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                 getId(),
                 "topChange",
@@ -221,31 +250,30 @@ public class SketchCanvas extends View {
         invalidate();
     }
 
-    private void drawPath(Canvas canvas) {
-        for(SketchData path: this._paths) {
-            Paint paint = new Paint();
-            boolean isErase = path.strokeColor == Color.TRANSPARENT;
-            paint.setColor(path.strokeColor);
-            paint.setStrokeWidth(path.strokeWidth);
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeCap(Paint.Cap.ROUND);
-            paint.setStrokeJoin(Paint.Join.ROUND);
-            paint.setAntiAlias(true);
-            paint.setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
+    private Bitmap createImage(boolean transparent, boolean includeImage, boolean cropToImageSize) {
+        Bitmap bitmap = Bitmap.createBitmap(
+            mBackgroundImage != null && cropToImageSize ? mOriginalWidth : getWidth(),
+            mBackgroundImage != null && cropToImageSize ? mOriginalHeight : getHeight(), 
+            Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
 
-            if (path.path != null) {
-
-                if (path.points.size() == 1) {
-                    // draw if only 1 point
-                    PointF origin = path.points.get(0);
-                    canvas.drawPoint(origin.x, origin.y, paint);
-                }
-
-                // draw path
-                canvas.drawPath(path.path, paint);
-            } else {
-                canvas.drawPath(path.evaluatePath(), paint);
-            }
+        if (mBackgroundImage != null && includeImage) {
+            Rect targetRect = new Rect();
+            Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), 
+                bitmap.getWidth(), bitmap.getHeight(), "AspectFit").roundOut(targetRect);
+            canvas.drawBitmap(mBackgroundImage, null, targetRect, null);
         }
+
+
+        if (mBackgroundImage != null && cropToImageSize) {
+            Rect targetRect = new Rect();
+            Utility.fillImage(mDrawingBitmap.getWidth(), mDrawingBitmap.getHeight(), 
+                bitmap.getWidth(), bitmap.getHeight(), "AspectFill").roundOut(targetRect);
+            canvas.drawBitmap(mDrawingBitmap, null, targetRect, mPaint);
+        } else {
+            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+        }
+        return bitmap;
     }
 }

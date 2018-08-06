@@ -15,6 +15,7 @@ Features
 * Use vector concept. So sketches won't be cropped in different sizes of canvas.
 * Support translucent colors and eraser.
 * Support drawing on an image (Thanks to diego-caceres-galvan)
+* High performance (See [below](#Performance). Thanks to jeanregisser)
 
 
 ## Installation
@@ -82,7 +83,7 @@ AppRegistry.registerComponent('example', () => example);
 | onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
 | user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
 | touchEnabled | `bool` | If false, disable touching. Default is true.  |
-| localSourceImagePath | `string` | Require a path which contains an image. If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan) |
+| localSourceImage | `object` | Require an object (see [below](#objects)) which consists of `filename`, `directory`(optional) and `mode`(optional). If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan))([Here](#background-image) for details) |
 
 #### Methods
 -------------
@@ -92,10 +93,18 @@ AppRegistry.registerComponent('example', () => example);
 | undo() | Delete the latest path. Can undo multiple times. |
 | addPath(path) | Add a path (see [below](#objects)) to canvas.  |
 | deletePath(id) | Delete a path with its `id` |
-| save(imageType, transparent, folder, filename) | Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to **/sdcard/Pictures/`folder`/`filename`** (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll or file system. If `folder` and `filename` are set, image will save to **temporary directory/`folder`/`filename`** (which is NSTemporaryDirectory())  |
+| save(imageType, transparent, folder, filename, includeImage, cropToImageSize) | Save image to camera roll or filesystem. If `localSourceImage` is set and a background image is loaded successfully, set `includeImage` to true to include background image and set `cropToImageSize` to true to crop output image to background image.<br/>Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to **/sdcard/Pictures/`folder`/`filename`** (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll or file system. If `folder` and `filename` are set, image will save to **temporary directory/`folder`/`filename`** (which is NSTemporaryDirectory())  |
 | getPaths() | Get the paths that drawn on the canvas |
-| getBase64(imageType, transparent, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
+| getBase64(imageType, transparent, includeImage, cropToImageSize, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
 
+#### Constants
+-------------
+| Constant | Description |
+| :------------ |:---------------|
+| MAIN_BUNDLE | Android: empty string, '' <br/>iOS: equivalent to [[NSBundle mainBundle] bundlePath] |
+| DOCUMENT | Android: empty string, '' <br/>iOS: equivalent to NSDocumentDirectory |
+| LIBRARY | Android: empty string, '' <br/>iOS: equivalent to NSLibraryDirectory |
+| CACHES | Android: empty string, '' <br/>iOS: equivalent to NSCachesDirectory |
 
 ### ● Using with build-in UI components
 <img src="https://i.imgur.com/O0vVdD6.png" height="400" />
@@ -209,14 +218,55 @@ AppRegistry.registerComponent('example', () => example);
 | savePreference | `function` | A function which is called when saving image and should return an object (see [below](#objects)). |
 | onSketchSaved | `function` | See [above](#properties) |
 
+#### Constants
+-------------
+| Constant | Description |
+| :------------ |:---------------|
+| MAIN_BUNDLE | See [above](#constants) |
+| DOCUMENT | See [above](#constants) |
+| LIBRARY | See [above](#constants) |
+| CACHES | See [above](#constants) |
+
+## Background Image
+-------------
+To use an image as background, `localSourceImage`(see [below](#background-image)) reqires an object, which consists of `filename`, `directory`(optional) and `mode`(optional). <br/>
+Note: Because native module cannot read the file in JS bundle, file path cannot be relative to JS side. For example, '../assets/image/image.png' will fail to load image.
+### Typical Usage
+* Load image from app native bundle
+<br/>
+  * Android: 
+    1. Put your images into android/app/src/main/res/drawable.
+    2. Set `filename` to the name of image files with or without file extension. 
+    3. Set `directory` to ''
+<br/>
+  * iOS:
+    1. Open Xcode and add images to project by right clicking `Add Files to [YOUR PROJECT NAME]`.
+    2. Set `filename` to the name of image files with file extension. 
+    3. Set `directory` to MAIN_BUNDLE (e.g. RNSketchCanvas.MAIN_BUNDLE or SketchCanvas.MAIN_BUNDLE)
+* Load image from camera
+  1. Retrive photo complete path (including file extension) after snapping.
+  2. Set `filename` to that path.
+  3. Set `directory` to ''
+
+### Content Mode
+* AspectFill<br/>
+<img src="https://i.imgur.com/vRydI60.png" height="200" />
+* AspectFit (default)<br/>
+<img src="https://i.imgur.com/r8DtgIN.png" height="200" />
+* ScaleToFill<br/>
+<img src="https://i.imgur.com/r9dRnAC.png" height="200" />
+
 ## Objects
+-------------
 ### Use for saving image
 ```javascript
 {
   folder: 'RNSketchCanvas', // use in Android, the folder name in Pictures
   filename: 'image',  // use in Android, the file name of image
   transparent: true,  // true for transparent background, ignored when imageType sets to 'jpg'
-  imageType: 'jpg'  // one of 'jpg' or 'png'
+  imageType: 'jpg',  // one of 'jpg' or 'png'
+  includeImage: true, // include background image if exists
+  cropToImageSize: true  // crop output image to background image if exists
 }
 ```
 
@@ -230,7 +280,7 @@ AppRegistry.registerComponent('example', () => example);
   },
   path: {
     id: 8979841, // path id
-    color: '#000000', 
+    color: '#FF000000', // ARGB or RGB
     width: 5,
     data: [
       "296.11,281.34",  // x,y
@@ -241,6 +291,26 @@ AppRegistry.registerComponent('example', () => example);
 }
 ```
 
+### LocalSourceImage format
+```javascript
+{
+  filename: 'image.png',  // e.g. 'image.png' or '/storage/sdcard0/Pictures/image.png'
+  directory: '', // e.g. SketchCanvas.MAIN_BUNDLE or '/storage/sdcard0/Pictures/'
+  mode: 'AspectFill'  // one of 'AspectFill', 'AspectFit' or 'ScaleToFill'
+}
+```
+
+## Performance
+-------------
+1. For non-transparent path, both Android and iOS performances are good. Because when drawing non-transparent path, only last segment is drawn on canvas, no matter how long the path is, CPU usage is stable at about 20% and 15% in Android and iOS respectively. 
+2. For transparent path, CPU usage stays at around 25% in Android, however, in iOS, CPU usage grows to 100% :(.
+* Android<br/>
+<img src="https://i.imgur.com/YQ2wVMc.jpg" height="400" />
+<img src="https://i.imgur.com/CuIar4h.jpg" height="400" />
+* iOS<br/>
+<img src="https://i.imgur.com/AwkFu94.png" height="400" />
+<img src="https://i.imgur.com/UDcaiaz.png" height="400" />
+
 ## Example
 -------------
 The source code includes 3 examples, using build-in UI components, using with only canvas, and sync between two canvases.
@@ -248,4 +318,5 @@ The source code includes 3 examples, using build-in UI components, using with on
 Check full example app in the [example](./example) folder 
 
 ## Troubleshooting
+-------------
 Please refer  [here](https://github.com/terrylinla/react-native-sketch-canvas/wiki/Troubleshooting).

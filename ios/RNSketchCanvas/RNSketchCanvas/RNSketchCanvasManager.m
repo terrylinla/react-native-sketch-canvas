@@ -14,17 +14,28 @@ RCT_EXPORT_MODULE()
     return YES;
 }
 
+-(NSDictionary *)constantsToExport {
+    return @{
+             @"MainBundlePath": [[NSBundle mainBundle] bundlePath],
+             @"NSDocumentDirectory": [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject],
+             @"NSLibraryDirectory": [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject],
+             @"NSCachesDirectory": [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject],
+             };
+}
+
 #pragma mark - Events
 
 RCT_EXPORT_VIEW_PROPERTY(onChange, RCTBubblingEventBlock);
 
 #pragma mark - Props
-RCT_CUSTOM_VIEW_PROPERTY(localSourceImagePath, NSString, RNSketchCanvas)
+RCT_CUSTOM_VIEW_PROPERTY(localSourceImage, NSDictionary, RNSketchCanvas)
 {
     RNSketchCanvas *currentView = !view ? defaultView : view;
-    NSString *localFilePath = [RCTConvert NSString:json];
+    NSDictionary *dict = [RCTConvert NSDictionary:json];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [currentView openSketchFile:localFilePath];
+        [currentView openSketchFile:dict[@"filename"]
+                          directory:[dict[@"directory"] isEqual: [NSNull null]] ? @"" : dict[@"directory"]
+                        contentMode: [dict[@"mode"] isEqual: [NSNull null]] ? @"" : dict[@"mode"]];
     });
 }
 
@@ -38,10 +49,10 @@ RCT_CUSTOM_VIEW_PROPERTY(localSourceImagePath, NSString, RNSketchCanvas)
 #pragma mark - Exported methods
 
 
-RCT_EXPORT_METHOD(save:(nonnull NSNumber *)reactTag type:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent)
+RCT_EXPORT_METHOD(save:(nonnull NSNumber *)reactTag type:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize)
 {
     [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
-        [canvas saveImageOfType: type folder: folder filename: filename withTransparentBackground: transparent];
+        [canvas saveImageOfType: type folder: folder filename: filename withTransparentBackground: transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize];
     }];
 }
 
@@ -93,10 +104,10 @@ RCT_EXPORT_METHOD(clear:(nonnull NSNumber *)reactTag)
     }];
 }
 
-RCT_EXPORT_METHOD(transferToBase64:(nonnull NSNumber *)reactTag type: (NSString*) type withTransparentBackground:(BOOL) transparent :(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(transferToBase64:(nonnull NSNumber *)reactTag type: (NSString*) type withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize :(RCTResponseSenderBlock)callback)
 {
     [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
-        callback(@[[NSNull null], [canvas transferToBase64OfType: type withTransparentBackground: transparent]]);
+        callback(@[[NSNull null], [canvas transferToBase64OfType: type withTransparentBackground: transparent includeImage:includeImage cropToImageSize:cropToImageSize]]);
     }];
 }
 

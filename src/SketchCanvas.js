@@ -37,7 +37,7 @@ class SketchCanvas extends React.Component {
     user: PropTypes.string,
 
     touchEnabled: PropTypes.bool,
-    localSourceImagePath: PropTypes.string
+    localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.string })
   };
 
   static defaultProps = {
@@ -52,7 +52,7 @@ class SketchCanvas extends React.Component {
     user: null,
 
     touchEnabled: true,
-    localSourceImagePath: null
+    localSourceImage: null
   };
 
   constructor(props) {
@@ -100,19 +100,19 @@ class SketchCanvas extends React.Component {
     UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deletePath, [ id ])
   }
 
-  save(imageType, transparent, folder, filename) {
-    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.save, [ imageType, folder, filename, transparent ])
+  save(imageType, transparent, folder, filename, includeImage, cropToImageSize) {
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.save, [ imageType, folder, filename, transparent, includeImage, cropToImageSize ])
   }
 
   getPaths() {
     return this._paths
   }
 
-  getBase64(imageType, transparent, callback) {
+  getBase64(imageType, transparent, includeImage, cropToImageSize, callback) {
     if (Platform.OS === 'ios') {
-      SketchCanvasManager.transferToBase64(this._handle, imageType, transparent, callback)
+      SketchCanvasManager.transferToBase64(this._handle, imageType, transparent, includeImage, cropToImageSize, callback)
     } else {
-      NativeModules.SketchCanvasModule.transferToBase64(this._handle, imageType, transparent, callback)
+      NativeModules.SketchCanvasModule.transferToBase64(this._handle, imageType, transparent, includeImage, cropToImageSize, callback)
     }
   }
 
@@ -201,10 +201,15 @@ class SketchCanvas extends React.Component {
             this.props.onSketchSaved(e.nativeEvent.success)
           }
         }}
-        localSourceImagePath={this.props.localSourceImagePath}
+        localSourceImage={this.props.localSourceImage}
       />
     );
   }
 }
+
+SketchCanvas.MAIN_BUNDLE = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.MainBundlePath : '';
+SketchCanvas.DOCUMENT = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.NSDocumentDirectory : '';
+SketchCanvas.LIBRARY = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.NSLibraryDirectory : '';
+SketchCanvas.CACHES = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.NSCachesDirectory : '';
 
 module.exports = SketchCanvas;
