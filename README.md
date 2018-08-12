@@ -3,10 +3,9 @@ react-native-sketch-canvas
 
 A React Native component for drawing by touching on both iOS and Android.
 
-<img src="https://media.giphy.com/media/3ov9kbuQg8ayvoYG8E/giphy.gif" height="400" />
-<img src="https://media.giphy.com/media/3ov9jNZooUPTbWWbh6/giphy.gif" height="400" />
-<img src="https://i.imgur.com/lc5WlGz.png" height="400" />
-<img src="https://i.imgur.com/NBZvKtp.png" height="400" />
+<img src="https://media.giphy.com/media/3ov9kbuQg8ayvoYG8E/giphy.gif" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://media.giphy.com/media/3ov9jNZooUPTbWWbh6/giphy.gif" height="400" />
+<br/>
+<img src="https://i.imgur.com/lc5WlGz.png" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/NBZvKtp.png" height="400" />
 
 Features
 -------------
@@ -365,11 +364,9 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 1. For non-transparent path, both Android and iOS performances are good. Because when drawing non-transparent path, only last segment is drawn on canvas, no matter how long the path is, CPU usage is stable at about 20% and 15% in Android and iOS respectively. 
 2. For transparent path, CPU usage stays at around 25% in Android, however, in iOS, CPU usage grows to 100% :(.
 * Android (https://youtu.be/gXdCEN6Enmk)<br/>
-<img src="https://i.imgur.com/YQ2wVMc.jpg" height="400" />
-<img src="https://i.imgur.com/CuIar4h.jpg" height="400" />
+<img src="https://i.imgur.com/YQ2wVMc.jpg" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/CuIar4h.jpg" height="400" />
 * iOS (https://youtu.be/_jO4ky400Eo)<br/>
-<img src="https://i.imgur.com/AwkFu94.png" height="400" />
-<img src="https://i.imgur.com/UDcaiaz.png" height="400" />
+<img src="https://i.imgur.com/AwkFu94.png" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/UDcaiaz.png" height="400" />
 
 ## Example
 -------------
