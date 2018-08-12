@@ -11,7 +11,6 @@ public final class Utility {
             case "AspectFill": {
                 float scaleFactor = targetAspectRatio < imageAspectRatio ? targetHeight / imgHeight : targetWidth / imgWidth;
                 float w = imgWidth * scaleFactor, h = imgHeight * scaleFactor;
-                Log.d("Canvas", "h: " + h);
                 return new RectF((targetWidth - w) / 2, (targetHeight - h) / 2, 
                     w + (targetWidth - w) / 2, h + (targetHeight - h) / 2);
             }
@@ -19,7 +18,6 @@ public final class Utility {
             default: {
                 float scaleFactor = targetAspectRatio > imageAspectRatio ? targetHeight / imgHeight : targetWidth / imgWidth;
                 float w = imgWidth * scaleFactor, h = imgHeight * scaleFactor;
-                Log.d("Canvas", "h: " + h);
                 return new RectF((targetWidth - w) / 2, (targetHeight - h) / 2, 
                     w + (targetWidth - w) / 2, h + (targetHeight - h) / 2);
             }

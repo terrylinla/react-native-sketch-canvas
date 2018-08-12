@@ -6,9 +6,6 @@ import ReactNative, {
   requireNativeComponent,
   NativeModules,
   UIManager,
-  View,
-  Text,
-  TouchableOpacity,
   PanResponder,
   PixelRatio,
   Platform,
@@ -38,7 +35,20 @@ class SketchCanvas extends React.Component {
     user: PropTypes.string,
 
     touchEnabled: PropTypes.bool,
-    localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.string }),
+
+    text: PropTypes.arrayOf(PropTypes.shape({
+      text: PropTypes.string,
+      font: PropTypes.string,
+      fontSize: PropTypes.number,
+      fontColor: PropTypes.string,
+      overlay: PropTypes.oneOf(['TextOnSketch', 'SketchOnText']),
+      anchor: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
+      position: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
+      coordinate: PropTypes.oneOf(['Absolute', 'Ratio']),
+      alignment: PropTypes.oneOf(['Left', 'Center', 'Right']),
+      lineHeightMultiple: PropTypes.number,
+    })),
+    localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.oneOf(['AspectFill', 'AspectFit', 'ScaleToFill']) }),
 
     permissionDialogTitle: PropTypes.string,
     permissionDialogMessage: PropTypes.string,
@@ -57,11 +67,16 @@ class SketchCanvas extends React.Component {
 
     touchEnabled: true,
 
+    text: null,
     localSourceImage: null,
 
     permissionDialogTitle: '',
     permissionDialogMessage: '',
   };
+
+  state = {
+    text: null
+  }
 
   constructor(props) {
     super(props)
@@ -73,6 +88,19 @@ class SketchCanvas extends React.Component {
     this._offset = { x: 0, y: 0 }
     this._size = { width: 0, height: 0 }
     this._initialized = false
+
+    this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null)
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      text: this._processText(nextProps.text ? nextProps.text.map(t => Object.assign({}, t)) : null)
+    })
+  }
+
+  _processText(text) {
+    text && text.forEach(t => t.fontColor = processColor(t.fontColor))
+    return text
   }
 
   clear() {
@@ -108,22 +136,20 @@ class SketchCanvas extends React.Component {
     UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deletePath, [id])
   }
 
-  save(imageType, transparent, folder, filename, includeImage, cropToImageSize) {
-    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.save, [imageType, folder, filename, transparent, includeImage, cropToImageSize])
+  save(imageType, transparent, folder, filename, includeImage, includeText, cropToImageSize) {
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.save, [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize])
   }
 
   getPaths() {
     return this._paths
   }
 
-  getBase64(imageType, transparent, includeImage, cropToImageSize, callback) {
+  getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback) {
     if (Platform.OS === 'ios') {
-      SketchCanvasManager.transferToBase64(this._handle, imageType, transparent, includeImage, cropToImageSize, callback)
+      SketchCanvasManager.transferToBase64(this._handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback)
     } else {
-      NativeModules.SketchCanvasModule.transferToBase64(this._handle, imageType, transparent, includeImage, cropToImageSize, callback)
+      NativeModules.SketchCanvasModule.transferToBase64(this._handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback)
     }
-
-
   }
 
   componentWillMount() {
@@ -142,7 +168,7 @@ class SketchCanvas extends React.Component {
           id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
           width: this.props.strokeWidth, data: []
         }
-
+        
         UIManager.dispatchViewManagerCommand(
           this._handle,
           UIManager.RNSketchCanvas.Commands.newPath,
@@ -160,8 +186,9 @@ class SketchCanvas extends React.Component {
             parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
           ]
         )
-        this._path.data.push(`${parseFloat(gestureState.x0 - this._offset.x).toFixed(2)},${parseFloat(gestureState.y0 - this._offset.y).toFixed(2)}`)
-        this.props.onStrokeStart()
+        const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)), y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
+        this._path.data.push(`${x},${y}`)
+        this.props.onStrokeStart(x, y)
       },
       onPanResponderMove: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
@@ -170,8 +197,9 @@ class SketchCanvas extends React.Component {
             parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
             parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
           ])
-          this._path.data.push(`${parseFloat(gestureState.moveX - this._offset.x).toFixed(2)},${parseFloat(gestureState.moveY - this._offset.y).toFixed(2)}`)
-          this.props.onStrokeChanged()
+          const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)), y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
+          this._path.data.push(`${x},${y}`)
+          this.props.onStrokeChanged(x, y)
         }
       },
       onPanResponderRelease: (evt, gestureState) => {
@@ -221,6 +249,7 @@ class SketchCanvas extends React.Component {
         localSourceImage={this.props.localSourceImage}
         permissionDialogTitle={this.props.permissionDialogTitle}
         permissionDialogMessage={this.props.permissionDialogMessage}
+        text={this.state.text}
       />
     );
   }

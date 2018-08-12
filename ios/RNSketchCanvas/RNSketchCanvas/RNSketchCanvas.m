@@ -21,6 +21,8 @@
     UIImage *_backgroundImage;
     UIImage *_backgroundImageScaled;
     NSString *_backgroundImageContentMode;
+    
+    NSArray *_arrTextOnSketch, *_arrSketchOnText;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -67,12 +69,20 @@
         [_backgroundImageScaled drawInRect:bounds];
     }
 
+    for (CanvasText *text in _arrSketchOnText) {
+        [text.text drawInRect: text.drawRect withAttributes: text.attribute];
+    }
+    
     if (_frozenImage) {
         CGContextDrawImage(context, bounds, _frozenImage);
     }
 
     if (_translucentFrozenImage && _currentPath.isTranslucent) {
         CGContextDrawImage(context, bounds, _translucentFrozenImage);
+    }
+    
+    for (CanvasText *text in _arrTextOnSketch) {
+        [text.text drawInRect: text.drawRect withAttributes: text.attribute];
     }
 }
 
@@ -86,6 +96,18 @@
         [self createDrawingContext];
         _needsFullRedraw = YES;
         _backgroundImageScaled = nil;
+        
+        for (CanvasText *text in [_arrTextOnSketch arrayByAddingObjectsFromArray: _arrSketchOnText]) {
+            CGPoint position = text.position;
+            if (!text.isAbsoluteCoordinate) {
+                position.x *= self.bounds.size.width;
+                position.y *= self.bounds.size.height;
+            }
+            position.x -= text.drawRect.size.width * text.anchor.x;
+            position.y -= text.drawRect.size.height * text.anchor.y;
+            text.drawRect = CGRectMake(position.x, position.y, text.drawRect.size.width, text.drawRect.size.height);
+        }
+        
         [self setNeedsDisplay];
     }
 }
@@ -132,6 +154,70 @@
         }
     }
     return NO;
+}
+
+- (void)setCanvasText:(NSArray *)aText {
+    NSMutableArray *arrTextOnSketch = [NSMutableArray new];
+    NSMutableArray *arrSketchOnText = [NSMutableArray new];
+    NSDictionary *alignments = @{
+                                 @"Left": [NSNumber numberWithInteger:NSTextAlignmentLeft],
+                                 @"Center": [NSNumber numberWithInteger:NSTextAlignmentCenter],
+                                 @"Right": [NSNumber numberWithInteger:NSTextAlignmentRight]
+                                 };
+    
+    for (NSDictionary *property in aText) {
+        if (property[@"text"]) {
+            NSMutableArray *arr = [@"TextOnSketch" isEqualToString: property[@"overlay"]] ? arrTextOnSketch : arrSketchOnText;
+            CanvasText *text = [CanvasText new];
+            text.text = property[@"text"];
+            UIFont *font = nil;
+            if (property[@"font"]) {
+                font = [UIFont fontWithName: property[@"font"] size: property[@"fontSize"] == nil ? 12 : [property[@"fontSize"] floatValue]];
+                font = font == nil ? [UIFont systemFontOfSize: property[@"fontSize"] == nil ? 12 : [property[@"fontSize"] floatValue]] : font;
+            } else if (property[@"fontSize"]) {
+                font = [UIFont systemFontOfSize: [property[@"fontSize"] floatValue]];
+            } else {
+                font = [UIFont systemFontOfSize: 12];
+            }
+            text.font = font;
+            text.anchor = property[@"anchor"] == nil ?
+                CGPointMake(0, 0) :
+                CGPointMake([property[@"anchor"][@"x"] floatValue], [property[@"anchor"][@"y"] floatValue]);
+            text.position = property[@"position"] == nil ?
+                CGPointMake(0, 0) :
+                CGPointMake([property[@"position"][@"x"] floatValue], [property[@"position"][@"y"] floatValue]);
+            long color = property[@"fontColor"] == nil ? 0xFF000000 : [property[@"fontColor"] longValue];
+            UIColor *fontColor =
+            [UIColor colorWithRed:(CGFloat)((color & 0x00FF0000) >> 16) / 0xFF
+                            green:(CGFloat)((color & 0x0000FF00) >> 8) / 0xFF
+                             blue:(CGFloat)((color & 0x000000FF)) / 0xFF
+                            alpha:(CGFloat)((color & 0xFF000000) >> 24) / 0xFF];
+            NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+            NSString *a = property[@"alignment"] ? property[@"alignment"] : @"Left";
+            style.alignment = [alignments[a] integerValue];
+            style.lineHeightMultiple = property[@"lineHeightMultiple"] ? [property[@"lineHeightMultiple"] floatValue] : 1.0;
+            text.attribute = @{
+                               NSFontAttributeName:font,
+                               NSForegroundColorAttributeName:fontColor,
+                               NSParagraphStyleAttributeName:style
+                               };
+            text.isAbsoluteCoordinate = ![@"Ratio" isEqualToString:property[@"coordinate"]];
+            CGSize textSize = [text.text sizeWithAttributes:text.attribute];
+            
+            CGPoint position = text.position;
+            if (!text.isAbsoluteCoordinate) {
+                position.x *= self.bounds.size.width;
+                position.y *= self.bounds.size.height;
+            }
+            position.x -= textSize.width * text.anchor.x;
+            position.y -= textSize.height * text.anchor.y;
+            text.drawRect = CGRectMake(position.x, position.y, textSize.width, textSize.height);
+            [arr addObject: text];
+        }
+    }
+    _arrTextOnSketch = [arrTextOnSketch copy];
+    _arrSketchOnText = [arrSketchOnText copy];
+    [self setNeedsDisplay];
 }
 
 - (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
@@ -211,7 +297,7 @@
     [self notifyPathsUpdate];
 }
 
-- (UIImage*)createImageWithTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize {
+- (UIImage*)createImageWithTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize {
     if (_backgroundImage && cropToImageSize) {
         CGRect rect = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
         UIGraphicsBeginImageContextWithOptions(rect.size, !transparent, 1);
@@ -224,8 +310,22 @@
         if (includeImage) {
             [_backgroundImage drawInRect:rect];
         }
+        
+        if (includeText) {
+            for (CanvasText *text in _arrSketchOnText) {
+                [text.text drawInRect: text.drawRect withAttributes: text.attribute];
+            }
+        }
+        
         CGContextDrawImage(context, targetRect, _frozenImage);
         CGContextDrawImage(context, targetRect, _translucentFrozenImage);
+        
+        if (includeText) {
+            for (CanvasText *text in _arrTextOnSketch) {
+                [text.text drawInRect: text.drawRect withAttributes: text.attribute];
+            }
+        }
+        
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
@@ -242,8 +342,22 @@
             CGRect targetRect = [Utility fillImageWithSize:_backgroundImage.size toSize:rect.size contentMode:_backgroundImageContentMode];
             [_backgroundImage drawInRect:targetRect];
         }
+        
+        if (includeText) {
+            for (CanvasText *text in _arrSketchOnText) {
+                [text.text drawInRect: text.drawRect withAttributes: text.attribute];
+            }
+        }
+        
         CGContextDrawImage(context, rect, _frozenImage);
         CGContextDrawImage(context, rect, _translucentFrozenImage);
+        
+        if (includeText) {
+            for (CanvasText *text in _arrTextOnSketch) {
+                [text.text drawInRect: text.drawRect withAttributes: text.attribute];
+            }
+        }
+        
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
@@ -251,8 +365,8 @@
     }
 }
 
-- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize {
-    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage cropToImageSize:cropToImageSize];
+- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize {
+    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage includeText:(BOOL)includeText cropToImageSize:cropToImageSize];
     
     if (folder != nil && filename != nil) {
         NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];
@@ -301,8 +415,8 @@
     return image;
 }
 
-- (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize {
-    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage cropToImageSize:cropToImageSize];
+- (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize {
+    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage includeText:(BOOL)includeText cropToImageSize:cropToImageSize];
     NSData *data = [self getImageData:img type:type];
     return [data base64EncodedStringWithOptions: NSDataBase64Encoding64CharacterLineLength];
 }
@@ -329,4 +443,7 @@
     }
 }
 
+@end
+
+@implementation CanvasText
 @end

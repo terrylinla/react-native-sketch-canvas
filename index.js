@@ -43,6 +43,18 @@ export default class RNSketchCanvas extends React.Component {
     savePreference: PropTypes.func,
     onSketchSaved: PropTypes.func,
 
+    text: PropTypes.arrayOf(PropTypes.shape({
+      text: PropTypes.string,
+      font: PropTypes.string,
+      fontSize: PropTypes.number,
+      fontColor: PropTypes.string,
+      overlay: PropTypes.oneOf(['TextOnSketch', 'SketchOnText']),
+      anchor: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
+      position: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
+      coordinate: PropTypes.oneOf(['Absolute', 'Ratio']),
+      alignment: PropTypes.oneOf(['Left', 'Center', 'Right']),
+      lineHeightMultiple: PropTypes.number,
+    })),
     localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.string }),
 
     permissionDialogTitle: PropTypes.string,
@@ -100,6 +112,7 @@ export default class RNSketchCanvas extends React.Component {
     savePreference: null,
     onSketchSaved: () => { },
 
+    text: null,
     localSourceImage: null,
 
     permissionDialogTitle: '',
@@ -140,12 +153,12 @@ export default class RNSketchCanvas extends React.Component {
   save() {
     if (this.props.savePreference) {
       const p = this.props.savePreference()
-      this._sketchCanvas.save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename, p.includeImage, p.cropToImageSize)
+      this._sketchCanvas.save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename, p.includeImage !== false, p.includeText !== false, p.cropToImageSize || false)
     } else {
       const date = new Date()
-      this._sketchCanvas.save('png', '', false, 
+      this._sketchCanvas.save('png', false, '', 
         date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + ('0' + date.getDate()).slice(-2) + ' ' + ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-' + ('0' + date.getSeconds()).slice(-2),
-        true, true)
+        true, true, false)
     }
   }
 
@@ -242,6 +255,7 @@ export default class RNSketchCanvas extends React.Component {
           strokeWidth={this.state.strokeWidth}
           onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
           onPathsChange={this.props.onPathsChange}
+          text={this.props.text}
           localSourceImage={this.props.localSourceImage}
           permissionDialogTitle={this.props.permissionDialogTitle}
           permissionDialogMessage={this.props.permissionDialogMessage}

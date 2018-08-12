@@ -3,7 +3,10 @@ react-native-sketch-canvas
 
 A React Native component for drawing by touching on both iOS and Android.
 
-<img src="https://media.giphy.com/media/3ov9kbuQg8ayvoYG8E/giphy.gif" height="400" /> <img src="https://media.giphy.com/media/3ov9jNZooUPTbWWbh6/giphy.gif" height="400" />
+<img src="https://media.giphy.com/media/3ov9kbuQg8ayvoYG8E/giphy.gif" height="400" />
+<img src="https://media.giphy.com/media/3ov9jNZooUPTbWWbh6/giphy.gif" height="400" />
+<img src="https://i.imgur.com/lc5WlGz.png" height="400" />
+<img src="https://i.imgur.com/NBZvKtp.png" height="400" />
 
 Features
 -------------
@@ -16,6 +19,8 @@ Features
 * Support translucent colors and eraser.
 * Support drawing on an image (Thanks to diego-caceres-galvan)
 * High performance (See [below](#Performance). Thanks to jeanregisser)
+* Can draw multiple canvases in the same screen.
+* Can draw multiple multiline text on canvas.
 
 
 ## Installation
@@ -76,8 +81,8 @@ AppRegistry.registerComponent('example', () => example);
 | style | `object` | Styles to be applied on canvas component |
 | strokeColor | `string` | Set the color of stroke, which can be #RRGGBB or #RRGGBBAA. If strokeColor is set to #00000000, it will automatically become an eraser. <br/>NOTE: Once an eraser path is sent to Android, Android View will disable hardware acceleration automatically. It might reduce the canvas performance afterward. |
 | strokeWidth | `number` | The thickness of stroke |
-| onStrokeStart | `function` | An optional function called when user's finger touches the canvas (starts to draw) |
-| onStrokeChanged | `function` | An optional function called when user's finger moves |
+| onStrokeStart | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger touches the canvas (starts to draw) |
+| onStrokeChanged | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger moves |
 | onStrokeEnd | `function` | An optional function called when user's finger leaves the canvas (end drawing) |
 | onSketchSaved | `function` | An optional function which accpets 2 arguments `success` and `path`. If `success` is true, image is saved successfully and the saved image path might be in second argument. In Android, image path will always be returned. In iOS, image is saved to camera roll or file system, path will be set to null or image location respectively. |
 | onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
@@ -220,6 +225,16 @@ AppRegistry.registerComponent('example', () => example);
 | savePreference | `function` | A function which is called when saving image and should return an object (see [below](#objects)). |
 | onSketchSaved | `function` | See [above](#properties) |
 
+#### Methods
+-------------
+| Method | Description |
+| :------------ |:---------------|
+| clear() | See [above](#methods) |
+| undo() | See [above](#methods) |
+| addPath(path) | See [above](#methods) |
+| deletePath(id) | See [above](#methods) |
+| save() |  |
+
 #### Constants
 -------------
 | Constant | Description |
@@ -260,19 +275,29 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 
 ## Objects
 -------------
-### Use for saving image
+### SavePreference object
 ```javascript
 {
-  folder: 'RNSketchCanvas', // use in Android, the folder name in Pictures
-  filename: 'image',  // use in Android, the file name of image
-  transparent: true,  // true for transparent background, ignored when imageType sets to 'jpg'
-  imageType: 'jpg',  // one of 'jpg' or 'png'
-  includeImage: true, // include background image if exists
-  cropToImageSize: true  // crop output image to background image if exists
+  folder: 'RNSketchCanvas',
+  filename: 'image',
+  transparent: true,
+  imageType: 'jpg',
+  includeImage: true,
+  includeText: false,
+  cropToImageSize: true
 }
 ```
+| Property | Type | Description |
+| :------------ |:---------------|:---------------|:---------------| 
+| folder? | string | Android: the folder name in `Pictures` directory<br/>iOS: if `filename` is not null, image will save to temporary directory with folder and filename, otherwise, it will save to camera roll |
+| filename? | string | the file name of image<br/>iOS: Set to `null` to save image to camera roll. |
+| transparent | boolean | save canvas with transparent background, ignored if imageType is `jpg` |
+| imageType | string  | image file format<br/>Options: `png`, `jpg` |
+| includeImage? | boolean | Set to `true` to include the image loaded from `LocalSourceImage`. (Default is `true`) |
+| includeImage? | boolean | Set to `true` to include the text drawn from `Text`. (Default is `true`) |
+| cropToImageSize? | boolean | Set to `true` to crop output image to the image loaded from `LocalSourceImage`. (Default is `false`) |
 
-### Path format
+### Path object
 ```javascript
 {
   drawer: 'user1',
@@ -293,14 +318,47 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 }
 ```
 
-### LocalSourceImage format
+### LocalSourceImage object
 ```javascript
 {
   filename: 'image.png',  // e.g. 'image.png' or '/storage/sdcard0/Pictures/image.png'
   directory: '', // e.g. SketchCanvas.MAIN_BUNDLE or '/storage/sdcard0/Pictures/'
-  mode: 'AspectFill'  // one of 'AspectFill', 'AspectFit' or 'ScaleToFill'
+  mode: 'AspectFill'
 }
 ```
+| Property | Type | Description | Default |
+| :------------ |:---------------|:---------------|:---------------|:---------------|
+| filename | string | the fold name of the background image file (can be a full path) |  |
+| directory? | string | the directory of the background image file (usually used with [constants](#constants)) | '' |
+| mode? | boolean | Specify how the background image resizes itself to fit or fill the canvas.<br/>Options: `AspectFill`, `AspectFit`, `ScaleToFill` | `AspectFit` |
+
+### CanvasText object
+```javascript
+{
+  text: 'TEXT',
+  font: '',
+  fontSize: 20,
+  fontColor: 'red',
+  overlay: 'TextOnSketch',
+  anchor: { x: 0, y: 1 },
+  position: { x: 100, y: 200 },
+  coordinate: 'Absolute',
+  alignment: 'Center',
+  lineHeightMultiple: 1.2
+}
+```
+| Property | Type | Description | Default |
+| :------------ |:---------------|:---------------|:---------------| 
+| text | string | the text to display (can be multiline by `\n`) | |
+| font? | string | Android: You can set `font` to `fonts/[filename].ttf` to load font in `android/app/src/main/assets/fonts/` in your Android project<br/>iOS: Set `font` that included with iOS | |
+| fontSize? | number | font size | 12 |
+| fontColor? | string | text color | black |
+| overlay? | string | Set to `TextOnSketch` to overlay drawing with text, otherwise the text will be overlaid with drawing.<br/>Options: `TextOnSketch`, `SketchOnText` | SketchOnText |
+| anchor? | object | Set the origin point of the image. (0, 0) to (1, 1). (0, 0) and (1, 1) indicate the top-left and bottom-right point of the image respectively. | { x: 0, y: 0 } |
+| position | object | Set the position of the image on canvas. If `coordinate` is `Ratio`, (0, 0) and (1, 1) indicate the top-left and bottom-right point of the canvas respectively. | { x: 0, y: 0 } |
+| coordinate? | string | Set to `Absolute` and `Ratio` to treat `position` as absolute position (in point) and proportion respectively.<br/>Options: `Absolute`, `Ratio` | Absolute |
+| alignment? | string | Specify how the text aligns inside container. Only work when `text` is multiline text. | Left |
+| lineHeightMultiple? | number | Multiply line height by this factor. Only work when `text` is multiline text. | 1.0 |
 
 ## Performance
 -------------

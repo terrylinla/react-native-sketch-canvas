@@ -35,7 +35,16 @@ RCT_CUSTOM_VIEW_PROPERTY(localSourceImage, NSDictionary, RNSketchCanvas)
     dispatch_async(dispatch_get_main_queue(), ^{
         [currentView openSketchFile:dict[@"filename"]
                           directory:[dict[@"directory"] isEqual: [NSNull null]] ? @"" : dict[@"directory"]
-                        contentMode: [dict[@"mode"] isEqual: [NSNull null]] ? @"" : dict[@"mode"]];
+                        contentMode:[dict[@"mode"] isEqual: [NSNull null]] ? @"" : dict[@"mode"]];
+    });
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(text, NSArray, RNSketchCanvas)
+{
+    RNSketchCanvas *currentView = !view ? defaultView : view;
+    NSArray *arr = [RCTConvert NSArray:json];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [currentView setCanvasText:arr];
     });
 }
 
@@ -49,10 +58,10 @@ RCT_CUSTOM_VIEW_PROPERTY(localSourceImage, NSDictionary, RNSketchCanvas)
 #pragma mark - Exported methods
 
 
-RCT_EXPORT_METHOD(save:(nonnull NSNumber *)reactTag type:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize)
+RCT_EXPORT_METHOD(save:(nonnull NSNumber *)reactTag type:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize)
 {
     [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
-        [canvas saveImageOfType: type folder: folder filename: filename withTransparentBackground: transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize];
+        [canvas saveImageOfType:type folder:folder filename:filename withTransparentBackground:transparent includeImage:includeImage includeText:includeText cropToImageSize:cropToImageSize];
     }];
 }
 
@@ -104,10 +113,10 @@ RCT_EXPORT_METHOD(clear:(nonnull NSNumber *)reactTag)
     }];
 }
 
-RCT_EXPORT_METHOD(transferToBase64:(nonnull NSNumber *)reactTag type: (NSString*) type withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize :(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(transferToBase64:(nonnull NSNumber *)reactTag type: (NSString*) type withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize :(RCTResponseSenderBlock)callback)
 {
     [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
-        callback(@[[NSNull null], [canvas transferToBase64OfType: type withTransparentBackground: transparent includeImage:includeImage cropToImageSize:cropToImageSize]]);
+        callback(@[[NSNull null], [canvas transferToBase64OfType: type withTransparentBackground: transparent includeImage:includeImage includeText:includeText cropToImageSize:cropToImageSize]]);
     }];
 }
 

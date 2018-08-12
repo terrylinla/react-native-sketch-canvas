@@ -40,6 +40,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static SketchCanvas Canvas = null;
 
     private static final String PROPS_LOCAL_SOURCE_IMAGE = "localSourceImage";
+    private static final String PROPS_TEXT = "text";
 
     @Override
     public String getName() {
@@ -55,8 +56,17 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     @ReactProp(name = PROPS_LOCAL_SOURCE_IMAGE)
     public void setLocalSourceImage(SketchCanvas viewContainer, ReadableMap localSourceImage) {
         if (localSourceImage != null && localSourceImage.getString("filename") != null) {
-            viewContainer.openImageFile(localSourceImage.getString("filename"), localSourceImage.getString("directory"), localSourceImage.getString("mode"));
+            viewContainer.openImageFile(
+                localSourceImage.hasKey("filename") ? localSourceImage.getString("filename") : null,
+                localSourceImage.hasKey("directory") ? localSourceImage.getString("directory") : "",
+                localSourceImage.hasKey("mode") ? localSourceImage.getString("mode") : ""
+            );
         }
+    }
+
+    @ReactProp(name = PROPS_TEXT)
+    public void setText(SketchCanvas viewContainer, ReadableArray text) {
+        viewContainer.setCanvasText(text);
     }
 
     @Override
@@ -109,7 +119,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 return;
             }
             case COMMAND_SAVE: {
-                view.save(args.getString(0), args.getString(1), args.getString(2), args.getBoolean(3), args.getBoolean(4), args.getBoolean(5));
+                view.save(args.getString(0), args.getString(1), args.getString(2), args.getBoolean(3), args.getBoolean(4), args.getBoolean(5), args.getBoolean(6));
                 return;
             }
             case COMMAND_END_PATH: {
