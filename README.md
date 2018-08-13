@@ -287,7 +287,7 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 }
 ```
 | Property | Type | Description |
-| :------------ |:---------------|:---------------|:---------------| 
+| :------------ |:---------------|:---------------|
 | folder? | string | Android: the folder name in `Pictures` directory<br/>iOS: if `filename` is not null, image will save to temporary directory with folder and filename, otherwise, it will save to camera roll |
 | filename? | string | the file name of image<br/>iOS: Set to `null` to save image to camera roll. |
 | transparent | boolean | save canvas with transparent background, ignored if imageType is `jpg` |
@@ -326,7 +326,7 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 }
 ```
 | Property | Type | Description | Default |
-| :------------ |:---------------|:---------------|:---------------|:---------------|
+| :------------ |:---------------|:---------------|:---------------|
 | filename | string | the fold name of the background image file (can be a full path) |  |
 | directory? | string | the directory of the background image file (usually used with [constants](#constants)) | '' |
 | mode? | boolean | Specify how the background image resizes itself to fit or fill the canvas.<br/>Options: `AspectFill`, `AspectFit`, `ScaleToFill` | `AspectFit` |
