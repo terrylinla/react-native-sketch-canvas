@@ -1,6 +1,7 @@
 package com.terrylinla.rnsketchcanvas;
 
 import android.util.Log;
+import android.util.DisplayMetrics;
 import android.graphics.RectF;
 
 public final class Utility {
@@ -25,5 +26,13 @@ public final class Utility {
                 return  new RectF(0, 0, targetWidth, targetHeight);
             }
         }
+    }
+
+    public static int convertDpToPx(DisplayMetrics displayMetrics, float dp) {
+        return (int) (dp * displayMetrics.density);
+    }
+
+    public static int convertPxToDp(DisplayMetrics displayMetrics, float px) {
+        return (int) (px / displayMetrics.density);
     }
 }

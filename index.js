@@ -42,6 +42,7 @@ export default class RNSketchCanvas extends React.Component {
 
     savePreference: PropTypes.func,
     onSketchSaved: PropTypes.func,
+    onShapeSelectionChanged: PropTypes.func,
 
     text: PropTypes.arrayOf(PropTypes.shape({
       text: PropTypes.string,
@@ -111,6 +112,7 @@ export default class RNSketchCanvas extends React.Component {
 
     savePreference: null,
     onSketchSaved: () => { },
+    onShapeSelectionChanged: () => { },
 
     text: null,
     localSourceImage: null,
@@ -156,7 +158,7 @@ export default class RNSketchCanvas extends React.Component {
       this._sketchCanvas.save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename, p.includeImage !== false, p.includeText !== false, p.cropToImageSize || false)
     } else {
       const date = new Date()
-      this._sketchCanvas.save('png', false, '', 
+      this._sketchCanvas.save('png', false, '',
         date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + ('0' + date.getDate()).slice(-2) + ' ' + ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-' + ('0' + date.getSeconds()).slice(-2),
         true, true, false)
     }
@@ -254,6 +256,8 @@ export default class RNSketchCanvas extends React.Component {
           user={this.props.user}
           strokeWidth={this.state.strokeWidth}
           onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
+          onShapeSelectionChanged={(isShapeSelected) => this.props.onShapeSelectionChanged(isShapeSelected)}
+          touchEnabled={this.props.touchEnabled}
           onPathsChange={this.props.onPathsChange}
           text={this.props.text}
           localSourceImage={this.props.localSourceImage}

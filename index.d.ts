@@ -85,6 +85,7 @@ export interface SketchCanvasProps {
   onStrokeEnd?: (path: Path) => void
   onSketchSaved?: (result: boolean, path: string) => void
   onPathsChange?: (pathsCount: number) => void
+  onShapeSelectionChanged?: (isShapeSelected: boolean) => void
 }
 
 export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProperties> {
@@ -152,16 +153,18 @@ export interface RNSketchCanvasProps {
    */
   savePreference?: () => {folder: string, filename: string, transparent: boolean, imageType: ImageType, includeImage?: boolean, includeText?: boolean, cropToImageSize?: boolean}
   onSketchSaved?: (result: boolean, path: string) => void
+  onShapeSelectionChanged?: (isShapeSelected: boolean) => void
 
   text?: CanvasText[]
   /**
    * {
-   *    path: string, 
-   *    directory: string, 
+   *    path: string,
+   *    directory: string,
    *    mode: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
    * }
    */
   localSourceImage?: LocalSourceImage
+  touchEnabled?: boolean
 }
 
 export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps & ViewProperties> {

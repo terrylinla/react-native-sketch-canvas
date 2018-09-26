@@ -32,6 +32,7 @@ class SketchCanvas extends React.Component {
     onStrokeChanged: PropTypes.func,
     onStrokeEnd: PropTypes.func,
     onSketchSaved: PropTypes.func,
+    onShapeSelectionChanged: PropTypes.func,
     user: PropTypes.string,
 
     touchEnabled: PropTypes.bool,
@@ -63,6 +64,7 @@ class SketchCanvas extends React.Component {
     onStrokeChanged: () => { },
     onStrokeEnd: () => { },
     onSketchSaved: () => { },
+    onShapeSelectionChanged: () => { },
     user: null,
 
     touchEnabled: true,
@@ -168,7 +170,7 @@ class SketchCanvas extends React.Component {
           id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
           width: this.props.strokeWidth, data: []
         }
-        
+
         UIManager.dispatchViewManagerCommand(
           this._handle,
           UIManager.RNSketchCanvas.Commands.newPath,
@@ -244,6 +246,8 @@ class SketchCanvas extends React.Component {
             this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
           } else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
+          } else if (e.nativeEvent.hasOwnProperty('isShapeSelected')) {
+            this.props.onShapeSelectionChanged(e.nativeEvent.isShapeSelected);
           }
         }}
         localSourceImage={this.props.localSourceImage}

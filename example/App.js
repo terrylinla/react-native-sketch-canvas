@@ -30,7 +30,8 @@ export default class example extends Component {
       thickness: 5,
       message: '',
       photoPath: null,
-      scrollEnabled: true
+      scrollEnabled: true,
+      touchEnabled: true
     }
   }
 
@@ -99,6 +100,7 @@ export default class example extends Component {
           this.state.example === 1 &&
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <RNSketchCanvas
+              touchEnabled={this.state.touchEnabled}
               containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
               onStrokeEnd={data => {
@@ -149,6 +151,9 @@ export default class example extends Component {
               }}
               onPathsChange={(pathsCount) => {
                 console.log('pathsCount', pathsCount)
+              }}
+              onShapeSelectionChanged={(isShapeSelected) => {
+                this.setState({ touchEnabled: !isShapeSelected })
               }}
             />
           </View>
