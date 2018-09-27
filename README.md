@@ -90,6 +90,8 @@ AppRegistry.registerComponent('example', () => example);
 | localSourceImage | `object` | Require an object (see [below](#objects)) which consists of `filename`, `directory`(optional) and `mode`(optional). If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan))([Here](#background-image) for details) |
 | permissionDialogTitle | `string` | Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set |
 | permissionDialogMessage | `string` | Android Only: Provide a Dialog Message for the Image Saving PermissionDialog. Defaults to empty string if not set |
+| requiredTouches | `number` | (Optional) Fingers on the screen for drawing to be active. If you set this to 1, drawing is only possible while the user only uses one finger. So for 2 fingers, you can use another action. |
+| startToDrawDelay | `number` | (Optional) Delay in milliseconds after which the drawing starts. Use it if you use another PanResponder in the parent. |
 
 #### Methods
 -------------
@@ -358,6 +360,9 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 | coordinate? | string | Set to `Absolute` and `Ratio` to treat `position` as absolute position (in point) and proportion respectively.<br/>Options: `Absolute`, `Ratio` | Absolute |
 | alignment? | string | Specify how the text aligns inside container. Only work when `text` is multiline text. | Left |
 | lineHeightMultiple? | number | Multiply line height by this factor. Only work when `text` is multiline text. | 1.0 |
+
+## Combine with other PanResponder
+If you use it within another PanResponder, use requriedTouches={1} and startToDrawDelay > 0. This is usefull if you want to scroll or zoom in your drawing component. 
 
 ## Performance
 -------------
