@@ -34,7 +34,8 @@ class SketchCanvas extends React.Component {
     onSketchSaved: PropTypes.func,
     user: PropTypes.string,
 
-    touchEnabled: PropTypes.bool,
+      touchEnabled: PropTypes.bool,
+      onPathPress: PropTypes.func,
 
     text: PropTypes.arrayOf(PropTypes.shape({
       text: PropTypes.string,
@@ -66,6 +67,7 @@ class SketchCanvas extends React.Component {
     user: null,
 
     touchEnabled: true,
+      onPathPress: () => { },
 
     text: null,
     localSourceImage: null,
@@ -90,6 +92,8 @@ class SketchCanvas extends React.Component {
     this._initialized = false
 
     this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null)
+      this.didTouchPath = this.didTouchPath.bind(this);
+      this._loadPanResponder.call(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -152,7 +156,7 @@ class SketchCanvas extends React.Component {
     }
   }
 
-  componentWillMount() {
+  _loadPanResponder() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
       onStartShouldSetPanResponder: (evt, gestureState) => true,
@@ -215,7 +219,23 @@ class SketchCanvas extends React.Component {
         return true;
       },
     });
-  }
+    }
+
+    didTouchPath(evt, gestureState) {
+        const e = evt.nativeEvent;
+        this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY };
+
+        UIManager.dispatchViewManagerCommand(
+            this._handle,
+            UIManager.RNSketchCanvas.Commands.didTouchPath,
+            [
+                e.timestamp.toString(),
+                Math.round(parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale)),
+                Math.round(parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale))
+            ]
+        );
+
+    }
 
   async componentDidMount() {
     const isStoragePermissionAuthorized = await requestPermissions(
@@ -244,6 +264,8 @@ class SketchCanvas extends React.Component {
             this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
           } else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
+          } else if (e.nativeEvent.hasOwnProperty('didTouchPath')) {
+              if (e.nativeEvent.didTouchPath) this.props.onPathPress(e.nativeEvent);
           }
         }}
         localSourceImage={this.props.localSourceImage}
