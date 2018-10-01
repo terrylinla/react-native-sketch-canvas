@@ -217,4 +217,47 @@ public class SketchData {
         path.moveTo(mid1.x, mid1.y);
         path.quadTo(pPoint.x, pPoint.y, mid2.x, mid2.y);
     }
+
+/*
+    //  could not get these methods to work
+    //  and act instead of Bitmap.getPixel(x, y) to test touch
+
+    @TargetApi(26)
+    private float[][] mGetCoords() {
+        float acceptableError = 0.5f;
+        if (mPath == null && !this.isTranslucent) mPath = evaluatePath();
+        if(mPath != null) {
+            float[] apprx = mPath.approximate(acceptableError);
+            float[][] coords = new float[(int)(apprx.length/3)][3];
+            for (int i=0; i<apprx.length; i++) {
+                coords[(int)(i/3)][i%3] = apprx[i];
+            }
+            return coords;
+        }
+        return new float[0][0];
+    }
+
+
+    @TargetApi(19)
+    public boolean isPointOnPath(int x, int y) {
+        if(mPath == null) mPath = evaluatePath();
+        if (mPath != null && !this.isTranslucent) {
+            Path path = new Path();
+            Path tPath = new Path();
+            //path.addCircle(x, y, 1, Path.Direction.CW);
+            path.addRect((float)(x-0.5),(float)(y-0.5),(float)(x+0.5),(float)(y+0.5),Path.Direction.CW);
+            boolean op = tPath.op(mPath, path, Path.Op.INTERSECT);
+            boolean isRect = tPath.isRect(new RectF());
+            boolean is = tPath.isEmpty();
+
+            Log.d("RNSketchCanvas", "isEmpty: " + Boolean.toString(is));
+            Log.d("RNSketchCanvas", "isRect: " + Boolean.toString(isRect));
+            Log.d("RNSketchCanvas", "op: " + Boolean.toString(op));
+            return op;
+            //return tPath.isRect(new RectF());
+            //return tPath.isEmpty();
+        }
+        return false;
+    }
+    */
 }
