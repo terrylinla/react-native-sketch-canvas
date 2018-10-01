@@ -36,6 +36,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_DELETE_PATH = 5;
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
+    public static final int COMMAND_DID_TOUCH_PATH = 8;
 
     public static SketchCanvas Canvas = null;
 
@@ -80,6 +81,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("deletePath", COMMAND_DELETE_PATH);
         map.put("save", COMMAND_SAVE);
         map.put("endPath", COMMAND_END_PATH);
+        map.put("didTouchPath", COMMAND_DID_TOUCH_PATH);
 
         return map;
     }
@@ -124,6 +126,10 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
             }
             case COMMAND_END_PATH: {
                 view.end();
+                return;
+            }
+            case COMMAND_DID_TOUCH_PATH: {
+                view.didTouchPath(args.getString(0), args.getInt(1), args.getInt(2));
                 return;
             }
             default:
