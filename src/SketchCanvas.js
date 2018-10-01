@@ -227,8 +227,6 @@ class SketchCanvas extends React.Component {
         delete e.changedTouches;
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY };
 
-        console.log({ nativeEvent: e, gestureState })
-
         UIManager.dispatchViewManagerCommand(
             this._handle,
             UIManager.RNSketchCanvas.Commands.didTouchPath,
