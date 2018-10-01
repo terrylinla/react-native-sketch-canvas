@@ -9,46 +9,55 @@ import android.graphics.PorterDuff;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.terrylinla.utils.CircleLayer;
 import com.terrylinla.utils.MotionEntity;
 
 public class CircleEntity extends MotionEntity {
-    private final Paint mCirclePaint;
+    private Paint mCirclePaint;
     private float mCircleRadius;
+    private float mBordersPadding;
+    private float mStrokeWidth;
+    private int mStrokeColor;
 
     private Bitmap mCircleBitmap;
     private Canvas mCircleCanvas;
 
     public CircleEntity(@NonNull CircleLayer layer,
                         @IntRange(from = 1) int canvasWidth,
-                        @IntRange(from = 1) int canvasHeight, int circleRadius) {
+                        @IntRange(from = 1) int canvasHeight, int circleRadius, @Nullable Float bordersPadding, @Nullable Float strokeWidth, @Nullable Integer strokeColor) {
         super(layer, canvasWidth, canvasHeight);
 
-        this.mCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        this.mCirclePaint.setFilterBitmap(true);
-        this.mCirclePaint.setDither(true);
-        this.mCirclePaint.setStyle(Paint.Style.STROKE);
-        this.mCirclePaint.setStrokeWidth(3);
         this.mCircleRadius = circleRadius;
+        this.mStrokeWidth = 5;
+        this.mBordersPadding = 10;
+        this.mStrokeColor = Color.BLACK;
+
+        if (bordersPadding != null) {
+            this.mBordersPadding = bordersPadding;
+        }
+        if (strokeWidth != null) {
+            this.mStrokeWidth = strokeWidth;
+        }
+        if (strokeColor != null) {
+            this.mStrokeColor = strokeColor;
+        }
 
         updateEntity(false);
     }
 
     private void updateEntity(boolean moveToPreviousCenter) {
+        configureCircleBitmap(null);
 
-        PointF oldCenter = absoluteCenter();
+        float width = this.mCircleBitmap.getWidth();
+        float height = this.mCircleBitmap.getHeight();
 
-        createCircleBitmap();
-
-        float width = mCircleBitmap.getWidth();
-        float height = mCircleBitmap.getHeight();
-
-        float widthAspect = 1.0F * canvasWidth / mCircleBitmap.getWidth();
-        float heightAspect = 1.0F * canvasHeight / mCircleBitmap.getHeight();
+        float widthAspect = 1.0F * canvasWidth / this.mCircleBitmap.getWidth();
+        float heightAspect = 1.0F * canvasHeight / this.mCircleBitmap.getHeight();
 
         // fit the smallest size
-        this.holyScale = Math.min(widthAspect, heightAspect);
+        holyScale = Math.min(widthAspect, heightAspect);
 
         // initial position of the entity
         srcPoints[0] = 0;
@@ -63,31 +72,46 @@ public class CircleEntity extends MotionEntity {
         srcPoints[8] = 0;
 
         if (moveToPreviousCenter) {
-            // move to previous center
-            moveCenterTo(oldCenter);
+            moveCenterTo(absoluteCenter());
         }
     }
 
-    private void createCircleBitmap() {
-        if (mCircleBitmap == null) {
-            mCircleBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-            mCircleCanvas = new Canvas(mCircleBitmap);
+    private void configureCircleBitmap(@Nullable Paint paint) {
+        updatePaint(paint);
+        if (this.mCircleBitmap == null) {
+            this.mCircleBitmap = Bitmap.createBitmap(getWidth()+(int)this.mBordersPadding, getHeight()+(int)this.mBordersPadding, Bitmap.Config.ARGB_8888);
+            this.mCircleCanvas = new Canvas(this.mCircleBitmap);
         }
-        mCirclePaint.setStrokeWidth(3 / getLayer().getScale());
-        mCircleCanvas.save();
-        mCircleCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        mCircleCanvas.drawCircle(getLayer().getX() + mCircleRadius, getLayer().getY() + mCircleRadius, mCircleRadius, mCirclePaint);
-        mCircleCanvas.restore();
+        this.mCircleCanvas.save();
+        this.mCircleCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        this.mCircleCanvas.drawCircle(getLayer().getX() + this.mCircleRadius+this.mBordersPadding/2, getLayer().getY() + this.mCircleRadius+this.mBordersPadding/2, this.mCircleRadius-this.mBordersPadding, this.mCirclePaint);
+        this.mCircleCanvas.restore();
+    }
+
+    private void updatePaint(@Nullable Paint paint) {
+        if (paint != null && isSelected()) {
+            this.mStrokeColor = paint.getColor();
+            this.mStrokeWidth = paint.getStrokeWidth();
+        }
+        
+        this.mCirclePaint = new Paint();
+        this.mCirclePaint.setColor(this.mStrokeColor);
+        this.mCirclePaint.setStrokeWidth(this.mStrokeWidth / getLayer().getScale());
+
+        // TODO: Circle Border gets pixelated because it's just done once (initially)!
+        this.mCirclePaint.setAntiAlias(true);
+
+        // When scaling the CircleShape the border gets pixelated, this helps a bit against it.
+        // TODO: FIX THIS by somehow scaling the shape as well and not just the bitmap...
+        this.mCirclePaint.setFilterBitmap(true);
+        this.mCirclePaint.setDither(true);
+        this.mCirclePaint.setStyle(Paint.Style.STROKE);
     }
 
     @Override
     protected void drawContent(@NonNull Canvas canvas, @Nullable Paint drawingPaint) {
-        createCircleBitmap();
-        if (drawingPaint != null) {
-            canvas.drawBitmap(mCircleBitmap, matrix, drawingPaint);
-        } else {
-            canvas.drawBitmap(mCircleBitmap, matrix, mCirclePaint);
-        }
+        configureCircleBitmap(drawingPaint);
+        canvas.drawBitmap(this.mCircleBitmap, matrix, this.mCirclePaint);
     }
 
     @Override
@@ -98,12 +122,12 @@ public class CircleEntity extends MotionEntity {
 
     @Override
     public int getWidth() {
-        return (int) mCircleRadius * 2;
+        return (int) this.mCircleRadius * 2;
     }
 
     @Override
     public int getHeight() {
-        return (int) mCircleRadius * 2;
+        return (int) this.mCircleRadius * 2;
     }
 
     public void updateEntity() {
@@ -112,8 +136,8 @@ public class CircleEntity extends MotionEntity {
 
     @Override
     public void release() {
-        if (mCircleBitmap != null && !mCircleBitmap.isRecycled()) {
-            mCircleBitmap.recycle();
+        if (this.mCircleBitmap != null && !this.mCircleBitmap.isRecycled()) {
+            this.mCircleBitmap.recycle();
         }
     }
 

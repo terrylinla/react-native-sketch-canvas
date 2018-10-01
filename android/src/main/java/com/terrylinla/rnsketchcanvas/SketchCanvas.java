@@ -82,8 +82,10 @@ public class SketchCanvas extends View {
     private String mBitmapContentMode;
 
     // General
-    private Canvas mSketchCanvas = null;
+    private float mStrokeWidth = 5;
+    private int mStrokeColor = Color.BLACK;
     private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Canvas mSketchCanvas = null;
     private ThemedReactContext mContext;
     private boolean mDisableHardwareAccelerated = false;
     private boolean mNeedsFullRedraw = true;
@@ -224,6 +226,8 @@ public class SketchCanvas extends View {
 
     public void newPath(int id, int strokeColor, float strokeWidth) {
         mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
+        mStrokeColor = strokeColor;
+        mStrokeWidth = Utility.convertPxToDpAsFloat(mContext.getResources().getDisplayMetrics(), strokeWidth);
         mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
         if (isErase && mDisableHardwareAccelerated == false) {
@@ -247,6 +251,8 @@ public class SketchCanvas extends View {
     }
 
     public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+        mStrokeColor = strokeColor;
+
         boolean exist = false;
         for(SketchData data: mPaths) {
             if (data.id == id) {
@@ -320,7 +326,7 @@ public class SketchCanvas extends View {
                             "topChange",
                             event);
                 }
-            }, 150);
+            }, 250);
         } else {
             mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                     getId(),
@@ -499,7 +505,7 @@ public class SketchCanvas extends View {
 
     protected void addCircleShape() {
         CircleLayer shapeLayer = createCircleLayer();
-        CircleEntity circleEntity = new CircleEntity(shapeLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300);
+        CircleEntity circleEntity = new CircleEntity(shapeLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, Utility.convertDpToPxAsFloat(mContext.getResources().getDisplayMetrics(), mStrokeWidth), mStrokeColor);
         addEntityAndPosition(circleEntity);
 
         PointF center = circleEntity.absoluteCenter();
@@ -558,20 +564,22 @@ public class SketchCanvas extends View {
         }
     }
 
-    private void initEntityBorder(MotionEntity entity ) {
-        // init stroke
+    private void initEntityBorder(MotionEntity entity) {
         int strokeSize = Utility.convertDpToPx(mContext.getResources().getDisplayMetrics(), 3);
         Paint borderPaint = new Paint();
         borderPaint.setStrokeWidth(strokeSize);
         borderPaint.setAntiAlias(true);
         borderPaint.setColor(Color.BLACK);
-
         entity.setBorderPaint(borderPaint);
     }
 
     private void drawAllEntities(Canvas canvas) {
+        Paint paint = new Paint();
+        paint.setColor(mStrokeColor);
+        paint.setStrokeWidth(mStrokeWidth);
+
         for (int i = 0; i < mEntities.size(); i++) {
-            mEntities.get(i).draw(canvas, null);
+            mEntities.get(i).draw(canvas, paint);
         }
     }
 
@@ -692,8 +700,9 @@ public class SketchCanvas extends View {
         public boolean onDoubleTap(MotionEvent e) {
             if (mSelectedEntity != null) {
                 // Double tap happened
+                return true;
             }
-            return true;
+            return false;
         }
 
         @Override
@@ -718,8 +727,9 @@ public class SketchCanvas extends View {
                 float scaleFactorDiff = detector.getScaleFactor();
                 mSelectedEntity.getLayer().postScale(scaleFactorDiff - 1.0F);
                 updateUI();
+                return true;
             }
-            return true;
+            return false;
         }
     }
 
@@ -729,16 +739,20 @@ public class SketchCanvas extends View {
             if (mSelectedEntity != null) {
                 mSelectedEntity.getLayer().postRotate(-detector.getRotationDegreesDelta());
                 updateUI();
+                return true;
             }
-            return true;
+            return false;
         }
     }
 
     private class MoveListener extends MoveGestureDetector.SimpleOnMoveGestureListener {
         @Override
         public boolean onMove(MoveGestureDetector detector) {
-            handleTranslate(detector.getFocusDelta());
-            return true;
+            if (mSelectedEntity != null) {
+                handleTranslate(detector.getFocusDelta());
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -69,7 +69,7 @@ public abstract class MotionEntity {
         this.canvasHeight = canvasHeight;
     }
 
-    private boolean isSelected() {
+    public boolean isSelected() {
         return isSelected;
     }
 
