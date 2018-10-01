@@ -185,7 +185,8 @@ class SketchCanvas extends React.Component {
           UIManager.RNSketchCanvas.Commands.addPoint,
           [
             parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
+            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale),
+            false
           ]
         )
         const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)), y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
@@ -195,10 +196,13 @@ class SketchCanvas extends React.Component {
       onPanResponderMove: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
         if (this._path) {
-          UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+          UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint,
+          [
             parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
-          ])
+            parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale),
+            true
+          ]
+        )
           const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)), y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
           this._path.data.push(`${x},${y}`)
           this.props.onStrokeChanged(x, y)

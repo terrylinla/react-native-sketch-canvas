@@ -237,8 +237,8 @@ public class SketchCanvas extends View {
         invalidateCanvas(true);
     }
 
-    public void addPoint(float x, float y) {
-        if (mSelectedEntity == null && findEntityAtPoint(x, y) == null) {
+    public void addPoint(float x, float y, boolean isMove) {
+        if (mSelectedEntity == null && (findEntityAtPoint(x, y) == null || isMove)) {
             Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
             if (mCurrentPath.isTranslucent) {
                 mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
@@ -686,12 +686,14 @@ public class SketchCanvas extends View {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if (mScaleGestureDetector != null) {
+                mGestureDetectorCompat.onTouchEvent(event);
                 mScaleGestureDetector.onTouchEvent(event);
                 mRotateGestureDetector.onTouchEvent(event);
                 mMoveGestureDetector.onTouchEvent(event);
-                mGestureDetectorCompat.onTouchEvent(event);
+                return true;
+            } else {
+              return false;
             }
-            return true;
         }
     };
 
