@@ -223,18 +223,21 @@ class SketchCanvas extends React.Component {
 
     didTouchPath(evt, gestureState) {
         const e = evt.nativeEvent;
+        delete e.touches;
+        delete e.changedTouches;
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY };
+
+        console.log({ nativeEvent: e, gestureState })
 
         UIManager.dispatchViewManagerCommand(
             this._handle,
             UIManager.RNSketchCanvas.Commands.didTouchPath,
             [
-                e.timestamp.toString(),
+                JSON.stringify({ nativeEvent: e, gestureState }),
                 Math.round(parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale)),
                 Math.round(parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale))
             ]
         );
-
     }
 
   async componentDidMount() {
@@ -265,7 +268,10 @@ class SketchCanvas extends React.Component {
           } else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
           } else if (e.nativeEvent.hasOwnProperty('didTouchPath')) {
-              if (e.nativeEvent.didTouchPath) this.props.onPathPress(e.nativeEvent);
+              if (e.nativeEvent.didTouchPath) {
+                  e.nativeEvent.eventContext = JSON.parse(e.nativeEvent.eventContext);
+                  this.props.onPathPress(e.nativeEvent);
+              }
           }
         }}
         localSourceImage={this.props.localSourceImage}

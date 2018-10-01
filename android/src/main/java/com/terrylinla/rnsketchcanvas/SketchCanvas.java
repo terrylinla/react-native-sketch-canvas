@@ -419,14 +419,16 @@ public class SketchCanvas extends View {
         return bitmap;
     }
 
-    public void didTouchPath(String eventId, int x, int y) {
-        WritableMap event = Arguments.createMap();
-
+    public boolean pathHitTest(int x, int y) {
         int color = mDrawingBitmap.getPixel(x, y);
         boolean didTouch = color != 0;
+        return didTouch;
+    }
 
-        event.putBoolean("didTouchPath", didTouch);
-        event.putString("eventId", eventId);
+    public void didTouchPath(String eventContext, int x, int y) {
+        WritableMap event = Arguments.createMap();
+        event.putBoolean("didTouchPath", pathHitTest(x, y));
+        event.putString("eventContext", eventContext);
 
         mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                 getId(),
