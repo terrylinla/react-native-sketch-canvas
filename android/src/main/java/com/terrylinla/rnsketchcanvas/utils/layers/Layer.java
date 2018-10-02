@@ -1,4 +1,4 @@
-package com.terrylinla.utils;
+package com.terrylinla.rnsketchcanvas.utils.layers;
 
 import android.support.annotation.FloatRange;
 

@@ -1,4 +1,4 @@
-package com.terrylinla.utils;
+package com.terrylinla.rnsketchcanvas.utils.layers;
 
 public class TextLayer extends Layer {
 

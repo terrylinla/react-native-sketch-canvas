@@ -1,4 +1,4 @@
-package com.terrylinla.rnsketchcanvas;
+package com.terrylinla.rnsketchcanvas.utils;
 
 import android.util.Log;
 import android.util.DisplayMetrics;

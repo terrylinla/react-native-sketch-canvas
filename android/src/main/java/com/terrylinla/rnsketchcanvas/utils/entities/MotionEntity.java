@@ -1,4 +1,4 @@
-package com.terrylinla.utils;
+package com.terrylinla.rnsketchcanvas.utils.entities;
 
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -8,6 +8,8 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.terrylinla.rnsketchcanvas.utils.Utility;
+import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
 
 @SuppressWarnings({"WeakerAccess"})
 public abstract class MotionEntity {
@@ -186,7 +188,7 @@ public abstract class MotionEntity {
         pD.x = destPoints[6];
         pD.y = destPoints[7];
 
-        return MathUtils.pointInTriangle(point, pA, pB, pC) || MathUtils.pointInTriangle(point, pA, pD, pC);
+        return Utility.pointInTriangle(point, pA, pB, pC) || Utility.pointInTriangle(point, pA, pD, pC);
     }
 
     /**

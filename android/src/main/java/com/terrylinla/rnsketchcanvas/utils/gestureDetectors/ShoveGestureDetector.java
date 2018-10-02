@@ -1,4 +1,4 @@
-package com.terrylinla.utils.gestureDetectors;
+package com.terrylinla.rnsketchcanvas.utils.gestureDetectors;
 
 import android.content.Context;
 import android.view.MotionEvent;

@@ -32,14 +32,15 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.terrylinla.utils.CircleLayer;
-import com.terrylinla.utils.Layer;
-import com.terrylinla.utils.MotionEntity;
-import com.terrylinla.utils.TextEntity;
-import com.terrylinla.utils.TextLayer;
-import com.terrylinla.utils.gestureDetectors.MoveGestureDetector;
-import com.terrylinla.utils.gestureDetectors.RotateGestureDetector;
-import com.terrylinla.utils.shapes.CircleEntity;
+import com.terrylinla.rnsketchcanvas.utils.Utility;
+import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
+import com.terrylinla.rnsketchcanvas.utils.layers.CircleLayer;
+import com.terrylinla.rnsketchcanvas.utils.layers.TextLayer;
+import com.terrylinla.rnsketchcanvas.utils.entities.MotionEntity;
+import com.terrylinla.rnsketchcanvas.utils.entities.TextEntity;
+import com.terrylinla.rnsketchcanvas.utils.entities.CircleEntity;
+import com.terrylinla.rnsketchcanvas.utils.gestureDetectors.MoveGestureDetector;
+import com.terrylinla.rnsketchcanvas.utils.gestureDetectors.RotateGestureDetector;
 
 class CanvasText {
     public String text;

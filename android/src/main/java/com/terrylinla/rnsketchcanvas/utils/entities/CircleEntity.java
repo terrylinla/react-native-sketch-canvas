@@ -1,4 +1,4 @@
-package com.terrylinla.utils.shapes;
+package com.terrylinla.rnsketchcanvas.utils.entities;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -11,8 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.terrylinla.utils.CircleLayer;
-import com.terrylinla.utils.MotionEntity;
+import com.terrylinla.rnsketchcanvas.utils.layers.CircleLayer;
 
 public class CircleEntity extends MotionEntity {
     private Paint mCirclePaint;
