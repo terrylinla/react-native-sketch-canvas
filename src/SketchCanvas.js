@@ -195,6 +195,7 @@ class SketchCanvas extends React.Component {
       },
       onPanResponderMove: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
+        if (Math.abs(gestureState.dx) < 2.5 || Math.abs(gestureState.dy) < 2.5) return
         if (this._path) {
           UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint,
           [
