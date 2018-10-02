@@ -266,10 +266,8 @@ class SketchCanvas extends React.Component {
           } else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
           } else if (e.nativeEvent.hasOwnProperty('didTouchPath')) {
-              if (e.nativeEvent.didTouchPath) {
-                  e.nativeEvent.eventContext = JSON.parse(e.nativeEvent.eventContext);
-                  this.props.onPathPress(e.nativeEvent);
-              }
+              e.nativeEvent.eventContext = JSON.parse(e.nativeEvent.eventContext);
+              this.props.onPathPress(e.nativeEvent);
           }
         }}
         localSourceImage={this.props.localSourceImage}
