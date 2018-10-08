@@ -420,9 +420,16 @@ public class SketchCanvas extends View {
     }
 
     public boolean pathHitTest(int x, int y) {
-        int color = mDrawingBitmap.getPixel(x, y);
-        boolean didTouch = color != 0;
-        return didTouch;
+        //if(mDrawingBitmap.getWidth() < x || mDrawingBitmap.getHeight() < y) return false;
+        try {
+            int color = mDrawingBitmap.getPixel(x, y);
+            boolean didTouch = color != 0;
+            return didTouch;
+        }
+        catch (Exception e){
+            Log.d("RNSketchCanvas", "pathHitTest error: " + e.toString());
+            return false;
+        }
     }
 
     public void didTouchPath(String eventContext, int x, int y) {
