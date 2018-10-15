@@ -64,11 +64,12 @@ public class SketchCanvas extends View {
     private MoveGestureDetector mMoveGestureDetector;
     private GestureDetectorCompat mGestureDetectorCompat;
 
-    // TODO: Shapes: Just TextEntity works atm, working on shapes now!
+    // TODO: Shapes: CircleEntity and TextEntity are working
     private final ArrayList<MotionEntity> mEntities = new ArrayList<MotionEntity>();
     private MotionEntity mSelectedEntity;
+    private int mEntityBorderColor = Color.TRANSPARENT;
 
-    // TODO: Text: can be changed to TextEntity to make it scalable, movable and
+    // TODO maybe: Text: can be changed to TextEntity to make it scalable, movable and
     // rotatable :).
     // We could even add DoubleTap to edit text :D
     private ArrayList<CanvasText> mArrCanvasText = new ArrayList<CanvasText>();
@@ -217,6 +218,10 @@ public class SketchCanvas extends View {
         }
 
         invalidateCanvas(false);
+    }
+
+    public void setShapeBorderColor(int shapeBorderColor) {
+        mEntityBorderColor = shapeBorderColor;
     }
 
     public void clear() {
@@ -577,7 +582,7 @@ public class SketchCanvas extends View {
         Paint borderPaint = new Paint();
         borderPaint.setStrokeWidth(strokeSize);
         borderPaint.setAntiAlias(true);
-        borderPaint.setColor(Color.BLACK);
+        borderPaint.setColor(mEntityBorderColor);
         entity.setBorderPaint(borderPaint);
     }
 

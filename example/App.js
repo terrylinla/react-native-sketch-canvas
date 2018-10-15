@@ -155,6 +155,7 @@ export default class example extends Component {
               onShapeSelectionChanged={(isShapeSelected) => {
                 this.setState({ touchEnabled: !isShapeSelected })
               }}
+              shapeBorderColor={{ shapeBorderColor: 'transparent' }}
             />
           </View>
         }
@@ -442,19 +443,19 @@ export default class example extends Component {
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
               onStrokeEnd={data => {
               }}
-              closeComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Close</Text></View>}
+              closeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View>}
               onClosePressed={() => {
                 this.setState({ example: 0 })
               }}
-              undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
+              undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
               onUndoPressed={(id) => {
                 // Alert.alert('do something')
               }}
-              clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
+              clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
               onClearPressed={() => {
                 // Alert.alert('do something')
               }}
-              eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
+              eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
               )}
@@ -465,15 +466,16 @@ export default class example extends Component {
               }}
               strokeWidthComponent={(w) => {
                 return (<View style={styles.strokeWidthButton}>
-                  <View  style={{
-                  backgroundColor: 'white', marginHorizontal: 2.5,
-                  width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
+                  <View style={{
+                    backgroundColor: 'white', marginHorizontal: 2.5,
+                    width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
                   }} />
                 </View>
-              )}}
+                )
+              }}
               defaultStrokeIndex={0}
               defaultStrokeWidth={5}
-              saveComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Save</Text></View>}
+              saveComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Save</Text></View>}
               savePreference={() => {
                 return {
                   folder: 'RNSketchCanvas',
@@ -508,19 +510,19 @@ export default class example extends Component {
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
               onStrokeEnd={data => {
               }}
-              closeComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Close</Text></View>}
+              closeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View>}
               onClosePressed={() => {
                 this.setState({ example: 0 })
               }}
-              undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
+              undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
               onUndoPressed={(id) => {
                 // Alert.alert('do something')
               }}
-              clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
+              clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
               onClearPressed={() => {
                 // Alert.alert('do something')
               }}
-              eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
+              eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
               )}
@@ -531,15 +533,16 @@ export default class example extends Component {
               }}
               strokeWidthComponent={(w) => {
                 return (<View style={styles.strokeWidthButton}>
-                  <View  style={{
-                  backgroundColor: 'white', marginHorizontal: 2.5,
-                  width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
+                  <View style={{
+                    backgroundColor: 'white', marginHorizontal: 2.5,
+                    width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
                   }} />
                 </View>
-              )}}
+                )
+              }}
               defaultStrokeIndex={0}
               defaultStrokeWidth={5}
-              saveComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Save</Text></View>}
+              saveComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Save</Text></View>}
               savePreference={() => {
                 return {
                   folder: 'RNSketchCanvas',

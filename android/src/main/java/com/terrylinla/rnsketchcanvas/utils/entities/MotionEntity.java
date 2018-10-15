@@ -1,12 +1,14 @@
 package com.terrylinla.rnsketchcanvas.utils.entities;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.terrylinla.rnsketchcanvas.utils.Utility;
 import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
@@ -205,7 +207,10 @@ public abstract class MotionEntity {
 
         drawContent(canvas, drawingPaint);
 
-        if (isSelected()) {
+        boolean isTransparentColor = borderPaint.getColor() == Color.TRANSPARENT;
+
+        Log.e("MOTION ENTITY", "Is transparent color: " + isTransparentColor);
+        if (isSelected() && borderPaint.getColor() != Color.TRANSPARENT) {
             // get alpha from drawingPaint
             int storedAlpha = borderPaint.getAlpha();
             if (drawingPaint != null) {
