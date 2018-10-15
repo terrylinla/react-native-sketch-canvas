@@ -1,16 +1,22 @@
 package com.terrylinla.rnsketchcanvas.utils.layers;
 
+import com.facebook.react.uimanager.ThemedReactContext;
+
 public class TextLayer extends Layer {
 
     private String mText;
+    private Font mFont;
+    private ThemedReactContext mContext;
 
-    public TextLayer() {
+    public TextLayer(ThemedReactContext context) {
+        mContext = context;
     }
 
     @Override
     protected void reset() {
         super.reset();
         this.mText = "";
+        this.mFont = new Font(mContext, null);
     }
 
     @Override
@@ -34,6 +40,14 @@ public class TextLayer extends Layer {
 
     public void setText(String text) {
         this.mText = text;
+    }
+
+    public Font getFont() {
+        return mFont;
+    }
+
+    public void setFont(Font font) {
+        this.mFont = font;
     }
 
     public interface Limits {

@@ -31,11 +31,7 @@ public class TextEntity extends MotionEntity {
     }
 
     private void updateEntity(boolean moveToPreviousCenter) {
-
-        // save previous center
-        PointF oldCenter = absoluteCenter();
-
-        Bitmap newBmp = createBitmap(getLayer(), bitmap);
+        Bitmap newBmp = configureTextBitmap(null, bitmap);
 
         // recycle previous bitmap (if not reused) as soon as possible
         if (bitmap != null && bitmap != newBmp && !bitmap.isRecycled()) {
@@ -66,31 +62,27 @@ public class TextEntity extends MotionEntity {
         srcPoints[8] = 0;
 
         if (moveToPreviousCenter) {
-            // move to previous center
-            moveCenterTo(oldCenter);
+            moveCenterTo(absoluteCenter());
         }
     }
 
-    /**
-     * If reuseBmp is not null, and size of the new bitmap matches the size of the reuseBmp,
-     * new bitmap won't be created, reuseBmp it will be reused instead
-     *
-     * @param textLayer text to draw
-     * @param reuseBmp  the bitmap that will be reused
-     * @return bitmap with the text
-     */
-    @NonNull
-    private Bitmap createBitmap(@NonNull TextLayer textLayer, @Nullable Bitmap reuseBmp) {
+    private Bitmap configureTextBitmap(@Nullable Paint paint, @Nullable Bitmap reuseBmp) {
+        updatePaint(paint);
 
-        int boundsWidth = canvasWidth;
+        // substracting 25% of the width so the border around the entity is closer to the text
+        int boundsWidth = (canvasWidth / 100) * 75;
 
         // init params - size, color, typeface
+        TextLayer layer = getLayer();
         textPaint.setStyle(Paint.Style.FILL);
+        textPaint.setTextSize(layer.getFont().getSize() * canvasWidth);
+        textPaint.setColor(layer.getFont().getColor());
+        textPaint.setTypeface(layer.getFont().getTypeface());
 
         // drawing text guide : http://ivankocijan.xyz/android-drawing-multiline-text-on-canvas/
         // Static layout which will be drawn on canvas
         StaticLayout sl = new StaticLayout(
-                textLayer.getText(), // - text which will be drawn
+                layer.getText(), // - text which will be drawn
                 textPaint,
                 boundsWidth, // - width of the layout
                 Layout.Alignment.ALIGN_CENTER, // - layout alignment
@@ -134,17 +126,26 @@ public class TextEntity extends MotionEntity {
         return bmp;
     }
 
-    @Override
-    @NonNull
-    public TextLayer getLayer() {
-        return (TextLayer) layer;
+    private void updatePaint(@Nullable Paint paint) {
+        if (paint != null && isSelected()) {
+            int color = paint.getColor();
+            getLayer().getFont().setColor(color);
+            textPaint.setColor(color);
+        }
     }
 
     @Override
     protected void drawContent(@NonNull Canvas canvas, @Nullable Paint drawingPaint) {
+        bitmap = configureTextBitmap(drawingPaint, bitmap);
         if (bitmap != null) {
             canvas.drawBitmap(bitmap, matrix, drawingPaint);
         }
+    }
+
+    @Override
+    @NonNull
+    public TextLayer getLayer() {
+        return (TextLayer) layer;
     }
 
     @Override

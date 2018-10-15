@@ -34,6 +34,7 @@ import java.util.TimerTask;
 
 import com.terrylinla.rnsketchcanvas.utils.Utility;
 import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
+import com.terrylinla.rnsketchcanvas.utils.layers.Font;
 import com.terrylinla.rnsketchcanvas.utils.layers.CircleLayer;
 import com.terrylinla.rnsketchcanvas.utils.layers.TextLayer;
 import com.terrylinla.rnsketchcanvas.utils.entities.MotionEntity;
@@ -73,6 +74,7 @@ public class SketchCanvas extends View {
     private ArrayList<CanvasText> mArrCanvasText = new ArrayList<CanvasText>();
     private ArrayList<CanvasText> mArrTextOnSketch = new ArrayList<CanvasText>();
     private ArrayList<CanvasText> mArrSketchOnText = new ArrayList<CanvasText>();
+    private Typeface mTypeface;
 
     // Bitmap
     // TODO: We could add ImageEntities to add image stickers besides the bg-image
@@ -148,13 +150,12 @@ public class SketchCanvas extends View {
                         p.setTextAlign(Paint.Align.LEFT);
                         text.text = line;
                         if (property.hasKey("font")) {
-                            Typeface font;
                             try {
-                                font = Typeface.createFromAsset(mContext.getAssets(), property.getString("font"));
+                                mTypeface = Typeface.createFromAsset(mContext.getAssets(), property.getString("font"));
                             } catch(Exception ex) {
-                                font = Typeface.create(property.getString("font"), Typeface.NORMAL);
+                                mTypeface = Typeface.create(property.getString("font"), Typeface.NORMAL);
                             }
-                            p.setTypeface(font);
+                            p.setTypeface(mTypeface);
                         }
                         p.setTextSize(property.hasKey("fontSize") ? (float)property.getDouble("fontSize") : 12);
                         p.setColor(property.hasKey("fontColor") ? property.getInt("fontColor") : 0xFF000000);
@@ -444,7 +445,6 @@ public class SketchCanvas extends View {
 
         if (mEntities.isEmpty()) {
             addTextSticker();
-            addTextSticker();
             addCircleShape();
         } else {
             drawAllEntities(mSketchCanvas);
@@ -535,7 +535,14 @@ public class SketchCanvas extends View {
     }
 
     private TextLayer createTextLayer() {
-        TextLayer textLayer = new TextLayer();
+        TextLayer textLayer = new TextLayer(mContext);
+        Font font = new Font(mContext, null);
+        font.setColor(mStrokeColor);
+        font.setSize(TextLayer.Limits.INITIAL_FONT_SIZE);
+        if (mTypeface != null) {
+            font.setTypeface(mTypeface);
+        }
+        textLayer.setFont(font);
         return textLayer;
     }
 
