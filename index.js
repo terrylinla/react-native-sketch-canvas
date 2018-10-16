@@ -43,7 +43,7 @@ export default class RNSketchCanvas extends React.Component {
     savePreference: PropTypes.func,
     onSketchSaved: PropTypes.func,
     onShapeSelectionChanged: PropTypes.func,
-    shapeBorderColor: PropTypes.shape({ shapeBorderColor: PropTypes.string }),
+    shapeConfiguration: PropTypes.shape({ shapeBorderColor: PropTypes.string, shapeColor: PropTypes.string, shapeStrokeWidth: PropTypes.number }),
 
     text: PropTypes.arrayOf(PropTypes.shape({
       text: PropTypes.string,
@@ -114,7 +114,7 @@ export default class RNSketchCanvas extends React.Component {
     savePreference: null,
     onSketchSaved: () => { },
     onShapeSelectionChanged: () => { },
-    shapeBorderColor: { shapeBorderColor: 'transparent' },
+    shapeConfiguration: { shapeBorderColor: 'transparent', shapeColor: '#000000', shapeStrokeWidth: 3 },
 
     text: null,
     localSourceImage: null,
@@ -252,7 +252,7 @@ export default class RNSketchCanvas extends React.Component {
           ref={ref => this._sketchCanvas = ref}
           style={this.props.canvasStyle}
           strokeColor={this.state.color + (this.state.color.length === 9 ? '' : this.state.alpha)}
-          shapeBorderColor={this.props.shapeBorderColor}
+          shapeConfiguration={this.props.shapeConfiguration}
           onStrokeStart={this.props.onStrokeStart}
           onStrokeChanged={this.props.onStrokeChanged}
           onStrokeEnd={this.props.onStrokeEnd}

@@ -68,6 +68,8 @@ public class SketchCanvas extends View {
     private final ArrayList<MotionEntity> mEntities = new ArrayList<MotionEntity>();
     private MotionEntity mSelectedEntity;
     private int mEntityBorderColor = Color.TRANSPARENT;
+    private float mEntityStrokeWidth = 5;
+    private int mEntityStrokeColor = Color.BLACK;
 
     // TODO maybe: Text: can be changed to TextEntity to make it scalable, movable and
     // rotatable :).
@@ -86,8 +88,6 @@ public class SketchCanvas extends View {
     private String mBitmapContentMode;
 
     // General
-    private float mStrokeWidth = 5;
-    private int mStrokeColor = Color.BLACK;
     private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Canvas mSketchCanvas = null;
     private ThemedReactContext mContext;
@@ -220,8 +220,16 @@ public class SketchCanvas extends View {
         invalidateCanvas(false);
     }
 
-    public void setShapeBorderColor(int shapeBorderColor) {
-        mEntityBorderColor = shapeBorderColor;
+    public void setShapeConfiguration(ReadableMap shapeConfiguration) {
+        if (shapeConfiguration.hasKey("shapeBorderColor")) {
+            mEntityBorderColor = shapeConfiguration.getInt("shapeBorderColor");
+        }
+        if (shapeConfiguration.hasKey("shapeColor")) {
+            mEntityStrokeColor = shapeConfiguration.getInt("shapeColor");
+        }
+        if (shapeConfiguration.hasKey("shapeStrokeWidth")) {
+            mEntityStrokeWidth = shapeConfiguration.getInt("shapeStrokeWidth");
+        }
     }
 
     public void clear() {
@@ -233,8 +241,8 @@ public class SketchCanvas extends View {
 
     public void newPath(int id, int strokeColor, float strokeWidth) {
         mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
-        mStrokeColor = strokeColor;
-        mStrokeWidth = Utility.convertPxToDpAsFloat(mContext.getResources().getDisplayMetrics(), strokeWidth);
+        mEntityStrokeColor = strokeColor;
+        mEntityStrokeWidth = Utility.convertPxToDpAsFloat(mContext.getResources().getDisplayMetrics(), strokeWidth);
         mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
         if (isErase && mDisableHardwareAccelerated == false) {
@@ -258,7 +266,7 @@ public class SketchCanvas extends View {
     }
 
     public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
-        mStrokeColor = strokeColor;
+        mEntityStrokeColor = strokeColor;
 
         boolean exist = false;
         for(SketchData data: mPaths) {
@@ -511,7 +519,7 @@ public class SketchCanvas extends View {
 
     protected void addCircleShape() {
         CircleLayer shapeLayer = createCircleLayer();
-        CircleEntity circleEntity = new CircleEntity(shapeLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, Utility.convertDpToPxAsFloat(mContext.getResources().getDisplayMetrics(), mStrokeWidth), mStrokeColor);
+        CircleEntity circleEntity = new CircleEntity(shapeLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, Utility.convertDpToPxAsFloat(mContext.getResources().getDisplayMetrics(), mEntityStrokeWidth), mEntityStrokeColor);
         addEntityAndPosition(circleEntity);
 
         PointF center = circleEntity.absoluteCenter();
@@ -542,7 +550,7 @@ public class SketchCanvas extends View {
     private TextLayer createTextLayer() {
         TextLayer textLayer = new TextLayer(mContext);
         Font font = new Font(mContext, null);
-        font.setColor(mStrokeColor);
+        font.setColor(mEntityStrokeColor);
         font.setSize(TextLayer.Limits.INITIAL_FONT_SIZE);
         if (mTypeface != null) {
             font.setTypeface(mTypeface);
@@ -588,8 +596,8 @@ public class SketchCanvas extends View {
 
     private void drawAllEntities(Canvas canvas) {
         Paint paint = new Paint();
-        paint.setColor(mStrokeColor);
-        paint.setStrokeWidth(mStrokeWidth);
+        paint.setColor(mEntityStrokeColor);
+        paint.setStrokeWidth(mEntityStrokeWidth);
 
         for (int i = 0; i < mEntities.size(); i++) {
             mEntities.get(i).draw(canvas, paint);

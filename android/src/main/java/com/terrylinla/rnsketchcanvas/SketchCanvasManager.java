@@ -41,7 +41,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     private static final String PROPS_LOCAL_SOURCE_IMAGE = "localSourceImage";
     private static final String PROPS_TEXT = "text";
-    private static final String PROPS_SHAPE_BORDER_COLOR = "shapeBorderColor";
+    private static final String PROPS_SHAPE_CONFIGURATION = "shapeConfiguration";
 
     @Override
     public String getName() {
@@ -54,10 +54,10 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         return SketchCanvasManager.Canvas;
     }
 
-    @ReactProp(name = PROPS_SHAPE_BORDER_COLOR)
-    public void setShapeBorderColor(SketchCanvas viewContainer, ReadableMap shapeBorderColor) {
-        if (shapeBorderColor != null) {
-            viewContainer.setShapeBorderColor(shapeBorderColor.getInt("shapeBorderColor"));
+    @ReactProp(name = PROPS_SHAPE_CONFIGURATION)
+    public void setShapeConfiguration(SketchCanvas viewContainer, ReadableMap shapeConfiguration) {
+        if (shapeConfiguration != null) {
+            viewContainer.setShapeConfiguration(shapeConfiguration);
         }
     }
 

@@ -207,9 +207,6 @@ public abstract class MotionEntity {
 
         drawContent(canvas, drawingPaint);
 
-        boolean isTransparentColor = borderPaint.getColor() == Color.TRANSPARENT;
-
-        Log.e("MOTION ENTITY", "Is transparent color: " + isTransparentColor);
         if (isSelected() && borderPaint.getColor() != Color.TRANSPARENT) {
             // get alpha from drawingPaint
             int storedAlpha = borderPaint.getAlpha();

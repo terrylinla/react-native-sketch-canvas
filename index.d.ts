@@ -60,6 +60,12 @@ export interface LocalSourceImage {
   mode?: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
 }
 
+export interface ShapeConfiguration {
+  shapeBorderColor: string
+  shapeColor: string
+  shapeStrokeWidth: number
+}
+
 export interface SketchCanvasProps {
   style?: StyleProp<ViewStyle>
   strokeColor?: string
@@ -69,6 +75,15 @@ export interface SketchCanvasProps {
   text?: CanvasText[]
   localSourceImage?: LocalSourceImage
   touchEnabled?: boolean
+
+  /**
+   * {
+   *    shapeBorderColor: string,
+   *    shapeColor: string,
+   *    shapeStrokeWidth: number
+   * }
+  */
+  shapeConfiguration?: ShapeConfiguration
 
   /**
    * Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set
@@ -138,7 +153,7 @@ export interface RNSketchCanvasProps {
   strokeSelectedComponent?: (color: string, index: number, changed: boolean) => JSX.Element
   strokeWidthComponent?: (width: number) => JSX.Element
 
-  strokeColors?: {color: string}[]
+  strokeColors?: { color: string }[]
   defaultStrokeIndex?: number
   defaultStrokeWidth?: number
 
@@ -151,7 +166,7 @@ export interface RNSketchCanvasProps {
    * @param includeImage default true
    * @param cropToImageSize default false
    */
-  savePreference?: () => {folder: string, filename: string, transparent: boolean, imageType: ImageType, includeImage?: boolean, includeText?: boolean, cropToImageSize?: boolean}
+  savePreference?: () => { folder: string, filename: string, transparent: boolean, imageType: ImageType, includeImage?: boolean, includeText?: boolean, cropToImageSize?: boolean }
   onSketchSaved?: (result: boolean, path: string) => void
   onShapeSelectionChanged?: (isShapeSelected: boolean) => void
 
@@ -165,6 +180,14 @@ export interface RNSketchCanvasProps {
    */
   localSourceImage?: LocalSourceImage
   touchEnabled?: boolean
+  /**
+   * {
+   *    shapeBorderColor: string,
+   *    shapeColor: string,
+   *    shapeStrokeWidth: number
+   * }
+  */
+  shapeConfiguration?: ShapeConfiguration
 }
 
 export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps & ViewProperties> {
