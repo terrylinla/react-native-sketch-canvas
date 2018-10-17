@@ -70,7 +70,7 @@ public class TextEntity extends MotionEntity {
         updatePaint(paint);
 
         // substracting 25% of the width so the border around the entity is closer to the text
-        int boundsWidth = (canvasWidth / 100) * 75;
+        int boundsWidth = (canvasWidth / 100) * 60;
 
         // init params - size, color, typeface
         TextLayer layer = getLayer();

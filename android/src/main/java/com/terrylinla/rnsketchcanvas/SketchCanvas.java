@@ -224,7 +224,10 @@ public class SketchCanvas extends View {
 
     public void setShapeConfiguration(ReadableMap shapeConfiguration) {
         if (shapeConfiguration.hasKey("shapeBorderColor")) {
-            mEntityBorderColor = shapeConfiguration.getInt("shapeBorderColor");
+            int color = shapeConfiguration.getInt("shapeBorderColor");
+            if (color != Color.TRANSPARENT) {
+                mEntityBorderColor = color;
+            }
         }
         if (shapeConfiguration.hasKey("shapeBorderStyle")) {
             mEntityBorderStyle = shapeConfiguration.getString("shapeBorderStyle");
@@ -233,7 +236,10 @@ public class SketchCanvas extends View {
             mEntityBorderStrokeWidth = shapeConfiguration.getInt("shapeBorderStrokeWidth");
         }
         if (shapeConfiguration.hasKey("shapeColor")) {
-            mEntityStrokeColor = shapeConfiguration.getInt("shapeColor");
+            int color = shapeConfiguration.getInt("shapeColor");
+            if (color != Color.TRANSPARENT) {
+                mEntityStrokeColor = color;
+            }
         }
         if (shapeConfiguration.hasKey("shapeStrokeWidth")) {
             mEntityStrokeWidth = shapeConfiguration.getInt("shapeStrokeWidth");
@@ -249,7 +255,9 @@ public class SketchCanvas extends View {
 
     public void newPath(int id, int strokeColor, float strokeWidth) {
         mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
-        mEntityStrokeColor = strokeColor;
+        if (strokeColor != Color.TRANSPARENT) {
+            mEntityStrokeColor = strokeColor;
+        }
         mEntityStrokeWidth = Utility.convertPxToDpAsFloat(mContext.getResources().getDisplayMetrics(), strokeWidth);
         mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
@@ -274,7 +282,9 @@ public class SketchCanvas extends View {
     }
 
     public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
-        mEntityStrokeColor = strokeColor;
+        if (strokeColor != Color.TRANSPARENT) {
+            mEntityStrokeColor = strokeColor;
+        }
 
         boolean exist = false;
         for(SketchData data: mPaths) {

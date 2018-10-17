@@ -1,6 +1,9 @@
 react-native-sketch-canvas
 ===================
 
+THIS IS A FORK: Currently working on adding Movable, Scalable and Rotatable Shapes (Geometry shapes, Image Sticker, Text Sticker).
+Android is almost finished, if you want to test it, start the example app and go to example 1 :-)
+
 A React Native component for drawing by touching on both iOS and Android.
 
 <img src="https://media.giphy.com/media/3ov9kbuQg8ayvoYG8E/giphy.gif" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://media.giphy.com/media/3ov9jNZooUPTbWWbh6/giphy.gif" height="400" />
