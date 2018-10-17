@@ -1,6 +1,8 @@
 package com.terrylinla.rnsketchcanvas.utils.entities;
 
 import android.graphics.Canvas;
+import android.graphics.Path;
+import android.graphics.DashPathEffect;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -11,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.terrylinla.rnsketchcanvas.utils.Utility;
+import com.terrylinla.rnsketchcanvas.utils.BorderStyle;
 import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
 
 @SuppressWarnings({"WeakerAccess"})
@@ -64,6 +67,9 @@ public abstract class MotionEntity {
 
     @NonNull
     private Paint borderPaint = new Paint();
+
+    @NonNull
+    private BorderStyle borderStyle = BorderStyle.DASHED;
 
     public MotionEntity(@NonNull Layer layer,
                         @IntRange(from = 1) int canvasWidth,
@@ -138,7 +144,6 @@ public abstract class MotionEntity {
 
     public float absoluteCenterY() {
         float topLeftY = layer.getY() * canvasHeight;
-
         return topLeftY + getHeight() * holyScale * 0.5F;
     }
 
@@ -223,10 +228,21 @@ public abstract class MotionEntity {
 
     private void drawSelectedBg(Canvas canvas) {
         matrix.mapPoints(destPoints, srcPoints);
-        //noinspection Range
-        canvas.drawLines(destPoints, 0, 8, borderPaint);
-        //noinspection Range
-        canvas.drawLines(destPoints, 2, 8, borderPaint);
+        if (this.borderStyle == BorderStyle.DASHED) {
+            Paint dashedBorderPaint = borderPaint;
+            dashedBorderPaint.setPathEffect(new DashPathEffect(new float[]{5, 5}, 0));
+            dashedBorderPaint.setStyle(Paint.Style.STROKE);
+
+            //noinspection Range
+            canvas.drawLines(destPoints, 0, 8, dashedBorderPaint);
+            //noinspection Range
+            canvas.drawLines(destPoints, 2, 8, dashedBorderPaint);
+        } else {
+            //noinspection Range
+            canvas.drawLines(destPoints, 0, 8, borderPaint);
+            //noinspection Range
+            canvas.drawLines(destPoints, 2, 8, borderPaint);
+        }
     }
 
     @NonNull
@@ -236,6 +252,20 @@ public abstract class MotionEntity {
 
     public void setBorderPaint(@NonNull Paint borderPaint) {
         this.borderPaint = borderPaint;
+    }
+
+    public void setBorderStyle(@NonNull String borderStyle) {
+        switch(borderStyle) {
+            case "Dashed":
+                this.borderStyle = BorderStyle.DASHED;
+                break;
+            case "Solid":
+                this.borderStyle = BorderStyle.SOLID;
+                break;
+            default:
+                this.borderStyle = BorderStyle.DASHED;
+                break;
+        }
     }
 
     protected abstract void drawContent(@NonNull Canvas canvas, @Nullable Paint drawingPaint);

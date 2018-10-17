@@ -33,7 +33,7 @@ class SketchCanvas extends React.Component {
     onStrokeEnd: PropTypes.func,
     onSketchSaved: PropTypes.func,
     onShapeSelectionChanged: PropTypes.func,
-    shapeConfiguration: PropTypes.shape({ shapeBorderColor: PropTypes.string, shapeColor: PropTypes.string, shapeStrokeWidth: PropTypes.number }),
+    shapeConfiguration: PropTypes.shape({ shapeBorderColor: PropTypes.string, shapeBorderStyle: PropTypes.string, shapeBorderStrokeWidth: PropTypes.number, shapeColor: PropTypes.string, shapeStrokeWidth: PropTypes.number }),
     user: PropTypes.string,
 
     touchEnabled: PropTypes.bool,
@@ -66,7 +66,7 @@ class SketchCanvas extends React.Component {
     onStrokeEnd: () => { },
     onSketchSaved: () => { },
     onShapeSelectionChanged: () => { },
-    shapeConfiguration: { shapeBorderColor: 'transparent', shapeColor: '#000000', shapeStrokeWidth: 3 },
+    shapeConfiguration: { shapeBorderColor: 'transparent', shapeBorderStyle: 'Dashed', shapeBorderStrokeWidth: 1, shapeColor: '#000000', shapeStrokeWidth: 3 },
     user: null,
 
     touchEnabled: true,
@@ -260,7 +260,7 @@ class SketchCanvas extends React.Component {
         localSourceImage={this.props.localSourceImage}
         permissionDialogTitle={this.props.permissionDialogTitle}
         permissionDialogMessage={this.props.permissionDialogMessage}
-        shapeConfiguration={{ shapeBorderColor: processColor(this.props.shapeConfiguration.shapeBorderColor), shapeColor: processColor(this.props.strokeColor), shapeStrokeWidth: this.props.strokeWidth }}
+        shapeConfiguration={{ shapeBorderColor: processColor(this.props.shapeConfiguration.shapeBorderColor), shapeBorderStyle: this.props.shapeConfiguration.shapeBorderStyle, shapeBorderStrokeWidth: this.props.shapeConfiguration.shapeBorderStrokeWidth, shapeColor: processColor(this.props.strokeColor), shapeStrokeWidth: this.props.strokeWidth }}
         text={this.state.text}
       />
     );

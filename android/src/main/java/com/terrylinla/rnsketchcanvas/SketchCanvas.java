@@ -68,6 +68,8 @@ public class SketchCanvas extends View {
     private final ArrayList<MotionEntity> mEntities = new ArrayList<MotionEntity>();
     private MotionEntity mSelectedEntity;
     private int mEntityBorderColor = Color.TRANSPARENT;
+    private String mEntityBorderStyle = "Dashed";
+    private float mEntityBorderStrokeWidth = 1;
     private float mEntityStrokeWidth = 5;
     private int mEntityStrokeColor = Color.BLACK;
 
@@ -223,6 +225,12 @@ public class SketchCanvas extends View {
     public void setShapeConfiguration(ReadableMap shapeConfiguration) {
         if (shapeConfiguration.hasKey("shapeBorderColor")) {
             mEntityBorderColor = shapeConfiguration.getInt("shapeBorderColor");
+        }
+        if (shapeConfiguration.hasKey("shapeBorderStyle")) {
+            mEntityBorderStyle = shapeConfiguration.getString("shapeBorderStyle");
+        }
+        if (shapeConfiguration.hasKey("shapeBorderStrokeWidth")) {
+            mEntityBorderStrokeWidth = shapeConfiguration.getInt("shapeBorderStrokeWidth");
         }
         if (shapeConfiguration.hasKey("shapeColor")) {
             mEntityStrokeColor = shapeConfiguration.getInt("shapeColor");
@@ -578,6 +586,10 @@ public class SketchCanvas extends View {
 
     public void addEntityAndPosition(MotionEntity entity) {
         if (entity != null) {
+            // Make DashPathEffect work with drawLines (drawSelectedBg in MotionEntity)
+            mDisableHardwareAccelerated = true;
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
             initEntityBorder(entity);
             initialTranslateAndScale(entity);
             mEntities.add(entity);
@@ -586,12 +598,13 @@ public class SketchCanvas extends View {
     }
 
     private void initEntityBorder(MotionEntity entity) {
-        int strokeSize = Utility.convertDpToPx(mContext.getResources().getDisplayMetrics(), 3);
+        int strokeSize = Utility.convertDpToPx(mContext.getResources().getDisplayMetrics(), mEntityBorderStrokeWidth);
         Paint borderPaint = new Paint();
         borderPaint.setStrokeWidth(strokeSize);
         borderPaint.setAntiAlias(true);
         borderPaint.setColor(mEntityBorderColor);
         entity.setBorderPaint(borderPaint);
+        entity.setBorderStyle(mEntityBorderStyle);
     }
 
     private void drawAllEntities(Canvas canvas) {
@@ -686,6 +699,15 @@ public class SketchCanvas extends View {
     public void release() {
         for (MotionEntity entity : mEntities) {
             entity.release();
+        }
+    }
+
+    public void releaseSelectedEntity() {
+        for (MotionEntity entity : mEntities) {
+            if (entity.isSelected()) {
+                entity.release();
+                break;
+            }
         }
     }
 

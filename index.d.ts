@@ -62,6 +62,8 @@ export interface LocalSourceImage {
 
 export interface ShapeConfiguration {
   shapeBorderColor: string
+  shapeBorderStyle: 'Dashed' | 'Solid'
+  shapeBorderStrokeWidth: number
   shapeColor: string
   shapeStrokeWidth: number
 }
