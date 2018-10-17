@@ -593,6 +593,7 @@ public class SketchCanvas extends View {
             initEntityBorder(entity);
             initialTranslateAndScale(entity);
             mEntities.add(entity);
+            onShapeSelectionChanged(entity);
             selectEntity(entity, true);
         }
     }
@@ -703,10 +704,19 @@ public class SketchCanvas extends View {
     }
 
     public void releaseSelectedEntity() {
+        MotionEntity toRemoveEntity = null;
         for (MotionEntity entity : mEntities) {
             if (entity.isSelected()) {
-                entity.release();
+                toRemoveEntity = entity;
                 break;
+            }
+        }
+        if (toRemoveEntity != null) {
+            if (mEntities.remove(toRemoveEntity)) {
+                toRemoveEntity.release();
+                toRemoveEntity = null;
+                onShapeSelectionChanged(toRemoveEntity);
+                updateUI();
             }
         }
     }

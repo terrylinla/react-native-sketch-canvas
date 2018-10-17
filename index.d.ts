@@ -110,6 +110,7 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
   undo(): number
   addPath(data: Path): void
   deletePath(id: number): void
+  deleteSelectedShape(): void
 
   /**
    * @param imageType "png" or "jpg"
@@ -148,6 +149,7 @@ export interface RNSketchCanvasProps {
 
   closeComponent?: JSX.Element,
   eraseComponent?: JSX.Element,
+  deleteSelectedShapeComponent?: JSX.Element,
   undoComponent?: JSX.Element,
   clearComponent?: JSX.Element,
   saveComponent?: JSX.Element,
@@ -197,6 +199,7 @@ export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps 
   undo(): number
   addPath(data: Path): void
   deletePath(id: number): void
+  deleteSelectedShape(): void
   save(): void
   nextStrokeWidth(): void
 

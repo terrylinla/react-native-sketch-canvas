@@ -28,6 +28,7 @@ export default class RNSketchCanvas extends React.Component {
     undoComponent: PropTypes.node,
     clearComponent: PropTypes.node,
     saveComponent: PropTypes.node,
+    deleteSelectedShapeComponent: PropTypes.node,
     strokeComponent: PropTypes.func,
     strokeSelectedComponent: PropTypes.func,
     strokeWidthComponent: PropTypes.func,
@@ -80,6 +81,7 @@ export default class RNSketchCanvas extends React.Component {
     undoComponent: null,
     clearComponent: null,
     saveComponent: null,
+    deleteSelectedShapeComponent: null,
     strokeComponent: null,
     strokeSelectedComponent: null,
     strokeWidthComponent: null,
@@ -154,6 +156,10 @@ export default class RNSketchCanvas extends React.Component {
     this._sketchCanvas.deletePath(id)
   }
 
+  deleteSelectedShape() {
+    this._sketchCanvas.deleteSelectedShape();
+  }
+
   save() {
     if (this.props.savePreference) {
       const p = this.props.savePreference()
@@ -219,6 +225,12 @@ export default class RNSketchCanvas extends React.Component {
             {this.props.eraseComponent && (
               <TouchableOpacity onPress={() => { this.setState({ color: '#00000000' }) }}>
                 {this.props.eraseComponent}
+              </TouchableOpacity>)
+            }
+
+            {this.props.deleteSelectedShapeComponent && (
+              <TouchableOpacity style={{ opacity: this.props.touchEnabled ? 0.5 : 1 }} disabled={this.props.touchEnabled} onPress={() => { this.deleteSelectedShape() }}>
+                {this.props.deleteSelectedShapeComponent}
               </TouchableOpacity>)
             }
           </View>

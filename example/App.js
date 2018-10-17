@@ -118,6 +118,7 @@ export default class example extends Component {
                 // Alert.alert('do something')
               }}
               eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
+              deleteSelectedShapeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Delete</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
               )}
