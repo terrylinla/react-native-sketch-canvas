@@ -13,15 +13,12 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.terrylinla.rnsketchcanvas.utils.Utility;
-import com.terrylinla.rnsketchcanvas.utils.BorderStyle;
+import com.terrylinla.rnsketchcanvas.utils.entities.BorderStyle;
 import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
 
 @SuppressWarnings({"WeakerAccess"})
 public abstract class MotionEntity {
 
-    /**
-     * data
-     */
     @NonNull
     protected final Layer layer;
 
@@ -29,6 +26,7 @@ public abstract class MotionEntity {
      * transformation matrix for the entity
      */
     protected final Matrix matrix = new Matrix();
+
     /**
      * true - entity is selected and need to draw it's border
      * false - not selected, no need to draw it's border
@@ -46,6 +44,7 @@ public abstract class MotionEntity {
      */
     @IntRange(from = 0)
     protected int canvasWidth;
+
     /**
      * height of canvas the entity is drawn in
      */
@@ -59,6 +58,7 @@ public abstract class MotionEntity {
      * NOTE: saved as a field variable in order to avoid creating array in draw()-like methods
      */
     private final float[] destPoints = new float[10]; // x0, y0, x1, y1, x2, y2, x3, y3, x0, y0
+
     /**
      * Initial points of the entity
      * @see #destPoints
@@ -254,18 +254,8 @@ public abstract class MotionEntity {
         this.borderPaint = borderPaint;
     }
 
-    public void setBorderStyle(@NonNull String borderStyle) {
-        switch(borderStyle) {
-            case "Dashed":
-                this.borderStyle = BorderStyle.DASHED;
-                break;
-            case "Solid":
-                this.borderStyle = BorderStyle.SOLID;
-                break;
-            default:
-                this.borderStyle = BorderStyle.DASHED;
-                break;
-        }
+    public void setBorderStyle(@NonNull BorderStyle borderStyle) {
+        this.borderStyle = borderStyle;
     }
 
     protected abstract void drawContent(@NonNull Canvas canvas, @Nullable Paint drawingPaint);

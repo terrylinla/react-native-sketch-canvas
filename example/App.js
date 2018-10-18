@@ -156,7 +156,7 @@ export default class example extends Component {
               onShapeSelectionChanged={(isShapeSelected) => {
                 this.setState({ touchEnabled: !isShapeSelected })
               }}
-              shapeConfiguration={{ shapeBorderColor: 'transparent', shapeBorderStyle: 'Dashed', shapeBorderStrokeWidth: 1 }}
+              shapeConfiguration={{ shapeBorderColor: 'black', shapeBorderStyle: 'Dashed', shapeBorderStrokeWidth: 1 }}
             />
           </View>
         }

@@ -32,28 +32,20 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.terrylinla.rnsketchcanvas.utils.CanvasText;
 import com.terrylinla.rnsketchcanvas.utils.Utility;
-import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
-import com.terrylinla.rnsketchcanvas.utils.layers.Font;
 import com.terrylinla.rnsketchcanvas.utils.layers.CircleLayer;
+import com.terrylinla.rnsketchcanvas.utils.layers.Font;
+import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
 import com.terrylinla.rnsketchcanvas.utils.layers.TextLayer;
+import com.terrylinla.rnsketchcanvas.utils.entities.BorderStyle;
+import com.terrylinla.rnsketchcanvas.utils.entities.CircleEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.MotionEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.TextEntity;
-import com.terrylinla.rnsketchcanvas.utils.entities.CircleEntity;
 import com.terrylinla.rnsketchcanvas.utils.gestureDetectors.MoveGestureDetector;
 import com.terrylinla.rnsketchcanvas.utils.gestureDetectors.RotateGestureDetector;
 
-class CanvasText {
-    public String text;
-    public Paint paint;
-    public PointF anchor, position, drawPosition, lineOffset;
-    public boolean isAbsoluteCoordinate;
-    public Rect textBounds;
-    public float height;
-}
-
 public class SketchCanvas extends View {
-
     // Data
     private ArrayList<SketchData> mPaths = new ArrayList<SketchData>();
     private SketchData mCurrentPath = null;
@@ -64,25 +56,22 @@ public class SketchCanvas extends View {
     private MoveGestureDetector mMoveGestureDetector;
     private GestureDetectorCompat mGestureDetectorCompat;
 
-    // TODO: Shapes: CircleEntity and TextEntity are working
+    // Shapes/Entities
     private final ArrayList<MotionEntity> mEntities = new ArrayList<MotionEntity>();
     private MotionEntity mSelectedEntity;
     private int mEntityBorderColor = Color.TRANSPARENT;
-    private String mEntityBorderStyle = "Dashed";
+    private BorderStyle mEntityBorderStyle = BorderStyle.DASHED;
     private float mEntityBorderStrokeWidth = 1;
     private float mEntityStrokeWidth = 5;
     private int mEntityStrokeColor = Color.BLACK;
 
-    // TODO maybe: Text: can be changed to TextEntity to make it scalable, movable and
-    // rotatable :).
-    // We could even add DoubleTap to edit text :D
+    // Text
     private ArrayList<CanvasText> mArrCanvasText = new ArrayList<CanvasText>();
     private ArrayList<CanvasText> mArrTextOnSketch = new ArrayList<CanvasText>();
     private ArrayList<CanvasText> mArrSketchOnText = new ArrayList<CanvasText>();
     private Typeface mTypeface;
 
     // Bitmap
-    // TODO: We could add ImageEntities to add image stickers besides the bg-image
     private Bitmap mDrawingBitmap = null, mTranslucentDrawingBitmap = null;
     private Bitmap mBackgroundImage;
     private Canvas mDrawingCanvas = null, mTranslucentDrawingCanvas = null;
@@ -107,6 +96,346 @@ public class SketchCanvas extends View {
 
         // Is initialized at bottom of class w/ other GestureDetectors
         setOnTouchListener(mOnTouchListener);
+    }
+
+    public String getBase64(String format, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
+        WritableMap event = Arguments.createMap();
+        Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
+        ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+
+        bitmap.compress(
+                format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                format.equals("png") ? 100 : 90,
+                byteArrayOS);
+        return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
+    }
+
+    private Bitmap createImage(boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
+        Bitmap bitmap = Bitmap.createBitmap(
+                mBackgroundImage != null && cropToImageSize ? mOriginalBitmapWidth : getWidth(),
+                mBackgroundImage != null && cropToImageSize ? mOriginalBitmapHeight : getHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
+
+        if (mBackgroundImage != null && includeImage) {
+            Rect targetRect = new Rect();
+            Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(),
+                    bitmap.getWidth(), bitmap.getHeight(), "AspectFit").roundOut(targetRect);
+            canvas.drawBitmap(mBackgroundImage, null, targetRect, null);
+        }
+
+        if (includeText) {
+            for(CanvasText text: mArrSketchOnText) {
+                canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
+            }
+        }
+
+        if (mBackgroundImage != null && cropToImageSize) {
+            Rect targetRect = new Rect();
+            Utility.fillImage(mDrawingBitmap.getWidth(), mDrawingBitmap.getHeight(),
+                    bitmap.getWidth(), bitmap.getHeight(), "AspectFill").roundOut(targetRect);
+            canvas.drawBitmap(mDrawingBitmap, null, targetRect, mPaint);
+        } else {
+            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+        }
+
+        if (includeText) {
+            for(CanvasText text: mArrTextOnSketch) {
+                canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
+            }
+        }
+
+        drawAllEntities(canvas);
+
+        return bitmap;
+    }
+
+    /**
+     *
+     * Canvas/Draw related code
+     *
+     **/
+    public void clear() {
+        mPaths.clear();
+        mCurrentPath = null;
+        mNeedsFullRedraw = true;
+        invalidateCanvas(true);
+    }
+
+    public void newPath(int id, int strokeColor, float strokeWidth) {
+        mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
+        if (strokeColor != Color.TRANSPARENT) {
+            mEntityStrokeColor = strokeColor;
+        }
+        mEntityStrokeWidth = Utility.convertPxToDpAsFloat(mContext.getResources().getDisplayMetrics(), strokeWidth);
+        mPaths.add(mCurrentPath);
+        boolean isErase = strokeColor == Color.TRANSPARENT;
+        if (isErase && mDisableHardwareAccelerated == false) {
+            mDisableHardwareAccelerated = true;
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        invalidateCanvas(true);
+    }
+
+    public void addPoint(float x, float y, boolean isMove) {
+        if (mSelectedEntity == null && (findEntityAtPoint(x, y) == null || isMove)) {
+            Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
+            if (mCurrentPath.isTranslucent) {
+                mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+                mCurrentPath.draw(mTranslucentDrawingCanvas);
+            } else {
+                mCurrentPath.drawLastPoint(mDrawingCanvas);
+            }
+            invalidate(updateRect);
+        }
+    }
+
+    public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+        if (strokeColor != Color.TRANSPARENT) {
+            mEntityStrokeColor = strokeColor;
+        }
+
+        boolean exist = false;
+        for(SketchData data: mPaths) {
+            if (data.id == id) {
+                exist = true;
+                break;
+            }
+        }
+
+        if (!exist) {
+            SketchData newPath = new SketchData(id, strokeColor, strokeWidth, points);
+            mPaths.add(newPath);
+            boolean isErase = strokeColor == Color.TRANSPARENT;
+            if (isErase && mDisableHardwareAccelerated == false) {
+                mDisableHardwareAccelerated = true;
+                setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            }
+            newPath.draw(mDrawingCanvas);
+            invalidateCanvas(true);
+        }
+    }
+
+    public void deletePath(int id) {
+        int index = -1;
+        for(int i = 0; i<mPaths.size(); i++) {
+            if (mPaths.get(i).id == id) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index > -1) {
+            mPaths.remove(index);
+            mNeedsFullRedraw = true;
+            invalidateCanvas(true);
+        }
+    }
+
+    public void end() {
+        if (mCurrentPath != null) {
+            if (mCurrentPath.isTranslucent) {
+                mCurrentPath.draw(mDrawingCanvas);
+                mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+            }
+            mCurrentPath = null;
+        }
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+
+        if (getWidth() > 0 && getHeight() > 0) {
+            mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                    Bitmap.Config.ARGB_8888);
+            mDrawingCanvas = new Canvas(mDrawingBitmap);
+            mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                    Bitmap.Config.ARGB_8888);
+            mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
+
+            for(CanvasText text: mArrCanvasText) {
+                PointF position = new PointF(text.position.x, text.position.y);
+                if (!text.isAbsoluteCoordinate) {
+                    position.x *= getWidth();
+                    position.y *= getHeight();
+                }
+
+                position.x -= text.textBounds.left;
+                position.y -= text.textBounds.top;
+                position.x -= (text.textBounds.width() * text.anchor.x);
+                position.y -= (text.height * text.anchor.y);
+                text.drawPosition = position;
+
+            }
+
+            mNeedsFullRedraw = true;
+            invalidate();
+        }
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        mSketchCanvas = canvas;
+
+        if (mNeedsFullRedraw && mDrawingCanvas != null) {
+            mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+
+            for(SketchData path: mPaths) {
+                path.draw(mDrawingCanvas);
+            }
+            mNeedsFullRedraw = false;
+        }
+
+        if (mBackgroundImage != null) {
+            Rect dstRect = new Rect();
+            mSketchCanvas.getClipBounds(dstRect);
+            mSketchCanvas.drawBitmap(mBackgroundImage, null,
+                    Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mBitmapContentMode),
+                    null);
+        }
+
+        for(CanvasText text: mArrSketchOnText) {
+            mSketchCanvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
+        }
+
+        if (mDrawingBitmap != null) {
+            mSketchCanvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+        }
+
+        if (mTranslucentDrawingBitmap != null && mCurrentPath != null && mCurrentPath.isTranslucent) {
+            mSketchCanvas.drawBitmap(mTranslucentDrawingBitmap, 0, 0, mPaint);
+        }
+
+        for(CanvasText text: mArrTextOnSketch) {
+            mSketchCanvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
+        }
+
+        // TODO: Remove after we can add entities from JS-Side
+        if (mEntities.isEmpty()) {
+            addTextSticker();
+            addCircleShape();
+        } else {
+            drawAllEntities(mSketchCanvas);
+        }
+    }
+
+    private void invalidateCanvas(boolean shouldDispatchEvent) {
+        if (shouldDispatchEvent) {
+            WritableMap event = Arguments.createMap();
+            event.putInt("pathsUpdate", mPaths.size());
+            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    getId(),
+                    "topChange",
+                    event);
+        }
+        invalidate();
+    }
+
+    /**
+     *
+     * Outgoing Events related code
+     *
+     **/
+    public void onShapeSelectionChanged(MotionEntity nextSelectedEntity) {
+        final WritableMap event = Arguments.createMap();
+        boolean isShapeSelected = nextSelectedEntity != null;
+        event.putBoolean("isShapeSelected", isShapeSelected);
+
+        if (!isShapeSelected) {
+            // This is ugly and actually was my last resort to fix the "do not draw when deselecting" problem
+            // without breaking existing functionality
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                            getId(),
+                            "topChange",
+                            event);
+                }
+            }, 250);
+        } else {
+            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    getId(),
+                    "topChange",
+                    event);
+        }
+    }
+
+    public void onSaved(boolean success, String path) {
+        WritableMap event = Arguments.createMap();
+        event.putBoolean("success", success);
+        event.putString("path", path);
+        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                getId(),
+                "topChange",
+                event);
+    }
+
+    /**
+     *
+     * Incoming Events related code
+     *
+     **/
+    public void setShapeConfiguration(ReadableMap shapeConfiguration) {
+        if (shapeConfiguration.hasKey("shapeBorderColor")) {
+            int color = shapeConfiguration.getInt("shapeBorderColor");
+            if (color != Color.TRANSPARENT) {
+                mEntityBorderColor = color;
+            }
+        }
+        if (shapeConfiguration.hasKey("shapeBorderStyle")) {
+            String borderStyle = shapeConfiguration.getString("shapeBorderStyle");
+            switch(borderStyle) {
+                case "Dashed":
+                    mEntityBorderStyle = BorderStyle.DASHED;
+                    break;
+                case "Solid":
+                    mEntityBorderStyle = BorderStyle.SOLID;
+                    break;
+                default:
+                    mEntityBorderStyle = BorderStyle.DASHED;
+                    break;
+            }
+        }
+        if (shapeConfiguration.hasKey("shapeBorderStrokeWidth")) {
+            mEntityBorderStrokeWidth = shapeConfiguration.getInt("shapeBorderStrokeWidth");
+        }
+        if (shapeConfiguration.hasKey("shapeColor")) {
+            int color = shapeConfiguration.getInt("shapeColor");
+            if (color != Color.TRANSPARENT) {
+                mEntityStrokeColor = color;
+            }
+        }
+        if (shapeConfiguration.hasKey("shapeStrokeWidth")) {
+            mEntityStrokeWidth = shapeConfiguration.getInt("shapeStrokeWidth");
+        }
+    }
+
+    public void save(String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
+        File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + folder);
+        boolean success = f.exists() ? true : f.mkdirs();
+        if (success) {
+            Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
+
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
+                    File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
+            try {
+                bitmap.compress(
+                        format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                        format.equals("png") ? 100 : 90,
+                        new FileOutputStream(file));
+                this.onSaved(true, file.getPath());
+            } catch (Exception e) {
+                e.printStackTrace();
+                onSaved(false, null);
+            }
+        } else {
+            Log.e("SketchCanvas", "Failed to create folder!");
+            onSaved(false, null);
+        }
     }
 
     public boolean openImageFile(String filename, String directory, String mode) {
@@ -222,319 +551,11 @@ public class SketchCanvas extends View {
         invalidateCanvas(false);
     }
 
-    public void setShapeConfiguration(ReadableMap shapeConfiguration) {
-        if (shapeConfiguration.hasKey("shapeBorderColor")) {
-            int color = shapeConfiguration.getInt("shapeBorderColor");
-            if (color != Color.TRANSPARENT) {
-                mEntityBorderColor = color;
-            }
-        }
-        if (shapeConfiguration.hasKey("shapeBorderStyle")) {
-            mEntityBorderStyle = shapeConfiguration.getString("shapeBorderStyle");
-        }
-        if (shapeConfiguration.hasKey("shapeBorderStrokeWidth")) {
-            mEntityBorderStrokeWidth = shapeConfiguration.getInt("shapeBorderStrokeWidth");
-        }
-        if (shapeConfiguration.hasKey("shapeColor")) {
-            int color = shapeConfiguration.getInt("shapeColor");
-            if (color != Color.TRANSPARENT) {
-                mEntityStrokeColor = color;
-            }
-        }
-        if (shapeConfiguration.hasKey("shapeStrokeWidth")) {
-            mEntityStrokeWidth = shapeConfiguration.getInt("shapeStrokeWidth");
-        }
-    }
-
-    public void clear() {
-        mPaths.clear();
-        mCurrentPath = null;
-        mNeedsFullRedraw = true;
-        invalidateCanvas(true);
-    }
-
-    public void newPath(int id, int strokeColor, float strokeWidth) {
-        mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
-        if (strokeColor != Color.TRANSPARENT) {
-            mEntityStrokeColor = strokeColor;
-        }
-        mEntityStrokeWidth = Utility.convertPxToDpAsFloat(mContext.getResources().getDisplayMetrics(), strokeWidth);
-        mPaths.add(mCurrentPath);
-        boolean isErase = strokeColor == Color.TRANSPARENT;
-        if (isErase && mDisableHardwareAccelerated == false) {
-            mDisableHardwareAccelerated = true;
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-        invalidateCanvas(true);
-    }
-
-    public void addPoint(float x, float y, boolean isMove) {
-        if (mSelectedEntity == null && (findEntityAtPoint(x, y) == null || isMove)) {
-            Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
-            if (mCurrentPath.isTranslucent) {
-                mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-                mCurrentPath.draw(mTranslucentDrawingCanvas);
-            } else {
-                mCurrentPath.drawLastPoint(mDrawingCanvas);
-            }
-            invalidate(updateRect);
-        }
-    }
-
-    public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
-        if (strokeColor != Color.TRANSPARENT) {
-            mEntityStrokeColor = strokeColor;
-        }
-
-        boolean exist = false;
-        for(SketchData data: mPaths) {
-            if (data.id == id) {
-                exist = true;
-                break;
-            }
-        }
-
-        if (!exist) {
-            SketchData newPath = new SketchData(id, strokeColor, strokeWidth, points);
-            mPaths.add(newPath);
-            boolean isErase = strokeColor == Color.TRANSPARENT;
-            if (isErase && mDisableHardwareAccelerated == false) {
-                mDisableHardwareAccelerated = true;
-                setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-            }
-            newPath.draw(mDrawingCanvas);
-            invalidateCanvas(true);
-        }
-    }
-
-    public void deletePath(int id) {
-        int index = -1;
-        for(int i = 0; i<mPaths.size(); i++) {
-            if (mPaths.get(i).id == id) {
-                index = i;
-                break;
-            }
-        }
-
-        if (index > -1) {
-            mPaths.remove(index);
-            mNeedsFullRedraw = true;
-            invalidateCanvas(true);
-        }
-    }
-
-    public void end() {
-        if (mCurrentPath != null) {
-            if (mCurrentPath.isTranslucent) {
-                mCurrentPath.draw(mDrawingCanvas);
-                mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-            }
-            mCurrentPath = null;
-        }
-    }
-
-    public void onSaved(boolean success, String path) {
-        WritableMap event = Arguments.createMap();
-        event.putBoolean("success", success);
-        event.putString("path", path);
-        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                getId(),
-                "topChange",
-                event);
-    }
-
-    public void onShapeSelectionChanged(MotionEntity nextSelectedEntity) {
-        final WritableMap event = Arguments.createMap();
-        boolean isShapeSelected = nextSelectedEntity != null;
-        event.putBoolean("isShapeSelected", isShapeSelected);
-
-        if (!isShapeSelected) {
-            // This is ugly and actually was my last resort to fix the "do not draw when deselecting" problem
-            // without breaking existing functionality
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                            getId(),
-                            "topChange",
-                            event);
-                }
-            }, 250);
-        } else {
-            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                    getId(),
-                    "topChange",
-                    event);
-        }
-    }
-
-    public void save(String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
-        File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + folder);
-        boolean success = f.exists() ? true : f.mkdirs();
-        if (success) {
-            Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
-
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-                    File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
-            try {
-                bitmap.compress(
-                        format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
-                        format.equals("png") ? 100 : 90,
-                        new FileOutputStream(file));
-                this.onSaved(true, file.getPath());
-            } catch (Exception e) {
-                e.printStackTrace();
-                onSaved(false, null);
-            }
-        } else {
-            Log.e("SketchCanvas", "Failed to create folder!");
-            onSaved(false, null);
-        }
-    }
-
-    public String getBase64(String format, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
-        WritableMap event = Arguments.createMap();
-        Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
-        ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
-
-        bitmap.compress(
-                format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
-                format.equals("png") ? 100 : 90,
-                byteArrayOS);
-        return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-
-        if (getWidth() > 0 && getHeight() > 0) {
-            mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                    Bitmap.Config.ARGB_8888);
-            mDrawingCanvas = new Canvas(mDrawingBitmap);
-            mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                    Bitmap.Config.ARGB_8888);
-            mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
-
-            for(CanvasText text: mArrCanvasText) {
-                PointF position = new PointF(text.position.x, text.position.y);
-                if (!text.isAbsoluteCoordinate) {
-                    position.x *= getWidth();
-                    position.y *= getHeight();
-                }
-
-                position.x -= text.textBounds.left;
-                position.y -= text.textBounds.top;
-                position.x -= (text.textBounds.width() * text.anchor.x);
-                position.y -= (text.height * text.anchor.y);
-                text.drawPosition = position;
-
-            }
-
-            mNeedsFullRedraw = true;
-            invalidate();
-        }
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        mSketchCanvas = canvas;
-
-        if (mNeedsFullRedraw && mDrawingCanvas != null) {
-            mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-
-            for(SketchData path: mPaths) {
-                path.draw(mDrawingCanvas);
-            }
-            mNeedsFullRedraw = false;
-        }
-
-        if (mBackgroundImage != null) {
-            Rect dstRect = new Rect();
-            mSketchCanvas.getClipBounds(dstRect);
-            mSketchCanvas.drawBitmap(mBackgroundImage, null,
-                    Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mBitmapContentMode),
-                    null);
-        }
-
-        for(CanvasText text: mArrSketchOnText) {
-            mSketchCanvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
-        }
-
-        if (mDrawingBitmap != null) {
-            mSketchCanvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
-        }
-
-        if (mTranslucentDrawingBitmap != null && mCurrentPath != null && mCurrentPath.isTranslucent) {
-            mSketchCanvas.drawBitmap(mTranslucentDrawingBitmap, 0, 0, mPaint);
-        }
-
-        for(CanvasText text: mArrTextOnSketch) {
-            mSketchCanvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
-        }
-
-        if (mEntities.isEmpty()) {
-            addTextSticker();
-            addCircleShape();
-        } else {
-            drawAllEntities(mSketchCanvas);
-        }
-    }
-
-    private void invalidateCanvas(boolean shouldDispatchEvent) {
-        if (shouldDispatchEvent) {
-            WritableMap event = Arguments.createMap();
-            event.putInt("pathsUpdate", mPaths.size());
-            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                    getId(),
-                    "topChange",
-                    event);
-        }
-        invalidate();
-    }
-
-    private Bitmap createImage(boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
-        Bitmap bitmap = Bitmap.createBitmap(
-                mBackgroundImage != null && cropToImageSize ? mOriginalBitmapWidth : getWidth(),
-                mBackgroundImage != null && cropToImageSize ? mOriginalBitmapHeight : getHeight(),
-                Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
-
-        if (mBackgroundImage != null && includeImage) {
-            Rect targetRect = new Rect();
-            Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(),
-                    bitmap.getWidth(), bitmap.getHeight(), "AspectFit").roundOut(targetRect);
-            canvas.drawBitmap(mBackgroundImage, null, targetRect, null);
-        }
-
-        if (includeText) {
-            for(CanvasText text: mArrSketchOnText) {
-                canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
-            }
-        }
-
-        if (mBackgroundImage != null && cropToImageSize) {
-            Rect targetRect = new Rect();
-            Utility.fillImage(mDrawingBitmap.getWidth(), mDrawingBitmap.getHeight(),
-                    bitmap.getWidth(), bitmap.getHeight(), "AspectFill").roundOut(targetRect);
-            canvas.drawBitmap(mDrawingBitmap, null, targetRect, mPaint);
-        } else {
-            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
-        }
-
-        if (includeText) {
-            for(CanvasText text: mArrTextOnSketch) {
-                canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
-            }
-        }
-
-        drawAllEntities(canvas);
-
-        return bitmap;
-    }
-
+    /**
+     *
+     * MotionEntities related code
+     *
+     **/
     protected void addCircleShape() {
         CircleLayer shapeLayer = createCircleLayer();
         CircleEntity circleEntity = new CircleEntity(shapeLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, Utility.convertDpToPxAsFloat(mContext.getResources().getDisplayMetrics(), mEntityStrokeWidth), mEntityStrokeColor);
@@ -544,25 +565,20 @@ public class SketchCanvas extends View {
         center.y = center.y * 0.5F;
         circleEntity.moveCenterTo(center);
 
-        updateUI();
+        invalidateCanvas(true);
     }
 
-    // Shape entity related code
     protected void addTextSticker() {
         TextLayer textLayer = createTextLayer();
         textLayer.setText("This is just a test");
         TextEntity textEntity = new TextEntity(textLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight() );
         addEntityAndPosition(textEntity);
 
-        // move text sticker up so that its not hidden under keyboard
         PointF center = textEntity.absoluteCenter();
         center.y = center.y * 0.5F;
         textEntity.moveCenterTo(center);
 
-        // redraw
-        updateUI();
-
-        // startTextEntityEditing();
+        invalidateCanvas(true);
     }
 
     private TextLayer createTextLayer() {
@@ -577,34 +593,24 @@ public class SketchCanvas extends View {
         return textLayer;
     }
 
-    private Layer createLayer() {
-        Layer layer = new Layer();
-        return layer;
-    }
-
     private CircleLayer createCircleLayer() {
         CircleLayer circleLayer = new CircleLayer();
         return circleLayer;
     }
 
-    public void addEntity(MotionEntity entity) {
-        if (entity != null) {
-            mEntities.add(entity);
-            selectEntity(entity, true);
-        }
-    }
-
     public void addEntityAndPosition(MotionEntity entity) {
         if (entity != null) {
-            // Make DashPathEffect work with drawLines (drawSelectedBg in MotionEntity)
-            mDisableHardwareAccelerated = true;
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            if (mEntityBorderStyle == BorderStyle.DASHED) {
+                // Make DashPathEffect work with drawLines (drawSelectedBg in MotionEntity)
+                mDisableHardwareAccelerated = true;
+                setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            }
 
             initEntityBorder(entity);
             initialTranslateAndScale(entity);
             mEntities.add(entity);
             onShapeSelectionChanged(entity);
-            selectEntity(entity, true);
+            selectEntity(entity);
         }
     }
 
@@ -628,14 +634,11 @@ public class SketchCanvas extends View {
         }
     }
 
-    private void updateUI() {
-        invalidateCanvas(true);
-    }
-
     private void handleTranslate(PointF delta) {
         if (mSelectedEntity != null) {
             float newCenterX = mSelectedEntity.absoluteCenterX() + delta.x;
             float newCenterY = mSelectedEntity.absoluteCenterY() + delta.y;
+            
             // limit entity center to screen bounds
             boolean needUpdateUI = false;
             if (newCenterX >= 0 && newCenterX <= getWidth()) {
@@ -647,7 +650,7 @@ public class SketchCanvas extends View {
                 needUpdateUI = true;
             }
             if (needUpdateUI) {
-                updateUI();
+                invalidateCanvas(true);
             }
         }
     }
@@ -657,7 +660,7 @@ public class SketchCanvas extends View {
         entity.getLayer().setScale(entity.getLayer().initialScale());
     }
 
-    private void selectEntity(MotionEntity entity, boolean updateCallback) {
+    private void selectEntity(MotionEntity entity) {
         if (mSelectedEntity != null) {
             mSelectedEntity.setIsSelected(false);
         }
@@ -665,9 +668,7 @@ public class SketchCanvas extends View {
             entity.setIsSelected(true);
         }
         mSelectedEntity = entity;
-        updateUI();
-        if (updateCallback) {
-        }
+        invalidateCanvas(true);
     }
 
     private MotionEntity findEntityAtPoint(float x, float y) {
@@ -683,33 +684,24 @@ public class SketchCanvas extends View {
     }
 
     private void bringLayerToFront(MotionEntity entity) {
-        // removing and adding brings layer to front
         if (mEntities.remove(entity)) {
             mEntities.add(entity);
-            updateUI();
+            invalidateCanvas(true);
         }
     }
 
     private void updateSelectionOnTap(MotionEvent e) {
         MotionEntity entity = findEntityAtPoint(e.getX(), e.getY());
         onShapeSelectionChanged(entity);
-        selectEntity(entity, true);
+        selectEntity(entity);
     }
 
     private void updateOnLongPress(MotionEvent e) {
-        // if layer is currently selected and point inside layer - move it to front
         if (mSelectedEntity != null) {
             PointF p = new PointF(e.getX(), e.getY());
             if (mSelectedEntity.pointInLayerRect(p)) {
                 bringLayerToFront(mSelectedEntity);
             }
-        }
-    }
-
-    // memory
-    public void release() {
-        for (MotionEntity entity : mEntities) {
-            entity.release();
         }
     }
 
@@ -726,11 +718,10 @@ public class SketchCanvas extends View {
                 toRemoveEntity.release();
                 toRemoveEntity = null;
                 onShapeSelectionChanged(toRemoveEntity);
-                updateUI();
+                invalidateCanvas(true);
             }
         }
     }
-
 
     /**
      *
@@ -764,7 +755,6 @@ public class SketchCanvas extends View {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             if (mSelectedEntity != null) {
-                // Double tap happened
                 return true;
             }
             return false;
@@ -778,8 +768,8 @@ public class SketchCanvas extends View {
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            // Update mSelectedEntity. Fires onShapeSelectionChanged (JS-PanResponder
-            // enabling/disabling)
+            // Update mSelectedEntity. 
+            // Fires onShapeSelectionChanged (JS-PanResponder enabling/disabling)
             updateSelectionOnTap(e);
             return true;
         }
@@ -791,7 +781,7 @@ public class SketchCanvas extends View {
             if (mSelectedEntity != null) {
                 float scaleFactorDiff = detector.getScaleFactor();
                 mSelectedEntity.getLayer().postScale(scaleFactorDiff - 1.0F);
-                updateUI();
+                invalidateCanvas(true);
                 return true;
             }
             return false;
@@ -803,7 +793,7 @@ public class SketchCanvas extends View {
         public boolean onRotate(RotateGestureDetector detector) {
             if (mSelectedEntity != null) {
                 mSelectedEntity.getLayer().postRotate(-detector.getRotationDegreesDelta());
-                updateUI();
+                invalidateCanvas(true);
                 return true;
             }
             return false;
