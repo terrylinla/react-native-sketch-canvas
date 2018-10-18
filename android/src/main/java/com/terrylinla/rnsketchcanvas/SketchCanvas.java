@@ -39,6 +39,7 @@ import com.terrylinla.rnsketchcanvas.utils.layers.Font;
 import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
 import com.terrylinla.rnsketchcanvas.utils.layers.TextLayer;
 import com.terrylinla.rnsketchcanvas.utils.entities.BorderStyle;
+import com.terrylinla.rnsketchcanvas.utils.entities.EntityType;
 import com.terrylinla.rnsketchcanvas.utils.entities.CircleEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.MotionEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.TextEntity;
@@ -556,6 +557,26 @@ public class SketchCanvas extends View {
      * MotionEntities related code
      *
      **/
+    public void addEntity(EntityType shapeType, String textShapeFontType, int textShapeFontSize, String textShapeText, String imageShapeAsset) {
+        switch(shapeType) {
+            case CIRCLE:
+                break;
+            case RECT:
+                break;
+            case TRIANGLE:
+                break;
+            case ARROW:
+                break;
+            case TEXT:
+                break;
+            case IMAGE:
+                break;
+            default:
+                // Draw Circle
+                break;
+        }
+    }
+    
     protected void addCircleShape() {
         CircleLayer shapeLayer = createCircleLayer();
         CircleEntity circleEntity = new CircleEntity(shapeLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, Utility.convertDpToPxAsFloat(mContext.getResources().getDisplayMetrics(), mEntityStrokeWidth), mEntityStrokeColor);

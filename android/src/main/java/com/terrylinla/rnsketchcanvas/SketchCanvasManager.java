@@ -28,6 +28,8 @@ import android.graphics.PointF;
 
 import javax.annotation.Nullable;
 
+import com.terrylinla.rnsketchcanvas.utils.entities.EntityType;
+
 public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_ADD_POINT = 1;
     public static final int COMMAND_NEW_PATH = 2;
@@ -37,6 +39,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
     public static final int COMMAND_DELETE_SELECTED_SHAPE = 8;
+    public static final int COMMAND_ADD_SHAPE = 9;
 
     public static SketchCanvas Canvas = null;
 
@@ -90,6 +93,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("save", COMMAND_SAVE);
         map.put("endPath", COMMAND_END_PATH);
         map.put("deleteSelectedShape", COMMAND_DELETE_SELECTED_SHAPE);
+        map.put("addShape", COMMAND_ADD_SHAPE);
 
         return map;
     }
@@ -138,6 +142,39 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
             }
             case COMMAND_DELETE_SELECTED_SHAPE: {
                 view.releaseSelectedEntity();
+                return;
+            }
+            case COMMAND_ADD_SHAPE: {
+                EntityType shapeType = null;
+                switch(args.getString(0)) {
+                    case "Circle":
+                        shapeType = EntityType.CIRCLE;
+                        break;
+                    case "Rect":
+                        shapeType = EntityType.RECT;
+                        break;
+                    case "Triangle":
+                        shapeType = EntityType.TRIANGLE;
+                        break;
+                    case "Arrow":
+                        shapeType = EntityType.ARROW;
+                        break;
+                    case "Text":
+                        shapeType = EntityType.TEXT;
+                        break;
+                    case "Image":
+                        shapeType = EntityType.IMAGE;
+                        break;
+                    default:
+                        shapeType = EntityType.CIRCLE;
+                        break;
+                }
+
+                String typeFace = args.isNull(1) ? null : args.getString(1);
+                int fontSize = args.getInt(2);
+                String text = args.isNull(3) ? null : args.getString(3);
+                String imagePath = args.isNull(4) ? null : args.getString(4);
+                view.addEntity(shapeType, typeFace, fontSize, text, imagePath);
                 return;
             }
             default:

@@ -68,6 +68,14 @@ export interface ShapeConfiguration {
   shapeStrokeWidth?: number
 }
 
+export interface AddShapeConfig {
+  shapeType: 'Circle' | 'Text' | 'Image' | 'Rect' | 'Triangle' | 'Arrow'
+  textShapeFontType?: string
+  textShapeFontSize?: number
+  textShapeText?: string
+  imageShapeAsset?: string;
+}
+
 export interface SketchCanvasProps {
   style?: StyleProp<ViewStyle>
   strokeColor?: string
@@ -81,6 +89,8 @@ export interface SketchCanvasProps {
   /**
    * {
    *    shapeBorderColor: string,
+   *    shapeBorderStyle?: 'Dashed' | 'Solid'
+   *    shapeBorderStrokeWidth?: number
    *    shapeColor: string,
    *    shapeStrokeWidth: number
    * }
@@ -110,6 +120,7 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
   undo(): number
   addPath(data: Path): void
   deletePath(id: number): void
+  addShape(config: AddShapeConfig): void
   deleteSelectedShape(): void
 
   /**
@@ -187,6 +198,8 @@ export interface RNSketchCanvasProps {
   /**
    * {
    *    shapeBorderColor: string,
+   *    shapeBorderStyle?: 'Dashed' | 'Solid'
+   *    shapeBorderStrokeWidth?: number
    *    shapeColor: string,
    *    shapeStrokeWidth: number
    * }
@@ -199,6 +212,7 @@ export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps 
   undo(): number
   addPath(data: Path): void
   deletePath(id: number): void
+  addShape(config: AddShapeConfig)
   deleteSelectedShape(): void
   save(): void
   nextStrokeWidth(): void

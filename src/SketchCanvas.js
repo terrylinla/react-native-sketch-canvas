@@ -140,6 +140,13 @@ class SketchCanvas extends React.Component {
     UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deletePath, [id])
   }
 
+  addShape(config) {
+    if (config) {
+      let fontSize = config.textShapeFontSize ? config.textShapeFontSize : 0;
+      UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addShape, [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset]);
+    }
+  }
+
   deleteSelectedShape() {
     UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deleteSelectedShape, []);
   }
