@@ -314,11 +314,7 @@ public class SketchCanvas extends View {
             mSketchCanvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
         }
 
-        // TODO: Remove after we can add entities from JS-Side
-        if (mEntities.isEmpty()) {
-            addTextSticker();
-            addCircleShape();
-        } else {
+        if (!mEntities.isEmpty()) {
             drawAllEntities(mSketchCanvas);
         }
     }
@@ -560,26 +556,37 @@ public class SketchCanvas extends View {
     public void addEntity(EntityType shapeType, String textShapeFontType, int textShapeFontSize, String textShapeText, String imageShapeAsset) {
         switch(shapeType) {
             case CIRCLE:
-                break;
-            case RECT:
-                break;
-            case TRIANGLE:
-                break;
-            case ARROW:
+                addCircleEntity();
                 break;
             case TEXT:
+                addTextEntity(textShapeFontType, textShapeFontSize, textShapeText);
+                break;
+            case RECT:
+                // TODO: Doesn't exist yet
+                break;
+            case TRIANGLE:
+                // TODO: Doesn't exist yet
+                break;
+            case ARROW:
+                // TODO: Doesn't exist yet
                 break;
             case IMAGE:
+                // TODO: Doesn't exist yet
                 break;
             default:
-                // Draw Circle
+                addCircleEntity();
                 break;
         }
     }
     
-    protected void addCircleShape() {
-        CircleLayer shapeLayer = createCircleLayer();
-        CircleEntity circleEntity = new CircleEntity(shapeLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, Utility.convertDpToPxAsFloat(mContext.getResources().getDisplayMetrics(), mEntityStrokeWidth), mEntityStrokeColor);
+    protected void addCircleEntity() {
+        CircleLayer circleLayer = new CircleLayer();
+        CircleEntity circleEntity = null;
+        if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
+            circleEntity = new CircleEntity(circleLayer, mDrawingCanvas.getWidth(), mDrawingCanvas.getHeight(), 300, 20f, mEntityStrokeWidth, mEntityStrokeColor);
+        } else {
+            circleEntity = new CircleEntity(circleLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, mEntityStrokeWidth, mEntityStrokeColor);
+        }
         addEntityAndPosition(circleEntity);
 
         PointF center = circleEntity.absoluteCenter();
@@ -589,10 +596,20 @@ public class SketchCanvas extends View {
         invalidateCanvas(true);
     }
 
-    protected void addTextSticker() {
-        TextLayer textLayer = createTextLayer();
-        textLayer.setText("This is just a test");
-        TextEntity textEntity = new TextEntity(textLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight() );
+    protected void addTextEntity(String fontType, int fontSize, String text) {
+        TextLayer textLayer = createTextLayer(fontType, fontSize);
+        if (text != null) {
+            textLayer.setText(text);
+        } else {
+            textLayer.setText("No Text provided!");
+        }
+
+        TextEntity textEntity = null;
+        if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
+            textEntity = new TextEntity(textLayer, mDrawingCanvas.getWidth(), mDrawingCanvas.getHeight());
+        } else {
+            textEntity = new TextEntity(textLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight());
+        }
         addEntityAndPosition(textEntity);
 
         PointF center = textEntity.absoluteCenter();
@@ -602,21 +619,30 @@ public class SketchCanvas extends View {
         invalidateCanvas(true);
     }
 
-    private TextLayer createTextLayer() {
+    private TextLayer createTextLayer(String fontType, int fontSize) {
         TextLayer textLayer = new TextLayer(mContext);
         Font font = new Font(mContext, null);
         font.setColor(mEntityStrokeColor);
-        font.setSize(TextLayer.Limits.INITIAL_FONT_SIZE);
-        if (mTypeface != null) {
-            font.setTypeface(mTypeface);
+
+        if (fontSize > 0) {
+            float convertedFontSize = (float)fontSize / 200;
+            font.setSize(convertedFontSize);
+        } else {
+            font.setSize(TextLayer.Limits.INITIAL_FONT_SIZE);
         }
+
+        if (fontType != null) {
+            Typeface typeFace = null;
+            try {
+                typeFace = Typeface.createFromAsset(mContext.getAssets(), fontType);
+            } catch(Exception ex) {
+                typeFace = Typeface.create(fontType, Typeface.NORMAL);
+            }
+            font.setTypeface(typeFace);
+        }
+
         textLayer.setFont(font);
         return textLayer;
-    }
-
-    private CircleLayer createCircleLayer() {
-        CircleLayer circleLayer = new CircleLayer();
-        return circleLayer;
     }
 
     public void addEntityAndPosition(MotionEntity entity) {

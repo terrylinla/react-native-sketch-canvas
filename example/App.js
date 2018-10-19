@@ -100,6 +100,9 @@ export default class example extends Component {
           this.state.example === 1 &&
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <RNSketchCanvas
+              ref={(ref) => {
+                this.canvas = ref
+              }}
               touchEnabled={this.state.touchEnabled}
               containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
@@ -111,6 +114,9 @@ export default class example extends Component {
               }}
               undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
               onUndoPressed={(id) => {
+                this.canvas.addShape({ shapeType: 'Circle' });
+                this.canvas.addShape({ shapeType: 'Text', textShapeFontSize: 10, textShapeText: "Added TextShape from JS" });
+                this.canvas.addShape({ shapeType: 'Text', textShapeFontType: 'fonts/IndieFlower.ttf', textShapeFontSize: 5, textShapeText: "Added TextShape with custom TypeFace" });
                 // Alert.alert('do something')
               }}
               clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
