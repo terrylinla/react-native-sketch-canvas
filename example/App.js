@@ -115,8 +115,10 @@ export default class example extends Component {
               undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
               onUndoPressed={(id) => {
                 this.canvas.addShape({ shapeType: 'Circle' });
-                this.canvas.addShape({ shapeType: 'Text', textShapeFontSize: 10, textShapeText: "Added TextShape from JS" });
-                this.canvas.addShape({ shapeType: 'Text', textShapeFontType: 'fonts/IndieFlower.ttf', textShapeFontSize: 5, textShapeText: "Added TextShape with custom TypeFace" });
+                this.canvas.addShape({ shapeType: 'Rect' });
+                // this.canvas.addShape({ shapeType: 'Square' });
+                // this.canvas.addShape({ shapeType: 'Text', textShapeFontSize: 10, textShapeText: "Added TextShape from JS" });
+                // this.canvas.addShape({ shapeType: 'Text', textShapeFontType: 'fonts/IndieFlower.ttf', textShapeFontSize: 5, textShapeText: "Added TextShape with custom TypeFace" });
                 // this.canvas.decreaseSelectedShapeFontsize();
                 // this.canvas.increaseSelectedShapeFontsize();
                 // this.canvas.changeSelectedShapeText("Random text " + Math.random());

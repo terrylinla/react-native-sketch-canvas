@@ -10,7 +10,7 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.terrylinla.rnsketchcanvas.utils.layers.CircleLayer;
+import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
 
 public class CircleEntity extends MotionEntity {
     private Paint mCirclePaint;
@@ -22,7 +22,7 @@ public class CircleEntity extends MotionEntity {
     private Bitmap mCircleBitmap;
     private Canvas mCircleCanvas;
 
-    public CircleEntity(@NonNull CircleLayer layer,
+    public CircleEntity(@NonNull Layer layer,
                         @IntRange(from = 1) int canvasWidth,
                         @IntRange(from = 1) int canvasHeight, int circleRadius, @Nullable Float bordersPadding, @Nullable Float strokeWidth, @Nullable Integer strokeColor) {
         super(layer, canvasWidth, canvasHeight);
@@ -114,8 +114,8 @@ public class CircleEntity extends MotionEntity {
 
     @Override
     @NonNull
-    public CircleLayer getLayer() {
-        return (CircleLayer) layer;
+    public Layer getLayer() {
+        return layer;
     }
 
     @Override

@@ -1,5 +1,5 @@
 package com.terrylinla.rnsketchcanvas.utils.entities;
 
 public enum EntityType {
-    CIRCLE, RECT, TRIANGLE, ARROW, TEXT, IMAGE
+    CIRCLE, RECT, SQUARE, TRIANGLE, ARROW, TEXT, IMAGE
 }

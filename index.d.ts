@@ -69,7 +69,7 @@ export interface ShapeConfiguration {
 }
 
 export interface AddShapeConfig {
-  shapeType: 'Circle' | 'Text' | 'Image' | 'Rect' | 'Triangle' | 'Arrow'
+  shapeType: 'Circle' | 'Text' | 'Image' | 'Rect' | 'Square' | 'Triangle' | 'Arrow'
   textShapeFontType?: string
   textShapeFontSize?: number
   textShapeText?: string

@@ -34,13 +34,13 @@ import java.util.TimerTask;
 
 import com.terrylinla.rnsketchcanvas.utils.CanvasText;
 import com.terrylinla.rnsketchcanvas.utils.Utility;
-import com.terrylinla.rnsketchcanvas.utils.layers.CircleLayer;
 import com.terrylinla.rnsketchcanvas.utils.layers.Font;
 import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
 import com.terrylinla.rnsketchcanvas.utils.layers.TextLayer;
 import com.terrylinla.rnsketchcanvas.utils.entities.BorderStyle;
 import com.terrylinla.rnsketchcanvas.utils.entities.EntityType;
 import com.terrylinla.rnsketchcanvas.utils.entities.CircleEntity;
+import com.terrylinla.rnsketchcanvas.utils.entities.RectEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.MotionEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.TextEntity;
 import com.terrylinla.rnsketchcanvas.utils.gestureDetectors.MoveGestureDetector;
@@ -562,7 +562,10 @@ public class SketchCanvas extends View {
                 addTextEntity(textShapeFontType, textShapeFontSize, textShapeText);
                 break;
             case RECT:
-                // TODO: Doesn't exist yet
+                addRectEntity(600, 300);
+                break;
+            case SQUARE:
+                addSquareEntity(600);
                 break;
             case TRIANGLE:
                 // TODO: Doesn't exist yet
@@ -580,7 +583,7 @@ public class SketchCanvas extends View {
     }
     
     protected void addCircleEntity() {
-        CircleLayer circleLayer = new CircleLayer();
+        Layer circleLayer = new Layer();
         CircleEntity circleEntity = null;
         if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
             circleEntity = new CircleEntity(circleLayer, mDrawingCanvas.getWidth(), mDrawingCanvas.getHeight(), 300, 20f, mEntityStrokeWidth, mEntityStrokeColor);
@@ -592,6 +595,27 @@ public class SketchCanvas extends View {
         PointF center = circleEntity.absoluteCenter();
         center.y = center.y * 0.5F;
         circleEntity.moveCenterTo(center);
+
+        invalidateCanvas(true);
+    }
+
+    protected void addSquareEntity(int width) {
+        addRectEntity(width, width);
+    }
+
+    protected void addRectEntity(int width, int height) {
+        Layer rectLayer = new Layer();
+        RectEntity rectEntity = null;
+        if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
+            rectEntity = new RectEntity(rectLayer, mDrawingCanvas.getWidth(), mDrawingCanvas.getHeight(), width, height, 30f, mEntityStrokeWidth, mEntityStrokeColor);
+        } else {
+            rectEntity = new RectEntity(rectLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), width, height, 30f, mEntityStrokeWidth, mEntityStrokeColor);
+        }
+        addEntityAndPosition(rectEntity);
+
+        PointF center = rectEntity.absoluteCenter();
+        center.y = center.y * 0.5F;
+        rectEntity.moveCenterTo(center);
 
         invalidateCanvas(true);
     }
@@ -730,26 +754,10 @@ public class SketchCanvas extends View {
         return selected;
     }
 
-    private void bringLayerToFront(MotionEntity entity) {
-        if (mEntities.remove(entity)) {
-            mEntities.add(entity);
-            invalidateCanvas(true);
-        }
-    }
-
     private void updateSelectionOnTap(MotionEvent e) {
         MotionEntity entity = findEntityAtPoint(e.getX(), e.getY());
         onShapeSelectionChanged(entity);
         selectEntity(entity);
-    }
-
-    private void updateOnLongPress(MotionEvent e) {
-        if (mSelectedEntity != null) {
-            PointF p = new PointF(e.getX(), e.getY());
-            if (mSelectedEntity.pointInLayerRect(p)) {
-                bringLayerToFront(mSelectedEntity);
-            }
-        }
     }
 
     public void releaseSelectedEntity() {
@@ -845,7 +853,7 @@ public class SketchCanvas extends View {
         @Override
         public void onLongPress(MotionEvent e) {
             // TODO: We may not need this...
-            updateOnLongPress(e);
+            // updateOnLongPress(e);
         }
 
         @Override

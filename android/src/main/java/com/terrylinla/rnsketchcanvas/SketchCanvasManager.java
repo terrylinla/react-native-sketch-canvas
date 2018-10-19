@@ -159,6 +159,9 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                     case "Rect":
                         shapeType = EntityType.RECT;
                         break;
+                    case "Square":
+                        shapeType = EntityType.SQUARE;
+                        break;
                     case "Triangle":
                         shapeType = EntityType.TRIANGLE;
                         break;
