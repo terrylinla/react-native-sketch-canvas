@@ -37,11 +37,13 @@ import com.terrylinla.rnsketchcanvas.utils.Utility;
 import com.terrylinla.rnsketchcanvas.utils.layers.Font;
 import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
 import com.terrylinla.rnsketchcanvas.utils.layers.TextLayer;
+import com.terrylinla.rnsketchcanvas.utils.entities.ArrowEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.BorderStyle;
 import com.terrylinla.rnsketchcanvas.utils.entities.EntityType;
 import com.terrylinla.rnsketchcanvas.utils.entities.CircleEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.RectEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.MotionEntity;
+import com.terrylinla.rnsketchcanvas.utils.entities.TriangleEntity;
 import com.terrylinla.rnsketchcanvas.utils.entities.TextEntity;
 import com.terrylinla.rnsketchcanvas.utils.gestureDetectors.MoveGestureDetector;
 import com.terrylinla.rnsketchcanvas.utils.gestureDetectors.RotateGestureDetector;
@@ -568,10 +570,10 @@ public class SketchCanvas extends View {
                 addSquareEntity(600);
                 break;
             case TRIANGLE:
-                // TODO: Doesn't exist yet
+                addTriangleEntity();
                 break;
             case ARROW:
-                // TODO: Doesn't exist yet
+                addArrowEntity();
                 break;
             case IMAGE:
                 // TODO: Doesn't exist yet
@@ -595,6 +597,40 @@ public class SketchCanvas extends View {
         PointF center = circleEntity.absoluteCenter();
         center.y = center.y * 0.5F;
         circleEntity.moveCenterTo(center);
+
+        invalidateCanvas(true);
+    }
+
+    protected void addTriangleEntity() {
+        Layer triangleLayer = new Layer();
+        TriangleEntity triangleEntity = null;
+        if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
+            triangleEntity = new TriangleEntity(triangleLayer, mDrawingCanvas.getWidth(), mDrawingCanvas.getHeight(), 600, 20f, mEntityStrokeWidth, mEntityStrokeColor);
+        } else {
+            triangleEntity = new TriangleEntity(triangleLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 600, 20f, mEntityStrokeWidth, mEntityStrokeColor);
+        }
+        addEntityAndPosition(triangleEntity);
+
+        PointF center = triangleEntity.absoluteCenter();
+        center.y = center.y * 0.5F;
+        triangleEntity.moveCenterTo(center);
+
+        invalidateCanvas(true);
+    }
+
+    protected void addArrowEntity() {
+        Layer arrowLayer = new Layer();
+        ArrowEntity arrowEntity = null;
+        if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
+            arrowEntity = new ArrowEntity(arrowLayer, mDrawingCanvas.getWidth(), mDrawingCanvas.getHeight(), 600, 600, 20f, mEntityStrokeWidth, mEntityStrokeColor);
+        } else {
+            arrowEntity = new ArrowEntity(arrowLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 600, 600, 20f, mEntityStrokeWidth, mEntityStrokeColor);
+        }
+        addEntityAndPosition(arrowEntity);
+
+        PointF center = arrowEntity.absoluteCenter();
+        center.y = center.y * 0.5F;
+        arrowEntity.moveCenterTo(center);
 
         invalidateCanvas(true);
     }
