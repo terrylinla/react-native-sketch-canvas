@@ -117,6 +117,8 @@ export default class example extends Component {
                 this.canvas.addShape({ shapeType: 'Circle' });
                 this.canvas.addShape({ shapeType: 'Text', textShapeFontSize: 10, textShapeText: "Added TextShape from JS" });
                 this.canvas.addShape({ shapeType: 'Text', textShapeFontType: 'fonts/IndieFlower.ttf', textShapeFontSize: 5, textShapeText: "Added TextShape with custom TypeFace" });
+                // this.canvas.decreaseSelectedShapeFontsize();
+                // this.canvas.increaseSelectedShapeFontsize();
                 // Alert.alert('do something')
               }}
               clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}

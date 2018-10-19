@@ -40,6 +40,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_END_PATH = 7;
     public static final int COMMAND_DELETE_SELECTED_SHAPE = 8;
     public static final int COMMAND_ADD_SHAPE = 9;
+    public static final int COMMAND_INCREASE_SHAPE_FONTSIZE = 10;
+    public static final int COMMAND_DECREASE_SHAPE_FONTSIZE = 11;
 
     public static SketchCanvas Canvas = null;
 
@@ -94,6 +96,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("endPath", COMMAND_END_PATH);
         map.put("deleteSelectedShape", COMMAND_DELETE_SELECTED_SHAPE);
         map.put("addShape", COMMAND_ADD_SHAPE);
+        map.put("increaseShapeFontsize", COMMAND_INCREASE_SHAPE_FONTSIZE);
+        map.put("decreaseShapeFontsize", COMMAND_DECREASE_SHAPE_FONTSIZE);
 
         return map;
     }
@@ -175,6 +179,14 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 String text = args.isNull(3) ? null : args.getString(3);
                 String imagePath = args.isNull(4) ? null : args.getString(4);
                 view.addEntity(shapeType, typeFace, fontSize, text, imagePath);
+                return;
+            }
+            case COMMAND_INCREASE_SHAPE_FONTSIZE: {
+                view.increaseTextEntityFontSize();
+                return;
+            }
+            case COMMAND_DECREASE_SHAPE_FONTSIZE: {
+                view.decreaseTextEntityFontSize();
                 return;
             }
             default:

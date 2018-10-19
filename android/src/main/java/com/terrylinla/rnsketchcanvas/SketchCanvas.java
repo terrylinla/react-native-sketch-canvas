@@ -770,6 +770,32 @@ public class SketchCanvas extends View {
         }
     }
 
+    public void increaseTextEntityFontSize() {
+        TextEntity textEntity = getSelectedTextEntity();
+        if (textEntity != null) {
+            textEntity.getLayer().getFont().increaseSize(TextLayer.Limits.FONT_SIZE_STEP);
+            textEntity.updateEntity();
+            invalidateCanvas(true);
+        }
+    }
+
+    public void decreaseTextEntityFontSize() {
+        TextEntity textEntity = getSelectedTextEntity();
+        if (textEntity != null) {
+            textEntity.getLayer().getFont().decreaseSize(TextLayer.Limits.FONT_SIZE_STEP);
+            textEntity.updateEntity();
+            invalidateCanvas(true);
+        }
+    }
+
+    private TextEntity getSelectedTextEntity() {
+        if (mSelectedEntity != null && mSelectedEntity instanceof TextEntity) {
+            return (TextEntity) mSelectedEntity;
+        } else {
+            return null;
+        }
+    }
+
     /**
      *
      * Gesture Listeners
