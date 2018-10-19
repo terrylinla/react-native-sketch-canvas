@@ -42,6 +42,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_ADD_SHAPE = 9;
     public static final int COMMAND_INCREASE_SHAPE_FONTSIZE = 10;
     public static final int COMMAND_DECREASE_SHAPE_FONTSIZE = 11;
+    public static final int COMMAND_CHANGE_SHAPE_TEXT = 12;
 
     public static SketchCanvas Canvas = null;
 
@@ -98,6 +99,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("addShape", COMMAND_ADD_SHAPE);
         map.put("increaseShapeFontsize", COMMAND_INCREASE_SHAPE_FONTSIZE);
         map.put("decreaseShapeFontsize", COMMAND_DECREASE_SHAPE_FONTSIZE);
+        map.put("changeShapeText", COMMAND_CHANGE_SHAPE_TEXT);
 
         return map;
     }
@@ -187,6 +189,11 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
             }
             case COMMAND_DECREASE_SHAPE_FONTSIZE: {
                 view.decreaseTextEntityFontSize();
+                return;
+            }
+            case COMMAND_CHANGE_SHAPE_TEXT: {
+                String newText = args.getString(0);
+                view.setTextEntityText(newText);
                 return;
             }
             default:

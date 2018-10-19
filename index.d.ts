@@ -124,6 +124,7 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
   deleteSelectedShape(): void
   increaseSelectedShapeFontsize(): void
   decreaseSelectedShapeFontsize(): void
+  changeSelectedShapeText(newText: String): void
 
   /**
    * @param imageType "png" or "jpg"
@@ -214,10 +215,11 @@ export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps 
   undo(): number
   addPath(data: Path): void
   deletePath(id: number): void
-  addShape(config: AddShapeConfig)
+  addShape(config: AddShapeConfig): void
   deleteSelectedShape(): void
   increaseSelectedShapeFontsize(): void
   decreaseSelectedShapeFontsize(): void
+  changeSelectedShapeText(newText: String): void
   save(): void
   nextStrokeWidth(): void
 

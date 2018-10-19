@@ -172,6 +172,10 @@ export default class RNSketchCanvas extends React.Component {
     this._sketchCanvas.decreaseSelectedShapeFontsize();
   }
 
+  changeSelectedShapeText(newText) {
+    this._sketchCanvas.changeSelectedShapeText(newText);
+  }
+
   save() {
     if (this.props.savePreference) {
       const p = this.props.savePreference()

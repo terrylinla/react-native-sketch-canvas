@@ -788,6 +788,15 @@ public class SketchCanvas extends View {
         }
     }
 
+    public void setTextEntityText(String newText) {
+        TextEntity textEntity = getSelectedTextEntity();
+        if (textEntity != null && newText != null && newText.length() > 0) {
+            textEntity.getLayer().setText(newText);
+            textEntity.updateEntity();
+            invalidateCanvas(true);
+        }
+    }
+
     private TextEntity getSelectedTextEntity() {
         if (mSelectedEntity != null && mSelectedEntity instanceof TextEntity) {
             return (TextEntity) mSelectedEntity;
