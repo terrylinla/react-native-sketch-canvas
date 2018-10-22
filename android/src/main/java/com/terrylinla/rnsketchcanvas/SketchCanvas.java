@@ -9,6 +9,8 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
@@ -333,6 +335,19 @@ public class SketchCanvas extends View {
         invalidate();
     }
 
+    private int exifToDegrees(int exifOrientation) {
+        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
+            return 90;
+        } else if(exifOrientation == ExifInterface.ORIENTATION_NORMAL) { 
+            return 90; 
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+            return 180;
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+            return 270;
+        }
+        return 0;
+    }
+
     /**
      *
      * Outgoing Events related code
@@ -444,9 +459,33 @@ public class SketchCanvas extends View {
                     "drawable",
                     mContext.getPackageName());
             BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-            Bitmap bitmap = res == 0 ?
-                    BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
-                    BitmapFactory.decodeResource(mContext.getResources(), res);
+            Bitmap bitmap = null;
+            
+            try {
+                if (res == 0) {
+                    String convertedDirectory = directory == null ? "" : directory;
+                    String path = filename + convertedDirectory;
+                    ExifInterface exif = new ExifInterface(path);
+                    int exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                    int rotationInDegrees = exifToDegrees(exifOrientation);
+                    Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).toString(), bitmapOptions);
+
+                    // Let's rotate the loaded image into the correct orientation :-)
+                    Matrix matrix = new Matrix();
+                    if (exifOrientation != 0f) {
+                        matrix.preRotate(rotationInDegrees);
+                        bitmap = Bitmap.createBitmap(tempBitmap, 0, 0, tempBitmap.getWidth(), tempBitmap.getHeight(), matrix, true);
+                    } else {
+                        bitmap = tempBitmap;
+                    }
+                } else {
+                    bitmap = BitmapFactory.decodeResource(mContext.getResources(), res);
+                }
+            } catch (Exception e) {
+                Log.e("SKETCHCANVAS", "exception in openImageFile when creating ExifInterface: " + e);
+                bitmap = BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions);
+            }
+
             if(bitmap != null) {
                 mBackgroundImage = bitmap;
                 mOriginalBitmapHeight = bitmap.getHeight();

@@ -96,18 +96,28 @@ public class ArrowEntity extends MotionEntity {
 
     private void drawArrow() {
         int halfWidth = mWidth / 2;
+        int oneThirdWidth = mWidth / 3;
         int halfHeight = mHeight / 2;
+        int oneThirdHeight = mHeight / 3;
 
         float centerX = getLayer().getX() + halfWidth;
         float centerY = getLayer().getY() + halfHeight;
         
         Path arrowPath = new Path();
 
+        // Arrow with adjacents to centerY
+        // arrowPath.moveTo(centerX, centerY + halfHeight - mBordersPadding); // Start at bottom center
+        // arrowPath.lineTo(centerX, getLayer().getY() + mBordersPadding); // Draw -- from bottom up
+        // arrowPath.lineTo(centerX - halfWidth + mBordersPadding, centerY); // Draw left adjacent from top
+        // arrowPath.lineTo(centerX, getLayer().getY() + mBordersPadding); // Go Back to top
+        // arrowPath.lineTo(centerX + halfWidth - mBordersPadding, centerY); // Draw right adjacent from top
+
+        // Arrow with adjacents to Y + 1/3 of the height
         arrowPath.moveTo(centerX, centerY + halfHeight - mBordersPadding); // Start at bottom center
         arrowPath.lineTo(centerX, getLayer().getY() + mBordersPadding); // Draw -- from bottom up
-        arrowPath.lineTo(centerX - halfWidth + mBordersPadding, centerY); // Draw left adjacent from top
+        arrowPath.lineTo(centerX - oneThirdWidth + mBordersPadding, getLayer().getY() + oneThirdHeight); // Draw left adjacent from top
         arrowPath.lineTo(centerX, getLayer().getY() + mBordersPadding); // Go Back to top
-        arrowPath.lineTo(centerX + halfWidth - mBordersPadding, centerY); // Draw right adjacent from top
+        arrowPath.lineTo(centerX + oneThirdWidth - mBordersPadding, getLayer().getY() + oneThirdHeight); // Draw right adjacent from top
 
         this.mArrowCanvas.drawPath(arrowPath, mArrowPaint);
     }
