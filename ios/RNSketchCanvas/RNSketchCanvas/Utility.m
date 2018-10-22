@@ -57,4 +57,20 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
     }
 }
 
++ (BOOL)pointInTriangle:(CGPoint)pt v1: (CGPoint)v1 v2: (CGPoint)v2 v3:(CGPoint)v3 {
+    bool b1 = [self crossProduct:pt withCGPointB:v1 withCGPointC:v2] < 0.0;
+    bool b2 = [self crossProduct:pt withCGPointB:v2 withCGPointC:v3] < 0.0;
+    bool b3 = [self crossProduct:pt withCGPointB:v3 withCGPointC:v1] < 0.0;
+    
+    return (b1 == b2) && (b2 == b3);
+}
+
++ (CGFloat)crossProduct:(CGPoint)a withCGPointB: (CGPoint)b withCGPointC: (CGPoint)c {
+    return [self crossProduct:a.x ay:a.y bx:b.x by:b.y cx:c.x cy:c.y];
+}
+
++ (CGFloat)crossProduct:(CGFloat)ax ay: (CGFloat)ay bx: (CGFloat)bx by: (CGFloat)by cx: (CGFloat)cx cy: (CGFloat)cy {
+    return (ax - cx) * (by - cy) - (bx - cx) * (ay - cy);
+}
+
 @end
