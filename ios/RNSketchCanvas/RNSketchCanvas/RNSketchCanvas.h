@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import <entities/Enumerations.h>
 
 @class RCTEventDispatcher;
 
@@ -18,7 +19,12 @@
 - (void)clear;
 - (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize;
 - (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize;
-
+- (void)setShapeConfiguration:(NSDictionary *)dict;
+- (void)addEntity:(NSString *)entityType textShapeFontType: (NSString *)textShapeFontType textShapeFontSize: (NSNumber *)textShapeFontSize textShapeText: (NSString *)textShapeText imageShapeAsset: (NSString *)imageShapeAsset;
+- (void)releaseSelectedEntity;
+- (void)increaseTextEntityFontSize;
+- (void)decreaseTextEntityFontSize;
+- (void)setTextEntityText:(NSString *)newText;
 @end
 
 
@@ -31,5 +37,4 @@
 @property (nonatomic) NSDictionary *attribute;
 @property (nonatomic) BOOL isAbsoluteCoordinate;
 @property (nonatomic) CGRect drawRect;
-
 @end

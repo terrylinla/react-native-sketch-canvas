@@ -4,6 +4,7 @@
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
 #import <React/RCTUIManager.h>
+#import "entities/Enumerations.h"
 
 @implementation RNSketchCanvasManager
 
@@ -139,7 +140,7 @@ RCT_EXPORT_METHOD(deleteSelectedShape:(nonnull NSNumber *)reactTag)
 RCT_EXPORT_METHOD(addShape:(nonnull NSNumber *)reactTag shapeType:(NSString *) shapeType textShapeFontType:(NSString *) textShapeFontType textShapeFontSize:(NSNumber *) textShapeFontSize textShapeText:(NSString *) textShapeText imageShapeAsset:(NSString *)imageShapeAsset)
 {
     [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
-        [canvas addEntity:shapeType:shapeType textShapeFontType:textShapeFontType textShapeFontSize:textShapeFontSize textShapeText:textShapeText imageShapeAsset:imageShapeAsset];
+        [canvas addEntity:shapeType textShapeFontType:textShapeFontType textShapeFontSize:textShapeFontSize textShapeText:textShapeText imageShapeAsset:imageShapeAsset];
     }];
 }
 

@@ -28,6 +28,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D7B7D3E1217DE92C00902B8C /* Enumerations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Enumerations.h; sourceTree = "<group>"; };
 		DE0C997E1F32D596001BDE8B /* RNSketchData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSketchData.h; sourceTree = "<group>"; };
 		DE0C997F1F32D596001BDE8B /* RNSketchData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNSketchData.m; sourceTree = "<group>"; };
 		DEB694851F322F2A00DC6841 /* RNSketchCanvasManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSketchCanvasManager.h; sourceTree = "<group>"; };
@@ -50,6 +51,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D7B7D3E0217DE80400902B8C /* entities */ = {
+			isa = PBXGroup;
+			children = (
+				D7B7D3E1217DE92C00902B8C /* Enumerations.h */,
+			);
+			path = entities;
+			sourceTree = "<group>";
+		};
 		DEFBA24F1F322B5F00A4545C = {
 			isa = PBXGroup;
 			children = (
@@ -69,6 +78,7 @@
 		DEFBA25A1F322B6000A4545C /* RNSketchCanvas */ = {
 			isa = PBXGroup;
 			children = (
+				D7B7D3E0217DE80400902B8C /* entities */,
 				DEB694851F322F2A00DC6841 /* RNSketchCanvasManager.h */,
 				DEB694861F322F2A00DC6841 /* RNSketchCanvasManager.m */,
 				DEFBA25B1F322B6000A4545C /* RNSketchCanvas.h */,

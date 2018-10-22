@@ -5,6 +5,7 @@
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
 #import "Utility.h"
+#import "entities/Enumerations.h"
 
 @implementation RNSketchCanvas
 {
@@ -23,6 +24,14 @@
     NSString *_backgroundImageContentMode;
     
     NSArray *_arrTextOnSketch, *_arrSketchOnText;
+    
+    NSArray *motionEntities;
+    // TODO: MotionEntity *entity;
+    UIColor *entityBorderColor;
+    enum BorderStyle entityBorderStyle;
+    CGFloat entityBorderStrokeWidth;
+    CGFloat entityStrokeWidth;
+    UIColor *entityStrokeColor;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -35,6 +44,14 @@
 
         self.backgroundColor = [UIColor clearColor];
         self.clearsContextBeforeDrawing = YES;
+        
+        motionEntities = [NSArray init];
+        // TODO: entity = nil;
+        entityBorderColor = [UIColor clearColor];
+        entityBorderStyle = DASHED;
+        entityBorderStrokeWidth = 1.0;
+        entityStrokeWidth = 5.0;
+        entityStrokeColor = [UIColor blackColor];
     }
     return self;
 }
@@ -431,6 +448,95 @@
     return data;
 }
 
+#pragma mark - MotionEntites related code
+- (void)setShapeConfiguration:(NSDictionary *)dict {
+    if (![dict[@"shapeBorderColor"] isEqual: [NSNull null]]) {
+        UIColor *color = dict[@"shapeBorderColor"];
+        if (![[UIColor clearColor] isEqual:color]) {
+            entityBorderColor = color;
+        }
+    }
+    
+    if (![dict[@"shapeBorderStyle"] isEqual:[NSNull null]]) {
+        NSString *borderStyle = dict[@"shapeBorderStyle"];
+        switch ([@[@"Dashed", @"Solid"] indexOfObject: borderStyle]) {
+            case 0:
+                entityBorderStyle = DASHED;
+                break;
+            case 1:
+                entityBorderStyle = SOLID;
+            case NSNotFound:
+            default: {
+                entityBorderStyle = DASHED;
+                break;
+            }
+        }
+    }
+    
+    if (![dict[@"shapeBorderStrokeWidth"] isEqual:[NSNull null]]) {
+        entityBorderStrokeWidth = [dict[@"shapeBorderStrokeWidth"] doubleValue];
+    }
+    
+    if (![dict[@"shapeColor"] isEqual: [NSNull null]]) {
+        UIColor *color = dict[@"shapeColor"];
+        if (![[UIColor clearColor] isEqual:color]) {
+            entityStrokeColor = color;
+        }
+    }
+    
+    if (![dict[@"shapeStrokeWidth"] isEqual:[NSNull null]]) {
+        entityStrokeWidth = [dict[@"shapeStrokeWidth"] doubleValue];
+    }
+}
+
+- (void)addEntity:(NSString *)entityType textShapeFontType:(NSString *)textShapeFontType textShapeFontSize:(NSNumber *)textShapeFontSize textShapeText:(NSString *)textShapeText imageShapeAsset:(NSString *)imageShapeAsset {
+    
+    switch ([@[@"Circle", @"Rect", @"Square", @"Triangle", @"Arrow", @"Text", @"Image"] indexOfObject: entityType]) {
+        case 1:
+            // addRectEntity(600, 300);
+            break;
+        case 2:
+            // addSquareEntity(600);
+            break;
+        case 3:
+            // addTriangleEntity();
+            break;
+        case 4:
+            // addArrowEntity();
+            break;
+        case 5:
+            // addTextEntity(textShapeFontType, textShapeFontSize, textShapeText);
+            break;
+        case 6:
+            // TODO: Doesn't exist yet
+        case 0:
+        case NSNotFound:
+        default: {
+            // addCircleEntity();
+            break;
+        }
+    }
+}
+
+// TODO: Add add*Entity methods
+
+- (void)releaseSelectedEntity {
+    // TODO: release the selected entity
+}
+
+- (void)increaseTextEntityFontSize {
+    // TODO: increase FontSize of TextEntity
+}
+
+- (void)decreaseTextEntityFontSize {
+    // TODO: decrease FontSize of TextEntity
+}
+
+- (void)setTextEntityText:(NSString *)newText {
+    // TODO: Set newText as text of selected TextEntity
+}
+
+#pragma mark - Outgoing events
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo: (void *) contextInfo {
     if (_onChange) {
         _onChange(@{ @"success": error != nil ? @NO : @YES });
@@ -440,6 +546,12 @@
 - (void)notifyPathsUpdate {
     if (_onChange) {
         _onChange(@{ @"pathsUpdate": @(_paths.count) });
+    }
+}
+
+- (void)onShapeSelectionChanged:(BOOL)isShapeSelected {
+    if (_onChange) {
+        _onChange(@{ @"isShapeSelected": isShapeSelected });
     }
 }
 
