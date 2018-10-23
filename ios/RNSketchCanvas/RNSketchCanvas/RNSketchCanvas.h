@@ -1,5 +1,5 @@
 #import <UIKit/UIKit.h>
-#import <entities/Enumerations.h>
+#import "entities/Enumerations.h"
 
 @class RCTEventDispatcher;
 
@@ -14,7 +14,7 @@
 - (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth;
 - (void)addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points;
 - (void)deletePath:(int) pathId;
-- (void)addPointX: (float)x Y: (float)y;
+- (void)addPointX: (float)x Y: (float)y isMove: (BOOL)isMove;
 - (void)endPath;
 - (void)clear;
 - (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize;

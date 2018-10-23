@@ -25,7 +25,7 @@
     
     NSArray *_arrTextOnSketch, *_arrSketchOnText;
     
-    NSArray *motionEntities;
+    NSMutableArray *motionEntities;
     // TODO: MotionEntity *entity;
     UIColor *entityBorderColor;
     enum BorderStyle entityBorderStyle;
@@ -45,7 +45,7 @@
         self.backgroundColor = [UIColor clearColor];
         self.clearsContextBeforeDrawing = YES;
         
-        motionEntities = [NSArray init];
+        // motionEntities = [NSArray init];
         // TODO: entity = nil;
         entityBorderColor = [UIColor clearColor];
         entityBorderStyle = DASHED;
@@ -284,7 +284,7 @@
     }
 }
 
-- (void)addPointX: (float)x Y: (float)y {
+- (void)addPointX: (float)x Y: (float)y isMove:(BOOL)isMove {
     CGPoint newPoint = CGPointMake(x, y);
     CGRect updateRect = [_currentPath addPoint: newPoint];
 
@@ -551,7 +551,7 @@
 
 - (void)onShapeSelectionChanged:(BOOL)isShapeSelected {
     if (_onChange) {
-        _onChange(@{ @"isShapeSelected": isShapeSelected });
+        _onChange(@{ @"isShapeSelected": isShapeSelected ? @YES : @NO});
     }
 }
 
