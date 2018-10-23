@@ -3,7 +3,7 @@
 
 @class RCTEventDispatcher;
 
-@interface RNSketchCanvas : UIView
+@interface RNSketchCanvas : UIView, UIGestureRecognizerDelegate
 
 @property (nonatomic, copy) RCTBubblingEventBlock onChange;
 

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D7BC8415217F565D00A275D3 /* Layer.m in Sources */ = {isa = PBXBuildFile; fileRef = D7BC8414217F565D00A275D3 /* Layer.m */; };
+		D7BC8416217F589C00A275D3 /* Layer.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D7BC8413217F50CF00A275D3 /* Layer.h */; };
 		DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */ = {isa = PBXBuildFile; fileRef = DE0C997F1F32D596001BDE8B /* RNSketchData.m */; };
 		DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB694861F322F2A00DC6841 /* RNSketchCanvasManager.m */; };
 		DED3A13720A4159A00D72FBF /* Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = DED3A13520A4159A00D72FBF /* Utility.m */; };
@@ -21,6 +23,7 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				D7BC8416217F589C00A275D3 /* Layer.h in CopyFiles */,
 				DEFBA25E1F322B6000A4545C /* RNSketchCanvas.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -29,6 +32,9 @@
 
 /* Begin PBXFileReference section */
 		D7B7D3E1217DE92C00902B8C /* Enumerations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Enumerations.h; sourceTree = "<group>"; };
+		D7BC8411217F4FE600A275D3 /* MotionEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MotionEntity.h; sourceTree = "<group>"; };
+		D7BC8413217F50CF00A275D3 /* Layer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Layer.h; sourceTree = "<group>"; };
+		D7BC8414217F565D00A275D3 /* Layer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Layer.m; sourceTree = "<group>"; };
 		DE0C997E1F32D596001BDE8B /* RNSketchData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSketchData.h; sourceTree = "<group>"; };
 		DE0C997F1F32D596001BDE8B /* RNSketchData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNSketchData.m; sourceTree = "<group>"; };
 		DEB694851F322F2A00DC6841 /* RNSketchCanvasManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSketchCanvasManager.h; sourceTree = "<group>"; };
@@ -54,9 +60,20 @@
 		D7B7D3E0217DE80400902B8C /* entities */ = {
 			isa = PBXGroup;
 			children = (
+				D7BC8412217F50AD00A275D3 /* layer */,
 				D7B7D3E1217DE92C00902B8C /* Enumerations.h */,
+				D7BC8411217F4FE600A275D3 /* MotionEntity.h */,
 			);
 			path = entities;
+			sourceTree = "<group>";
+		};
+		D7BC8412217F50AD00A275D3 /* layer */ = {
+			isa = PBXGroup;
+			children = (
+				D7BC8413217F50CF00A275D3 /* Layer.h */,
+				D7BC8414217F565D00A275D3 /* Layer.m */,
+			);
+			path = layer;
 			sourceTree = "<group>";
 		};
 		DEFBA24F1F322B5F00A4545C = {
@@ -149,6 +166,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DEFBA25D1F322B6000A4545C /* RNSketchCanvas.m in Sources */,
+				D7BC8415217F565D00A275D3 /* Layer.m in Sources */,
 				DED3A13720A4159A00D72FBF /* Utility.m in Sources */,
 				DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */,
 				DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */,

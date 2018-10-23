@@ -6,6 +6,7 @@
 #import <React/UIView+React.h>
 #import "Utility.h"
 #import "entities/Enumerations.h"
+#import "entities/MotionEntity.h"
 
 @implementation RNSketchCanvas
 {
@@ -25,13 +26,18 @@
     
     NSArray *_arrTextOnSketch, *_arrSketchOnText;
     
-    NSMutableArray *motionEntities;
-    // TODO: MotionEntity *entity;
+    NSMutableArray<MotionEntity *> *motionEntities;
+    MotionEntity *selectedEntity;
     UIColor *entityBorderColor;
     enum BorderStyle entityBorderStyle;
     CGFloat entityBorderStrokeWidth;
     CGFloat entityStrokeWidth;
     UIColor *entityStrokeColor;
+    
+    UITapGestureRecognizer *tapGesture;
+    UIRotationGestureRecognizer *rotateGesture;
+    UIPanGestureRecognizer *moveGesture;
+    UIPinchGestureRecognizer *scaleGesture;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -45,15 +51,40 @@
         self.backgroundColor = [UIColor clearColor];
         self.clearsContextBeforeDrawing = YES;
         
-        // motionEntities = [NSArray init];
-        // TODO: entity = nil;
+        motionEntities = [NSMutableArray new];
+        selectedEntity = nil;
         entityBorderColor = [UIColor clearColor];
         entityBorderStyle = DASHED;
         entityBorderStrokeWidth = 1.0;
         entityStrokeWidth = 5.0;
         entityStrokeColor = [UIColor blackColor];
+        
+        tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+        tapGesture.delegate = self;
+        tapGesture.numberOfTapsRequired = 1;
+        
+        rotateGesture = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotate:)];
+        rotateGesture.delegate = self;
+        
+        moveGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleMove:)];
+        moveGesture.delegate = self;
+        moveGesture.minimumNumberOfTouches = 1;
+        moveGesture.maximumNumberOfTouches = 1;
+        
+        scaleGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handleScale:)];
+        scal eGesture.delegate = self;
+        
+        [self addGestureRecognizer:tapGesture];
+        [self addGestureRecognizer:rotateGesture];
+        [self addGestureRecognizer:moveGesture];
+        [self addGestureRecognizer:scaleGesture];
+        
     }
     return self;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return TRUE;
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -534,6 +565,25 @@
 
 - (void)setTextEntityText:(NSString *)newText {
     // TODO: Set newText as text of selected TextEntity
+}
+
+#pragma mark - UIGestureRecognizers
+- (void)handleTap:(UITapGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateEnded) {
+        // Do something when gesture ended
+    }
+}
+
+- (void)handleRotate:(UIRotationGestureRecognizer *)sender {
+    // Do something continously
+}
+
+- (void)handleMove:(UIPanGestureRecognizer *)sender {
+    // Do something continously
+}
+
+- (void)handleScale:(UIPinchGestureRecognizer *)sender {
+    // Do something continously
 }
 
 #pragma mark - Outgoing events
