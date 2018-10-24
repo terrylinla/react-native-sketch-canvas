@@ -72,7 +72,7 @@
         moveGesture.maximumNumberOfTouches = 1;
         
         scaleGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handleScale:)];
-        scal eGesture.delegate = self;
+        scaleGesture.delegate = self;
         
         [self addGestureRecognizer:tapGesture];
         [self addGestureRecognizer:rotateGesture];
@@ -83,6 +83,7 @@
     return self;
 }
 
+// Make multiple GestureRecognizers work
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     return TRUE;
 }
@@ -570,20 +571,45 @@
 #pragma mark - UIGestureRecognizers
 - (void)handleTap:(UITapGestureRecognizer *)sender {
     if (sender.state == UIGestureRecognizerStateEnded) {
-        // Do something when gesture ended
+        CGPoint tapLocation = [sender locationInView:self];
+        // updateSelectionOnTap();
     }
 }
 
 - (void)handleRotate:(UIRotationGestureRecognizer *)sender {
-    // Do something continously
+    UIGestureRecognizerState state = [sender state];
+    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
+        if (selectedEntity) {
+            CGFloat rotationInRadians = sender.rotation;
+            [selectedEntity rotateEntityBy:rotationInRadians];
+        }
+        [sender setRotation:0.0];
+    }
 }
 
 - (void)handleMove:(UIPanGestureRecognizer *)sender {
-    // Do something continously
+    UIGestureRecognizerState state = [sender state];
+    if (selectedEntity) {
+        if (state == UIGestureRecognizerStateBegan) {
+            selectedEntity.initialCenterPoint = selectedEntity.center;
+        }
+        if (state != UIGestureRecognizerStateCancelled) {
+            [selectedEntity moveEntityTo:[sender translationInView:self]];
+            [sender setTranslation:CGPointZero inView:sender.view];
+        } else {
+            selectedEntity.center = selectedEntity.initialCenterPoint;
+        }
+    }
 }
 
 - (void)handleScale:(UIPinchGestureRecognizer *)sender {
-    // Do something continously
+    UIGestureRecognizerState state = [sender state];
+    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
+        if (selectedEntity) {
+            [selectedEntity scaleEntityBy:sender.scale];
+        }
+        [sender setScale:1.0];
+    }
 }
 
 #pragma mark - Outgoing events
