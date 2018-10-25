@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		858EE6372180DFBD009C9E08 /* CircleEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 858EE6362180DFBD009C9E08 /* CircleEntity.m */; };
 		D7BC84182180814600A275D3 /* MotionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = D7BC84172180814600A275D3 /* MotionEntity.m */; };
 		DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */ = {isa = PBXBuildFile; fileRef = DE0C997F1F32D596001BDE8B /* RNSketchData.m */; };
 		DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB694861F322F2A00DC6841 /* RNSketchCanvasManager.m */; };
@@ -29,6 +30,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		858EE6312180DEC5009C9E08 /* CircleEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CircleEntity.h; sourceTree = "<group>"; };
+		858EE6362180DFBD009C9E08 /* CircleEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CircleEntity.m; sourceTree = "<group>"; };
 		D7B7D3E1217DE92C00902B8C /* Enumerations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Enumerations.h; sourceTree = "<group>"; };
 		D7BC8411217F4FE600A275D3 /* MotionEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MotionEntity.h; sourceTree = "<group>"; };
 		D7BC84172180814600A275D3 /* MotionEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MotionEntity.m; sourceTree = "<group>"; };
@@ -60,6 +63,8 @@
 				D7B7D3E1217DE92C00902B8C /* Enumerations.h */,
 				D7BC8411217F4FE600A275D3 /* MotionEntity.h */,
 				D7BC84172180814600A275D3 /* MotionEntity.m */,
+				858EE6312180DEC5009C9E08 /* CircleEntity.h */,
+				858EE6362180DFBD009C9E08 /* CircleEntity.m */,
 			);
 			path = entities;
 			sourceTree = "<group>";
@@ -157,6 +162,7 @@
 				DED3A13720A4159A00D72FBF /* Utility.m in Sources */,
 				DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */,
 				D7BC84182180814600A275D3 /* MotionEntity.m in Sources */,
+				858EE6372180DFBD009C9E08 /* CircleEntity.m in Sources */,
 				DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

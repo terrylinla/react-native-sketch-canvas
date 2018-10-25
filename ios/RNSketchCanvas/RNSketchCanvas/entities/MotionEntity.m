@@ -66,6 +66,17 @@
 
 - (void)drawRect:(CGRect)rect {
     // Call drawContent here
+    
+    if ([self respondsToSelector:@selector(drawContent)]) {
+        [self drawContent];
+    }
+    
     // Call drawBorder here
+    
+    
+}
+
+- (void) drawContent {
+    NSAssert(NO, @"This is an abstract method and should be overridden");
 }
 @end
