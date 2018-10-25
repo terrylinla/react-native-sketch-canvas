@@ -11,10 +11,10 @@
 #import "Enumerations.h"
 
 @protocol MotionEntityProtocol
-- (void)drawContent;
+- (void)drawContent:(CGRect)rect withinContext: (CGContextRef)contextRef;
 @end
 
-@interface MotionEntity : UIView
+@interface MotionEntity : UIView <MotionEntityProtocol>
 
 @property (nonatomic) BOOL isSelected;
 @property (nonatomic) CGFloat initialRotationInRadians;
@@ -37,7 +37,6 @@
 - (void)rotateEntityBy:(CGFloat)rotationInRadians;
 - (void)moveEntityTo:(CGPoint)locationDiff;
 - (void)scaleEntityBy:(CGFloat)newScale;
-- (void)drawContent;
 
 @end
 

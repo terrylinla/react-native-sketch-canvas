@@ -7,6 +7,7 @@
 #import "Utility.h"
 #import "entities/Enumerations.h"
 #import "entities/MotionEntity.h"
+#import "entities/CircleEntity.h"
 
 @implementation RNSketchCanvas
 {
@@ -132,6 +133,11 @@
     
     for (CanvasText *text in _arrTextOnSketch) {
         [text.text drawInRect: text.drawRect withAttributes: text.attribute];
+    }
+    
+    for (MotionEntity *entity in motionEntities) {
+        [entity drawRect:bounds];
+        [self addSubview:entity];
     }
 }
 
@@ -544,13 +550,24 @@
         case 0:
         case NSNotFound:
         default: {
-            // addCircleEntity();
+            [self addCircleEntity];
             break;
         }
     }
 }
 
 // TODO: Add add*Entity methods
+
+- (void)addCircleEntity {
+    CGFloat scale = self.window.screen.scale;
+    CGSize size = self.bounds.size;
+    size.width *= scale;
+    size.height *= scale;
+    CircleEntity *entity = [[CircleEntity alloc] initAndSetup:size.width parentHeight:size.height width:300 height:300 bordersPadding:10.0f];
+    
+    [motionEntities addObject:entity];
+    [self selectEntity:entity];
+}
 
 - (void)releaseSelectedEntity {
     // TODO: release the selected entity
@@ -568,11 +585,23 @@
     // TODO: Set newText as text of selected TextEntity
 }
 
+- (void)selectEntity:(MotionEntity *)entity {
+    if (selectedEntity) {
+        [selectedEntity setIsSelected:NO];
+    }
+    if (entity) {
+        [entity setIsSelected:YES];
+    }
+    selectedEntity = entity;
+    [self setNeedsDisplay];
+}
+
 #pragma mark - UIGestureRecognizers
 - (void)handleTap:(UITapGestureRecognizer *)sender {
     if (sender.state == UIGestureRecognizerStateEnded) {
-        CGPoint tapLocation = [sender locationInView:self];
+        CGPoint tapLocation = [sender locationInView:sender.view];
         // updateSelectionOnTap();
+        [self setNeedsDisplay];
     }
 }
 
@@ -582,6 +611,7 @@
         if (selectedEntity) {
             CGFloat rotationInRadians = sender.rotation;
             [selectedEntity rotateEntityBy:rotationInRadians];
+            [self setNeedsDisplay];
         }
         [sender setRotation:0.0];
     }
@@ -594,8 +624,9 @@
             selectedEntity.initialCenterPoint = selectedEntity.center;
         }
         if (state != UIGestureRecognizerStateCancelled) {
-            [selectedEntity moveEntityTo:[sender translationInView:self]];
+            [selectedEntity moveEntityTo:[sender translationInView:sender.view]];
             [sender setTranslation:CGPointZero inView:sender.view];
+            [self setNeedsDisplay];
         } else {
             selectedEntity.center = selectedEntity.initialCenterPoint;
         }
@@ -607,6 +638,7 @@
     if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
         if (selectedEntity) {
             [selectedEntity scaleEntityBy:sender.scale];
+            [self setNeedsDisplay];
         }
         [sender setScale:1.0];
     }

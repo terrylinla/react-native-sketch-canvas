@@ -8,8 +8,10 @@
 
 #import "MotionEntity.h"
 
-@interface CircleEntity : MotionEntity <MotionEntityProtocol>
+@interface CircleEntity : MotionEntity
 
-- (instancetype)initAndSetup:(NSInteger)parentWidth parentHeight: (NSInteger)parentHeight width: (NSInteger)width height: (NSInteger)height;
+@property (nonatomic) CGFloat bordersPadding;
+
+- (instancetype)initAndSetup:(NSInteger)parentWidth parentHeight: (NSInteger)parentHeight width: (NSInteger)width height: (NSInteger)height bordersPadding: (CGFloat)bordersPadding;
 
 @end
