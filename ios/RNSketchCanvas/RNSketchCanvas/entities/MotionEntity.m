@@ -15,7 +15,7 @@
 
 - (instancetype)initAndSetup:(NSInteger)parentWidth parentHeight:(NSInteger)parentHeight width:(NSInteger)width height:(NSInteger)height {
     
-    self = [super initWithFrame:CGRectMake(parentWidth / 4 , parentHeight / 4, parentWidth / 4, parentWidth / 4)];
+    self = [super initWithFrame:CGRectMake(parentWidth / 4 , parentHeight / 3, parentWidth / 2, parentWidth / 2)];
     
     if (self) {
         _parentWidth = parentWidth;
@@ -23,8 +23,8 @@
         _isSelected = false;
         _initialRotationInRadians = 0.0;
         _rotationInRadians = 0.0;
-        _initialCenterPoint = CGPointMake(parentWidth * 0.25f, parentHeight * 0.25f);
-        _centerPoint = CGPointMake(parentWidth * 0.25f, parentHeight * 0.25f);
+        _initialCenterPoint = CGPointMake(parentWidth / 16, parentHeight / 16);
+        _centerPoint = CGPointMake(parentWidth / 16, parentHeight / 16);
         _initialScale = 0.0;
         _scale = 0.0;
         _borderStyle = DASHED;
@@ -46,7 +46,7 @@
 }
 
 - (void)moveToParentCenter {
-    [self moveCenterTo:CGPointMake(_parentWidth * 0.25f, _parentHeight * 0.25f)];
+    [self moveCenterTo:_initialCenterPoint];
 }
 
 - (void)moveCenterTo:(CGPoint)moveToCenter {
@@ -68,14 +68,6 @@
 
 - (void)drawRect:(CGRect)rect {
     CGContextRef contextRef = UIGraphicsGetCurrentContext();
-    
-    printf("Entity: drawRect called with Bounds width %f and height %f \n", self.bounds.size.width, self.bounds.size.height);
-    printf("Entity: drawRect called with Bounds x %f and y %f \n", self.bounds.origin.x, self.bounds.origin.y);
-    
-    
-    printf("Entity: drawRect called with Rect width %f and height %f \n", rect.size.width, rect.size.height);
-    printf("Entity: drawRect called with Rect x %f and y %f \n", rect.origin.x, rect.origin.y);
-    
     if (contextRef) {
         CGContextSaveGState(contextRef);
         if ([self respondsToSelector:@selector(drawContent:withinContext:)]) {
@@ -85,6 +77,24 @@
     }
     
     // Draw Border
+    if (_isSelected) {
+        if (contextRef) {
+            CGContextSaveGState(contextRef);
+            
+            CGContextSetLineWidth(contextRef, 1.0);
+            CGContextSetRGBStrokeColor(contextRef, 0.0, 0.0, 255.0, 1.0);
+            if (_borderStyle == DASHED) {
+                CGFloat dashPattern[]= {3.0, 2};
+                CGContextSetLineDash(contextRef, 0.0, dashPattern, 2);
+            }
+            CGContextStrokeRect(contextRef, self.bounds);
+            
+            CGContextRestoreGState(contextRef);
+        }
+    }
+}
+
+- (void)drawBorder:(CGContextRef)contextRef {
     if (_isSelected) {
         if (contextRef) {
             CGContextSaveGState(contextRef);

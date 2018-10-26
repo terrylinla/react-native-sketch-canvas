@@ -136,7 +136,6 @@
     }
     
     for (MotionEntity *entity in motionEntities) {
-        [entity drawRect:bounds];
         [self addSubview:entity];
     }
 }
@@ -563,9 +562,12 @@
     CGSize size = self.bounds.size;
     size.width *= scale;
     size.height *= scale;
-    CircleEntity *entity = [[CircleEntity alloc] initAndSetup:size.width parentHeight:size.height width:300 height:300 bordersPadding:10.0f];
+    
+    printf("SKETCHCANVAS: width %f and height %f \n", self.bounds.size.width, self.bounds.size.height);
+    CircleEntity *entity = [[CircleEntity alloc] initAndSetup:self.bounds.size.width parentHeight:self.bounds.size.height width:300 height:300 bordersPadding:10.0f];
     
     [motionEntities addObject:entity];
+    // [entity moveToParentCenter];
     [self selectEntity:entity];
 }
 
@@ -599,9 +601,9 @@
 #pragma mark - UIGestureRecognizers
 - (void)handleTap:(UITapGestureRecognizer *)sender {
     if (sender.state == UIGestureRecognizerStateEnded) {
-        CGPoint tapLocation = [sender locationInView:sender.view];
+        // CGPoint tapLocation = [sender locationInView:sender.view];
         // updateSelectionOnTap();
-        [self setNeedsDisplay];
+        // [self setNeedsDisplay];
     }
 }
 
@@ -609,8 +611,7 @@
     UIGestureRecognizerState state = [sender state];
     if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
         if (selectedEntity) {
-            CGFloat rotationInRadians = sender.rotation;
-            [selectedEntity rotateEntityBy:rotationInRadians];
+            [selectedEntity rotateEntityBy:sender.rotation];
             [self setNeedsDisplay];
         }
         [sender setRotation:0.0];
@@ -624,7 +625,7 @@
             selectedEntity.initialCenterPoint = selectedEntity.center;
         }
         if (state != UIGestureRecognizerStateCancelled) {
-            [selectedEntity moveEntityTo:[sender translationInView:sender.view]];
+            [selectedEntity moveEntityTo:[sender translationInView:selectedEntity]];
             [sender setTranslation:CGPointZero inView:sender.view];
             [self setNeedsDisplay];
         } else {
