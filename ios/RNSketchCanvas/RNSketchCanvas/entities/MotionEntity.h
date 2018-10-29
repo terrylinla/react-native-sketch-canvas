@@ -17,12 +17,14 @@
 @interface MotionEntity : UIView <MotionEntityProtocol>
 
 @property (nonatomic) BOOL isSelected;
-@property (nonatomic) CGFloat initialRotationInRadians;
-@property (nonatomic) CGFloat rotationInRadians;
+// @property (nonatomic) CGFloat initialRotationInRadians;
+// @property (nonatomic) CGFloat rotationInRadians;
 @property (nonatomic) CGPoint initialCenterPoint;
 @property (nonatomic) CGPoint centerPoint;
-@property (nonatomic) CGFloat initialScale;
+// @property (nonatomic) CGFloat initialScale;
 @property (nonatomic) CGFloat scale;
+@property (nonatomic) CGFloat MIN_SCALE;
+@property (nonatomic) CGFloat MAX_SCALE;
 @property (nonatomic) CGFloat parentScreenScale;
 @property (nonatomic) NSInteger parentWidth;
 @property (nonatomic) NSInteger parentHeight;
@@ -43,11 +45,4 @@
 - (void)moveEntityTo:(CGPoint)locationDiff;
 - (void)scaleEntityBy:(CGFloat)newScale;
 
-@end
-
-@interface Limits : NSObject
-- (instancetype)initAndSetup;
-@property (nonatomic) CGFloat MIN_SCALE;
-@property (nonatomic) CGFloat MAX_SCALE;
-@property (nonatomic) CGFloat INITIAL_ENTITY_SCALE;
 @end

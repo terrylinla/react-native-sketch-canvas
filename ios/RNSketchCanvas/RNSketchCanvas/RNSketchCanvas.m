@@ -136,6 +136,9 @@
     }
     
     for (MotionEntity *entity in motionEntities) {
+        if ([selectedEntity isSelected]) {
+            [selectedEntity setNeedsDisplay];
+        }
         [self addSubview:entity];
     }
 }
@@ -634,14 +637,12 @@
 
 - (void)handleScale:(UIPinchGestureRecognizer *)sender {
     UIGestureRecognizerState state = [sender state];
-    if (state == UIGestureRecognizerStateBegan) {
-        [sender setScale:[selectedEntity scale]];
-    }
-    if (state == UIGestureRecognizerStateChanged || state == UIGestureRecognizerStateEnded) {
+    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
         if (selectedEntity) {
             [selectedEntity scaleEntityBy:sender.scale];
             [self setNeedsDisplay];
         }
+        [sender setScale:1.0];
     }
 }
 

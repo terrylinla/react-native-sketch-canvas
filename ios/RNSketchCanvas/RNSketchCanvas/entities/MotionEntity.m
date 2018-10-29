@@ -10,7 +10,6 @@
 
 @implementation MotionEntity
 {
-    
 }
 
 - (instancetype)initAndSetupWithParent:(NSInteger)parentWidth parentHeight:(NSInteger)parentHeight parentCenterX: (CGFloat)parentCenterX parentCenterY: (CGFloat)parentCenterY parentScreenScale:(CGFloat)parentScreenScale width:(NSInteger)width {
@@ -21,12 +20,14 @@
         _parentWidth = parentWidth;
         _parentHeight = parentHeight;
         _isSelected = false;
-        _initialRotationInRadians = 0.0;
-        _rotationInRadians = 0.0;
+        // _initialRotationInRadians = 0.0;
+        // _rotationInRadians = 0.0;
         _initialCenterPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
         _centerPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
-        _initialScale = 1.0;
+        // _initialScale = 1.0;
         _scale = 1.0;
+        _MIN_SCALE = 0.15f;
+        _MAX_SCALE = 4.5f;
         _parentScreenScale = parentScreenScale;
         _borderStyle = DASHED;
         self.backgroundColor = [UIColor clearColor];
@@ -60,20 +61,19 @@
 }
 
 - (void)moveEntityTo:(CGPoint)locationDiff {
+    _centerPoint = self.center;
     [self setTransform:CGAffineTransformTranslate(self.transform, locationDiff.x, locationDiff.y)];
 }
 
 - (void)scaleEntityBy:(CGFloat)newScale {
-    CGFloat scaleDiff = newScale - _scale;
-    _scale += scaleDiff;
-    [self setTransform:CGAffineTransformMakeScale(_scale, _scale)];
-    // [self setTransform:CGAffineTransformScale(self.transform, newScale, newScale)];
+    CGFloat absoluteScale = _scale * newScale;
+    if (absoluteScale >= _MIN_SCALE && absoluteScale <= _MAX_SCALE) {
+        _scale *= newScale;
+        [self setTransform:CGAffineTransformScale(self.transform, newScale, newScale)];
+    }
 }
 
 - (void)drawRect:(CGRect)rect {
-    
-    // printf("MotionEntity: scale is: %f \n", _scale);
-    
     CGContextRef contextRef = UIGraphicsGetCurrentContext();
     if (contextRef) {
         CGContextSaveGState(contextRef);
