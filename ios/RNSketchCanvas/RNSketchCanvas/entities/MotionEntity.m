@@ -20,11 +20,8 @@
         _parentWidth = parentWidth;
         _parentHeight = parentHeight;
         _isSelected = false;
-        // _initialRotationInRadians = 0.0;
-        // _rotationInRadians = 0.0;
         _initialCenterPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
         _centerPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
-        // _initialScale = 1.0;
         _scale = 1.0;
         _MIN_SCALE = 0.15f;
         _MAX_SCALE = 4.5f;
@@ -40,20 +37,11 @@
 }
 
 - (BOOL)isPointInEntity:(CGPoint)point {
-    return false;
+    return CGRectContainsPoint(self.frame, point);
 }
 
 - (void)setIsSelected:(BOOL)isSelected {
     _isSelected = isSelected;
-}
-
-- (void)moveToParentCenter {
-    [self moveCenterTo:_initialCenterPoint];
-}
-
-- (void)moveCenterTo:(CGPoint)moveToCenter {
-    self.center = moveToCenter;
-    _centerPoint = self.center;
 }
 
 - (void)rotateEntityBy:(CGFloat)rotationInRadians {
@@ -61,8 +49,8 @@
 }
 
 - (void)moveEntityTo:(CGPoint)locationDiff {
-    _centerPoint = self.center;
     [self setTransform:CGAffineTransformTranslate(self.transform, locationDiff.x, locationDiff.y)];
+    _centerPoint = self.center;
 }
 
 - (void)scaleEntityBy:(CGFloat)newScale {

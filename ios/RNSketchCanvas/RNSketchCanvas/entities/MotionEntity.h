@@ -17,11 +17,8 @@
 @interface MotionEntity : UIView <MotionEntityProtocol>
 
 @property (nonatomic) BOOL isSelected;
-// @property (nonatomic) CGFloat initialRotationInRadians;
-// @property (nonatomic) CGFloat rotationInRadians;
 @property (nonatomic) CGPoint initialCenterPoint;
 @property (nonatomic) CGPoint centerPoint;
-// @property (nonatomic) CGFloat initialScale;
 @property (nonatomic) CGFloat scale;
 @property (nonatomic) CGFloat MIN_SCALE;
 @property (nonatomic) CGFloat MAX_SCALE;
@@ -39,8 +36,6 @@
 - (BOOL)isEntitySelected;
 - (BOOL)isPointInEntity:(CGPoint)point;
 - (void)setIsSelected:(BOOL)isSelected;
-- (void)moveToParentCenter;
-- (void)moveCenterTo:(CGPoint)moveToCenter;
 - (void)rotateEntityBy:(CGFloat)rotationInRadians;
 - (void)moveEntityTo:(CGPoint)locationDiff;
 - (void)scaleEntityBy:(CGFloat)newScale;

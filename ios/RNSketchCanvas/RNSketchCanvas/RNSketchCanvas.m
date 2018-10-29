@@ -278,6 +278,11 @@
 }
 
 - (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
+    if (![[UIColor clearColor] isEqual:strokeColor]) {
+        entityStrokeColor = strokeColor;
+    }
+    entityStrokeWidth = strokeWidth;
+    
     _currentPath = [[RNSketchData alloc]
                     initWithId: pathId
                     strokeColor: strokeColor
@@ -286,6 +291,10 @@
 }
 
 - (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
+    if (![[UIColor clearColor] isEqual:strokeColor]) {
+        entityStrokeColor = strokeColor;
+    }
+    
     bool exist = false;
     for(int i=0; i<_paths.count; i++) {
         if (((RNSketchData*)_paths[i]).pathId == pathId) {
@@ -325,18 +334,20 @@
 }
 
 - (void)addPointX: (float)x Y: (float)y isMove:(BOOL)isMove {
-    CGPoint newPoint = CGPointMake(x, y);
-    CGRect updateRect = [_currentPath addPoint: newPoint];
-
-    if (_currentPath.isTranslucent) {
-        CGContextClearRect(_translucentDrawingContext, self.bounds);
-        [_currentPath drawInContext:_translucentDrawingContext];
-    } else {
-        [_currentPath drawLastPointInContext:_drawingContext];
+    if (!selectedEntity && (![self findEntityAtPointX:x andY:y] || isMove)) {
+        CGPoint newPoint = CGPointMake(x, y);
+        CGRect updateRect = [_currentPath addPoint: newPoint];
+        
+        if (_currentPath.isTranslucent) {
+            CGContextClearRect(_translucentDrawingContext, self.bounds);
+            [_currentPath drawInContext:_translucentDrawingContext];
+        } else {
+            [_currentPath drawLastPointInContext:_drawingContext];
+        }
+        
+        [self setFrozenImageNeedsUpdate];
+        [self setNeedsDisplayInRect:updateRect];
     }
-
-    [self setFrozenImageNeedsUpdate];
-    [self setNeedsDisplayInRect:updateRect];
 }
 
 - (void)endPath {
@@ -566,12 +577,8 @@
     CircleEntity *entity = [[CircleEntity alloc] initAndSetupWithParent:self.bounds.size.width parentHeight:self.bounds.size.height parentCenterX:centerX parentCenterY:centerY parentScreenScale:self.window.screen.scale width:300 bordersPadding:10.0f];
     
     [motionEntities addObject:entity];
-    // [entity moveToParentCenter];
+    [self onShapeSelectionChanged:entity];
     [self selectEntity:entity];
-}
-
-- (void)releaseSelectedEntity {
-    // TODO: release the selected entity
 }
 
 - (void)increaseTextEntityFontSize {
@@ -599,12 +606,47 @@
     [self setNeedsDisplay];
 }
 
+- (void)updateSelectionOnTapWithLocationPoint:(CGPoint)tapLocation {
+    MotionEntity *nextEntity = [self findEntityAtPointX:tapLocation.x andY:tapLocation.y];
+    [self onShapeSelectionChanged:nextEntity];
+    [self selectEntity:nextEntity];
+}
+
+- (MotionEntity *)findEntityAtPointX:(CGFloat)x andY: (CGFloat)y {
+    MotionEntity *nextEntity = nil;
+    CGPoint point = CGPointMake(x, y);
+    for (MotionEntity *entity in motionEntities) {
+        if ([entity isPointInEntity:point]) {
+            nextEntity = entity;
+            break;
+        }
+    }
+    return nextEntity;
+}
+
+- (void)releaseSelectedEntity {
+    MotionEntity *entityToRemove = nil;
+    for (MotionEntity *entity in motionEntities) {
+        if ([entity isSelected]) {
+            entityToRemove = entity;
+            break;
+        }
+    }
+    if (entityToRemove) {
+        [motionEntities removeObject:entityToRemove];
+        [entityToRemove removeFromSuperview];
+        entityToRemove = nil;
+        [self onShapeSelectionChanged:nil];
+        [self setNeedsDisplay];
+    }
+}
+
 #pragma mark - UIGestureRecognizers
 - (void)handleTap:(UITapGestureRecognizer *)sender {
     if (sender.state == UIGestureRecognizerStateEnded) {
-        // CGPoint tapLocation = [sender locationInView:sender.view];
-        // updateSelectionOnTap();
-        // [self setNeedsDisplay];
+        CGPoint tapLocation = [sender locationInView:sender.view];
+        [self updateSelectionOnTapWithLocationPoint:tapLocation];
+        [self setNeedsDisplay];
     }
 }
 
@@ -659,9 +701,18 @@
     }
 }
 
-- (void)onShapeSelectionChanged:(BOOL)isShapeSelected {
+- (void)onShapeSelectionChanged:(MotionEntity *)nextEntity {
+    BOOL isShapeSelected = NO;
+    if (nextEntity) {
+        isShapeSelected = YES;
+    }
     if (_onChange) {
-        _onChange(@{ @"isShapeSelected": isShapeSelected ? @YES : @NO});
+        if (isShapeSelected) {
+            _onChange(@{ @"isShapeSelected": @YES });
+        } else {
+            // Add delay!
+            _onChange(@{ @"isShapeSelected": @NO });
+        }
     }
 }
 
