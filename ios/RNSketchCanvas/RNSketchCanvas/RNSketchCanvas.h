@@ -1,11 +1,23 @@
 #import <UIKit/UIKit.h>
 #import "entities/Enumerations.h"
+#import "entities/MotionEntity.h"
 
 @class RCTEventDispatcher;
 
 @interface RNSketchCanvas : UIView <UIGestureRecognizerDelegate>
 
 @property (nonatomic, copy) RCTBubblingEventBlock onChange;
+@property (nonatomic) NSMutableArray<MotionEntity *> *motionEntities;
+@property (nonatomic) MotionEntity *selectedEntity;
+@property (nonatomic) UIColor *entityBorderColor;
+@property (nonatomic) enum BorderStyle entityBorderStyle;
+@property (nonatomic) CGFloat entityBorderStrokeWidth;
+@property (nonatomic) CGFloat entityStrokeWidth;
+@property (nonatomic) UIColor *entityStrokeColor;
+@property (nonatomic) UITapGestureRecognizer *tapGesture;
+@property (nonatomic) UIRotationGestureRecognizer *rotateGesture;
+@property (nonatomic) UIPanGestureRecognizer *moveGesture;
+@property (nonatomic) UIPinchGestureRecognizer *scaleGesture;
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher;
 

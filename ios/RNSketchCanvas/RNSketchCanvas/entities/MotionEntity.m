@@ -12,28 +12,42 @@
 {
 }
 
-- (instancetype)initAndSetupWithParent:(NSInteger)parentWidth parentHeight:(NSInteger)parentHeight parentCenterX: (CGFloat)parentCenterX parentCenterY: (CGFloat)parentCenterY parentScreenScale:(CGFloat)parentScreenScale width:(NSInteger)width {
+- (instancetype)initAndSetupWithParent: (NSInteger)parentWidth
+                          parentHeight: (NSInteger)parentHeight
+                         parentCenterX: (CGFloat)parentCenterX
+                         parentCenterY: (CGFloat)parentCenterY
+                     parentScreenScale: (CGFloat)parentScreenScale
+                                 width: (NSInteger)width
+                           borderStyle: (enum BorderStyle)borderStyle
+                     borderStrokeWidth: (CGFloat)borderStrokeWidth
+                     borderStrokeColor: (UIColor *)borderStrokeColor
+                     entityStrokeWidth: (CGFloat)entityStrokeWidth
+                     entityStrokeColor: (UIColor *)entityStrokeColor {
     
     self = [super initWithFrame:CGRectMake(parentCenterX - width / 4, parentCenterY - width / 4 , width / 2, width / 2)];
     
     if (self) {
-        _parentWidth = parentWidth;
-        _parentHeight = parentHeight;
-        _isSelected = false;
-        _initialCenterPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
-        _centerPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
-        _scale = 1.0;
-        _MIN_SCALE = 0.15f;
-        _MAX_SCALE = 4.5f;
-        _parentScreenScale = parentScreenScale;
-        _borderStyle = DASHED;
+        self.parentWidth = parentWidth;
+        self.parentHeight = parentHeight;
+        self.isSelected = false;
+        self.centerPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
+        self.scale = 1.0;
+        self.MIN_SCALE = 0.15f;
+        self.MAX_SCALE = 4.5f;
+        self.parentScreenScale = parentScreenScale;
+        self.borderStyle = borderStyle;
+        self.borderStrokeWidth = borderStrokeWidth;
+        self.borderStrokeColor = borderStrokeColor;
+        self.entityStrokeWidth = entityStrokeWidth;
+        self.entityStrokeColor = entityStrokeColor;
+        
         self.backgroundColor = [UIColor clearColor];
     }
     return self;
 }
 
 - (BOOL)isEntitySelected {
-    return _isSelected;
+    return self.isSelected;
 }
 
 - (BOOL)isPointInEntity:(CGPoint)point {
@@ -50,14 +64,29 @@
 
 - (void)moveEntityTo:(CGPoint)locationDiff {
     [self setTransform:CGAffineTransformTranslate(self.transform, locationDiff.x, locationDiff.y)];
-    _centerPoint = self.center;
+    self.centerPoint = self.center;
 }
 
 - (void)scaleEntityBy:(CGFloat)newScale {
-    CGFloat absoluteScale = _scale * newScale;
-    if (absoluteScale >= _MIN_SCALE && absoluteScale <= _MAX_SCALE) {
-        _scale *= newScale;
+    CGFloat absoluteScale = self.scale * newScale;
+    if (absoluteScale >= self.MIN_SCALE && absoluteScale <= self.MAX_SCALE) {
+        self.scale *= newScale;
         [self setTransform:CGAffineTransformScale(self.transform, newScale, newScale)];
+    }
+}
+
+- (void)updateStrokeSettings: (enum BorderStyle)borderStyle
+           borderStrokeWidth: (CGFloat)borderStrokeWidth
+           borderStrokeColor: (UIColor *)borderStrokeColor
+           entityStrokeWidth: (CGFloat)entityStrokeWidth
+           entityStrokeColor: (UIColor *)entityStrokeColor {
+    
+    if (self.isSelected) {
+        self.borderStyle = borderStyle;
+        self.borderStrokeWidth = borderStrokeWidth;
+        self.borderStrokeColor = borderStrokeColor;
+        self.entityStrokeWidth = entityStrokeWidth;
+        self.entityStrokeColor = entityStrokeColor;
     }
 }
 
@@ -72,13 +101,13 @@
     }
     
     // Draw Border
-    if (_isSelected) {
+    if (self.isSelected) {
         if (contextRef) {
             CGContextSaveGState(contextRef);
             
-            CGContextSetLineWidth(contextRef, (2.0 / _parentScreenScale) / _scale);
-            CGContextSetRGBStrokeColor(contextRef, 0.0, 0.0, 255.0, 1.0);
-            if (_borderStyle == DASHED) {
+            CGContextSetLineWidth(contextRef, self.borderStrokeWidth / self.scale);
+            CGContextSetStrokeColorWithColor(contextRef, [self.borderStrokeColor CGColor]);
+            if (self.borderStyle == DASHED) {
                 CGFloat dashPattern[]= {3.0, 2};
                 CGContextSetLineDash(contextRef, 0.0, dashPattern, 2);
             }

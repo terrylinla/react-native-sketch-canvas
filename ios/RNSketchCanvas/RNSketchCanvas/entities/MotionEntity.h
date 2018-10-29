@@ -17,7 +17,6 @@
 @interface MotionEntity : UIView <MotionEntityProtocol>
 
 @property (nonatomic) BOOL isSelected;
-@property (nonatomic) CGPoint initialCenterPoint;
 @property (nonatomic) CGPoint centerPoint;
 @property (nonatomic) CGFloat scale;
 @property (nonatomic) CGFloat MIN_SCALE;
@@ -32,12 +31,28 @@
 @property (nonatomic) UIColor* entityStrokeColor;
 
 
-- (instancetype)initAndSetupWithParent:(NSInteger)parentWidth parentHeight: (NSInteger)parentHeight parentCenterX: (CGFloat)parentCenterX parentCenterY: (CGFloat)parentCenterY parentScreenScale: (CGFloat)parentScreenScale width: (NSInteger)width;
+- (instancetype)initAndSetupWithParent: (NSInteger)parentWidth
+                          parentHeight: (NSInteger)parentHeight
+                         parentCenterX: (CGFloat)parentCenterX
+                         parentCenterY: (CGFloat)parentCenterY
+                     parentScreenScale: (CGFloat)parentScreenScale
+                                 width: (NSInteger)width
+                           borderStyle: (enum BorderStyle)borderStyle
+                     borderStrokeWidth: (CGFloat)borderStrokeWidth
+                     borderStrokeColor: (UIColor *)borderStrokeColor
+                     entityStrokeWidth: (CGFloat)entityStrokeWidth
+                     entityStrokeColor: (UIColor *)entityStrokeColor;
+
 - (BOOL)isEntitySelected;
 - (BOOL)isPointInEntity:(CGPoint)point;
 - (void)setIsSelected:(BOOL)isSelected;
 - (void)rotateEntityBy:(CGFloat)rotationInRadians;
 - (void)moveEntityTo:(CGPoint)locationDiff;
 - (void)scaleEntityBy:(CGFloat)newScale;
+- (void)updateStrokeSettings: (enum BorderStyle)borderStyle
+           borderStrokeWidth: (CGFloat)borderStrokeWidth
+           borderStrokeColor: (UIColor *)borderStrokeColor
+           entityStrokeWidth: (CGFloat)entityStrokeWidth
+           entityStrokeColor: (UIColor *)entityStrokeColor;
 
 @end

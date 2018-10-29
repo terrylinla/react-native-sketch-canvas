@@ -26,19 +26,6 @@
     NSString *_backgroundImageContentMode;
     
     NSArray *_arrTextOnSketch, *_arrSketchOnText;
-    
-    NSMutableArray<MotionEntity *> *motionEntities;
-    MotionEntity *selectedEntity;
-    UIColor *entityBorderColor;
-    enum BorderStyle entityBorderStyle;
-    CGFloat entityBorderStrokeWidth;
-    CGFloat entityStrokeWidth;
-    UIColor *entityStrokeColor;
-    
-    UITapGestureRecognizer *tapGesture;
-    UIRotationGestureRecognizer *rotateGesture;
-    UIPanGestureRecognizer *moveGesture;
-    UIPinchGestureRecognizer *scaleGesture;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -52,33 +39,33 @@
         self.backgroundColor = [UIColor clearColor];
         self.clearsContextBeforeDrawing = YES;
         
-        motionEntities = [NSMutableArray new];
-        selectedEntity = nil;
-        entityBorderColor = [UIColor clearColor];
-        entityBorderStyle = DASHED;
-        entityBorderStrokeWidth = 1.0;
-        entityStrokeWidth = 5.0;
-        entityStrokeColor = [UIColor blackColor];
+        self.motionEntities = [NSMutableArray new];
+        self.selectedEntity = nil;
+        self.entityBorderColor = [UIColor clearColor];
+        self.entityBorderStyle = DASHED;
+        self.entityBorderStrokeWidth = 1.0;
+        self.entityStrokeWidth = 5.0;
+        self.entityStrokeColor = [UIColor blackColor];
         
-        tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
-        tapGesture.delegate = self;
-        tapGesture.numberOfTapsRequired = 1;
+        self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+        self.tapGesture.delegate = self;
+        self.tapGesture.numberOfTapsRequired = 1;
         
-        rotateGesture = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotate:)];
-        rotateGesture.delegate = self;
+        self.rotateGesture = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotate:)];
+        self.rotateGesture.delegate = self;
         
-        moveGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleMove:)];
-        moveGesture.delegate = self;
-        moveGesture.minimumNumberOfTouches = 1;
-        moveGesture.maximumNumberOfTouches = 1;
+        self.moveGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleMove:)];
+        self.moveGesture.delegate = self;
+        self.moveGesture.minimumNumberOfTouches = 1;
+        self.moveGesture.maximumNumberOfTouches = 1;
         
-        scaleGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handleScale:)];
-        scaleGesture.delegate = self;
+        self.scaleGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handleScale:)];
+        self.scaleGesture.delegate = self;
         
-        [self addGestureRecognizer:tapGesture];
-        [self addGestureRecognizer:rotateGesture];
-        [self addGestureRecognizer:moveGesture];
-        [self addGestureRecognizer:scaleGesture];
+        [self addGestureRecognizer:self.tapGesture];
+        [self addGestureRecognizer:self.rotateGesture];
+        [self addGestureRecognizer:self.moveGesture];
+        [self addGestureRecognizer:self.scaleGesture];
         
     }
     return self;
@@ -135,10 +122,17 @@
         [text.text drawInRect: text.drawRect withAttributes: text.attribute];
     }
     
-    for (MotionEntity *entity in motionEntities) {
-        if ([selectedEntity isSelected]) {
-            [selectedEntity setNeedsDisplay];
+    for (MotionEntity *entity in self.motionEntities) {
+        [entity updateStrokeSettings:self.entityBorderStyle
+                   borderStrokeWidth:self.entityBorderStrokeWidth
+                   borderStrokeColor:self.entityBorderColor
+                   entityStrokeWidth:self.entityStrokeWidth
+                   entityStrokeColor:self.entityStrokeColor];
+        
+        if ([entity isSelected]) {
+            [entity setNeedsDisplay];
         }
+        
         [self addSubview:entity];
     }
 }
@@ -279,9 +273,9 @@
 
 - (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
     if (![[UIColor clearColor] isEqual:strokeColor]) {
-        entityStrokeColor = strokeColor;
+        self.entityStrokeColor = strokeColor;
     }
-    entityStrokeWidth = strokeWidth;
+    self.entityStrokeWidth = strokeWidth;
     
     _currentPath = [[RNSketchData alloc]
                     initWithId: pathId
@@ -292,7 +286,7 @@
 
 - (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
     if (![[UIColor clearColor] isEqual:strokeColor]) {
-        entityStrokeColor = strokeColor;
+        self.entityStrokeColor = strokeColor;
     }
     
     bool exist = false;
@@ -334,7 +328,7 @@
 }
 
 - (void)addPointX: (float)x Y: (float)y isMove:(BOOL)isMove {
-    if (!selectedEntity && (![self findEntityAtPointX:x andY:y] || isMove)) {
+    if (!self.selectedEntity && (![self findEntityAtPointX:x andY:y] || isMove)) {
         CGPoint newPoint = CGPointMake(x, y);
         CGRect updateRect = [_currentPath addPoint: newPoint];
         
@@ -501,10 +495,14 @@
 
 #pragma mark - MotionEntites related code
 - (void)setShapeConfiguration:(NSDictionary *)dict {
-    if (![dict[@"shapeBorderColor"] isEqual: [NSNull null]]) {
-        UIColor *color = dict[@"shapeBorderColor"];
-        if (![[UIColor clearColor] isEqual:color]) {
-            entityBorderColor = color;
+    if (![dict[@"shapeBorderColor"] isEqual:[NSNull null]]) {
+        long shapeBorderColorLong = [dict[@"shapeBorderColor"] longValue];
+        UIColor *shapeBorderColor = [UIColor colorWithRed:(CGFloat)((shapeBorderColorLong & 0x00FF0000) >> 16) / 0xFF
+                                                    green:(CGFloat)((shapeBorderColorLong & 0x0000FF00) >> 8) / 0xFF
+                                                     blue:(CGFloat)((shapeBorderColorLong & 0x000000FF)) / 0xFF
+                                                    alpha:(CGFloat)((shapeBorderColorLong & 0xFF000000) >> 24) / 0xFF];
+        if (![[UIColor clearColor] isEqual:shapeBorderColor]) {
+            self.entityBorderColor = shapeBorderColor;
         }
     }
     
@@ -512,31 +510,35 @@
         NSString *borderStyle = dict[@"shapeBorderStyle"];
         switch ([@[@"Dashed", @"Solid"] indexOfObject: borderStyle]) {
             case 0:
-                entityBorderStyle = DASHED;
+                self.entityBorderStyle = DASHED;
                 break;
             case 1:
-                entityBorderStyle = SOLID;
+                self.entityBorderStyle = SOLID;
             case NSNotFound:
             default: {
-                entityBorderStyle = DASHED;
+                self.entityBorderStyle = DASHED;
                 break;
             }
         }
     }
     
     if (![dict[@"shapeBorderStrokeWidth"] isEqual:[NSNull null]]) {
-        entityBorderStrokeWidth = [dict[@"shapeBorderStrokeWidth"] doubleValue];
+        self.entityBorderStrokeWidth = [dict[@"shapeBorderStrokeWidth"] doubleValue];
     }
     
-    if (![dict[@"shapeColor"] isEqual: [NSNull null]]) {
-        UIColor *color = dict[@"shapeColor"];
-        if (![[UIColor clearColor] isEqual:color]) {
-            entityStrokeColor = color;
+    if (![dict[@"shapeColor"] isEqual:[NSNull null]]) {
+        long shapeColorLong = [dict[@"shapeColor"] longValue];
+        UIColor *shapeColor = [UIColor colorWithRed:(CGFloat)((shapeColorLong & 0x00FF0000) >> 16) / 0xFF
+                                              green:(CGFloat)((shapeColorLong & 0x0000FF00) >> 8) / 0xFF
+                                               blue:(CGFloat)((shapeColorLong & 0x000000FF)) / 0xFF
+                                              alpha:(CGFloat)((shapeColorLong & 0xFF000000) >> 24) / 0xFF];
+        if (![[UIColor clearColor] isEqual:shapeColor]) {
+            self.entityStrokeColor = shapeColor;
         }
     }
     
     if (![dict[@"shapeStrokeWidth"] isEqual:[NSNull null]]) {
-        entityStrokeWidth = [dict[@"shapeStrokeWidth"] doubleValue];
+        self.entityStrokeWidth = [dict[@"shapeStrokeWidth"] doubleValue];
     }
 }
 
@@ -559,7 +561,7 @@
             // addTextEntity(textShapeFontType, textShapeFontSize, textShapeText);
             break;
         case 6:
-            // TODO: Doesn't exist yet
+            // TODO: ImageEntity Doesn't exist yet
         case 0:
         case NSNotFound:
         default: {
@@ -574,9 +576,22 @@
 - (void)addCircleEntity {
     CGFloat centerX = CGRectGetMidX(self.bounds);
     CGFloat centerY = CGRectGetMidY(self.bounds);
-    CircleEntity *entity = [[CircleEntity alloc] initAndSetupWithParent:self.bounds.size.width parentHeight:self.bounds.size.height parentCenterX:centerX parentCenterY:centerY parentScreenScale:self.window.screen.scale width:300 bordersPadding:10.0f];
     
-    [motionEntities addObject:entity];
+    CircleEntity *entity = [[CircleEntity alloc]
+                            initAndSetupWithParent:self.bounds.size.width
+                            parentHeight:self.bounds.size.height
+                            parentCenterX:centerX
+                            parentCenterY:centerY
+                            parentScreenScale:self.window.screen.scale
+                            width:300
+                            bordersPadding:10.0f
+                            borderStyle:self.entityBorderStyle
+                            borderStrokeWidth:self.entityBorderStrokeWidth
+                            borderStrokeColor:self.entityBorderColor
+                            entityStrokeWidth:self.entityStrokeWidth
+                            entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
     [self onShapeSelectionChanged:entity];
     [self selectEntity:entity];
 }
@@ -594,15 +609,15 @@
 }
 
 - (void)selectEntity:(MotionEntity *)entity {
-    if (selectedEntity) {
-        [selectedEntity setIsSelected:NO];
-        [selectedEntity setNeedsDisplay];
+    if (self.selectedEntity) {
+        [self.selectedEntity setIsSelected:NO];
+        [self.selectedEntity setNeedsDisplay];
     }
     if (entity) {
         [entity setIsSelected:YES];
         [entity setNeedsDisplay];
     }
-    selectedEntity = entity;
+    self.selectedEntity = entity;
     [self setNeedsDisplay];
 }
 
@@ -615,7 +630,7 @@
 - (MotionEntity *)findEntityAtPointX:(CGFloat)x andY: (CGFloat)y {
     MotionEntity *nextEntity = nil;
     CGPoint point = CGPointMake(x, y);
-    for (MotionEntity *entity in motionEntities) {
+    for (MotionEntity *entity in self.motionEntities) {
         if ([entity isPointInEntity:point]) {
             nextEntity = entity;
             break;
@@ -626,14 +641,14 @@
 
 - (void)releaseSelectedEntity {
     MotionEntity *entityToRemove = nil;
-    for (MotionEntity *entity in motionEntities) {
+    for (MotionEntity *entity in self.motionEntities) {
         if ([entity isSelected]) {
             entityToRemove = entity;
             break;
         }
     }
     if (entityToRemove) {
-        [motionEntities removeObject:entityToRemove];
+        [self.motionEntities removeObject:entityToRemove];
         [entityToRemove removeFromSuperview];
         entityToRemove = nil;
         [self onShapeSelectionChanged:nil];
@@ -653,8 +668,8 @@
 - (void)handleRotate:(UIRotationGestureRecognizer *)sender {
     UIGestureRecognizerState state = [sender state];
     if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
-        if (selectedEntity) {
-            [selectedEntity rotateEntityBy:sender.rotation];
+        if (self.selectedEntity) {
+            [self.selectedEntity rotateEntityBy:sender.rotation];
             [self setNeedsDisplay];
         }
         [sender setRotation:0.0];
@@ -663,16 +678,11 @@
 
 - (void)handleMove:(UIPanGestureRecognizer *)sender {
     UIGestureRecognizerState state = [sender state];
-    if (selectedEntity) {
-        if (state == UIGestureRecognizerStateBegan) {
-            selectedEntity.initialCenterPoint = selectedEntity.center;
-        }
+    if (self.selectedEntity) {
         if (state != UIGestureRecognizerStateCancelled) {
-            [selectedEntity moveEntityTo:[sender translationInView:selectedEntity]];
+            [self.selectedEntity moveEntityTo:[sender translationInView:self.selectedEntity]];
             [sender setTranslation:CGPointZero inView:sender.view];
             [self setNeedsDisplay];
-        } else {
-            selectedEntity.center = selectedEntity.initialCenterPoint;
         }
     }
 }
@@ -680,8 +690,8 @@
 - (void)handleScale:(UIPinchGestureRecognizer *)sender {
     UIGestureRecognizerState state = [sender state];
     if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
-        if (selectedEntity) {
-            [selectedEntity scaleEntityBy:sender.scale];
+        if (self.selectedEntity) {
+            [self.selectedEntity scaleEntityBy:sender.scale];
             [self setNeedsDisplay];
         }
         [sender setScale:1.0];
