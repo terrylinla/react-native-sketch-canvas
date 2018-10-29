@@ -23,12 +23,17 @@
 @property (nonatomic) CGPoint centerPoint;
 @property (nonatomic) CGFloat initialScale;
 @property (nonatomic) CGFloat scale;
+@property (nonatomic) CGFloat parentScreenScale;
 @property (nonatomic) NSInteger parentWidth;
 @property (nonatomic) NSInteger parentHeight;
 @property (nonatomic) enum BorderStyle borderStyle;
+@property (nonatomic) CGFloat borderStrokeWidth;
+@property (nonatomic) UIColor* borderStrokeColor;
+@property (nonatomic) CGFloat entityStrokeWidth;
+@property (nonatomic) UIColor* entityStrokeColor;
 
 
-- (instancetype)initAndSetup:(NSInteger)parentWidth parentHeight: (NSInteger)parentHeight width: (NSInteger)width height: (NSInteger)height;
+- (instancetype)initAndSetupWithParent:(NSInteger)parentWidth parentHeight: (NSInteger)parentHeight parentCenterX: (CGFloat)parentCenterX parentCenterY: (CGFloat)parentCenterY parentScreenScale: (CGFloat)parentScreenScale width: (NSInteger)width;
 - (BOOL)isEntitySelected;
 - (BOOL)isPointInEntity:(CGPoint)point;
 - (void)setIsSelected:(BOOL)isSelected;

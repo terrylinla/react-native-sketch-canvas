@@ -13,9 +13,9 @@
     
 }
 
-- (instancetype)initAndSetup:(NSInteger)parentWidth parentHeight:(NSInteger)parentHeight width:(NSInteger)width height:(NSInteger)height {
+- (instancetype)initAndSetupWithParent:(NSInteger)parentWidth parentHeight:(NSInteger)parentHeight parentCenterX: (CGFloat)parentCenterX parentCenterY: (CGFloat)parentCenterY parentScreenScale:(CGFloat)parentScreenScale width:(NSInteger)width {
     
-    self = [super initWithFrame:CGRectMake(parentWidth / 4 , parentHeight / 3, parentWidth / 2, parentWidth / 2)];
+    self = [super initWithFrame:CGRectMake(parentCenterX - width / 4, parentCenterY - width / 4 , width / 2, width / 2)];
     
     if (self) {
         _parentWidth = parentWidth;
@@ -23,10 +23,11 @@
         _isSelected = false;
         _initialRotationInRadians = 0.0;
         _rotationInRadians = 0.0;
-        _initialCenterPoint = CGPointMake(parentWidth / 16, parentHeight / 16);
-        _centerPoint = CGPointMake(parentWidth / 16, parentHeight / 16);
-        _initialScale = 0.0;
-        _scale = 0.0;
+        _initialCenterPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
+        _centerPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
+        _initialScale = 1.0;
+        _scale = 1.0;
+        _parentScreenScale = parentScreenScale;
         _borderStyle = DASHED;
         self.backgroundColor = [UIColor clearColor];
     }
@@ -63,10 +64,16 @@
 }
 
 - (void)scaleEntityBy:(CGFloat)newScale {
-    [self setTransform:CGAffineTransformScale(self.transform, newScale, newScale)];
+    CGFloat scaleDiff = newScale - _scale;
+    _scale += scaleDiff;
+    [self setTransform:CGAffineTransformMakeScale(_scale, _scale)];
+    // [self setTransform:CGAffineTransformScale(self.transform, newScale, newScale)];
 }
 
 - (void)drawRect:(CGRect)rect {
+    
+    // printf("MotionEntity: scale is: %f \n", _scale);
+    
     CGContextRef contextRef = UIGraphicsGetCurrentContext();
     if (contextRef) {
         CGContextSaveGState(contextRef);
@@ -81,25 +88,7 @@
         if (contextRef) {
             CGContextSaveGState(contextRef);
             
-            CGContextSetLineWidth(contextRef, 1.0);
-            CGContextSetRGBStrokeColor(contextRef, 0.0, 0.0, 255.0, 1.0);
-            if (_borderStyle == DASHED) {
-                CGFloat dashPattern[]= {3.0, 2};
-                CGContextSetLineDash(contextRef, 0.0, dashPattern, 2);
-            }
-            CGContextStrokeRect(contextRef, self.bounds);
-            
-            CGContextRestoreGState(contextRef);
-        }
-    }
-}
-
-- (void)drawBorder:(CGContextRef)contextRef {
-    if (_isSelected) {
-        if (contextRef) {
-            CGContextSaveGState(contextRef);
-            
-            CGContextSetLineWidth(contextRef, 1.0);
+            CGContextSetLineWidth(contextRef, (2.0 / _parentScreenScale) / _scale);
             CGContextSetRGBStrokeColor(contextRef, 0.0, 0.0, 255.0, 1.0);
             if (_borderStyle == DASHED) {
                 CGFloat dashPattern[]= {3.0, 2};

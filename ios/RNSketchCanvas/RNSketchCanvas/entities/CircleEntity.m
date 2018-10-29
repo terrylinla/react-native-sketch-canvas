@@ -14,8 +14,8 @@
 {
 }
 
-- (instancetype)initAndSetup:(NSInteger)parentWidth parentHeight:(NSInteger)parentHeight width:(NSInteger)width height:(NSInteger)height bordersPadding:(CGFloat)bordersPadding {
-    self = [super initAndSetup:parentWidth parentHeight:parentHeight width:width height:height];
+- (instancetype)initAndSetupWithParent:(NSInteger)parentWidth parentHeight:(NSInteger)parentHeight parentCenterX: (CGFloat)parentCenterX parentCenterY: (CGFloat)parentCenterY parentScreenScale: (CGFloat)parentScreenScale width:(NSInteger)width bordersPadding:(CGFloat)bordersPadding {
+    self = [super initAndSetupWithParent:parentWidth parentHeight:parentHeight parentCenterX:parentCenterX parentCenterY:parentCenterY parentScreenScale:parentScreenScale width:width];
     
     if (self) {
         self.bordersPadding = bordersPadding;
@@ -25,7 +25,7 @@
 }
 
 - (void)drawContent:(CGRect)rect withinContext:(CGContextRef)contextRef {
-    CGContextSetLineWidth(contextRef, 5.0);
+    CGContextSetLineWidth(contextRef, (5.0 / self.parentScreenScale) / self.scale);
     CGContextSetRGBStrokeColor(contextRef, 255.0, 0.0, 0.0, 1.0);
     
     CGRect circleRect = CGRectMake(0, 0, rect.size.width, rect.size.height);

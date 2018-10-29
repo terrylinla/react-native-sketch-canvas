@@ -12,6 +12,6 @@
 
 @property (nonatomic) CGFloat bordersPadding;
 
-- (instancetype)initAndSetup:(NSInteger)parentWidth parentHeight: (NSInteger)parentHeight width: (NSInteger)width height: (NSInteger)height bordersPadding: (CGFloat)bordersPadding;
+- (instancetype)initAndSetupWithParent:(NSInteger)parentWidth parentHeight: (NSInteger)parentHeight parentCenterX: (CGFloat)parentCenterX parentCenterY: (CGFloat)parentCenterY parentScreenScale: (CGFloat)parentScreenScale width: (NSInteger)width bordersPadding: (CGFloat)bordersPadding;
 
 @end

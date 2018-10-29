@@ -558,13 +558,9 @@
 // TODO: Add add*Entity methods
 
 - (void)addCircleEntity {
-    CGFloat scale = self.window.screen.scale;
-    CGSize size = self.bounds.size;
-    size.width *= scale;
-    size.height *= scale;
-    
-    printf("SKETCHCANVAS: width %f and height %f \n", self.bounds.size.width, self.bounds.size.height);
-    CircleEntity *entity = [[CircleEntity alloc] initAndSetup:self.bounds.size.width parentHeight:self.bounds.size.height width:300 height:300 bordersPadding:10.0f];
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    CircleEntity *entity = [[CircleEntity alloc] initAndSetupWithParent:self.bounds.size.width parentHeight:self.bounds.size.height parentCenterX:centerX parentCenterY:centerY parentScreenScale:self.window.screen.scale width:300 bordersPadding:10.0f];
     
     [motionEntities addObject:entity];
     // [entity moveToParentCenter];
@@ -590,9 +586,11 @@
 - (void)selectEntity:(MotionEntity *)entity {
     if (selectedEntity) {
         [selectedEntity setIsSelected:NO];
+        [selectedEntity setNeedsDisplay];
     }
     if (entity) {
         [entity setIsSelected:YES];
+        [entity setNeedsDisplay];
     }
     selectedEntity = entity;
     [self setNeedsDisplay];
@@ -636,12 +634,14 @@
 
 - (void)handleScale:(UIPinchGestureRecognizer *)sender {
     UIGestureRecognizerState state = [sender state];
-    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
+    if (state == UIGestureRecognizerStateBegan) {
+        [sender setScale:[selectedEntity scale]];
+    }
+    if (state == UIGestureRecognizerStateChanged || state == UIGestureRecognizerStateEnded) {
         if (selectedEntity) {
             [selectedEntity scaleEntityBy:sender.scale];
             [self setNeedsDisplay];
         }
-        [sender setScale:1.0];
     }
 }
 
