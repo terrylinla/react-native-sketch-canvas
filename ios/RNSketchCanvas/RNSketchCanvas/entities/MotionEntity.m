@@ -108,7 +108,7 @@
             CGContextSetLineWidth(contextRef, self.borderStrokeWidth / self.scale);
             CGContextSetStrokeColorWithColor(contextRef, [self.borderStrokeColor CGColor]);
             if (self.borderStyle == DASHED) {
-                CGFloat dashPattern[]= {3.0, 2};
+                CGFloat dashPattern[]= {2.5, 2.5};
                 CGContextSetLineDash(contextRef, 0.0, dashPattern, 2);
             }
             CGContextStrokeRect(contextRef, self.bounds);

@@ -272,7 +272,7 @@
 }
 
 - (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
-    if (![[UIColor clearColor] isEqual:strokeColor]) {
+    if (CGColorGetComponents(strokeColor.CGColor)[3] != 0.0) {
         self.entityStrokeColor = strokeColor;
     }
     self.entityStrokeWidth = strokeWidth;
@@ -285,7 +285,7 @@
 }
 
 - (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
-    if (![[UIColor clearColor] isEqual:strokeColor]) {
+    if (CGColorGetComponents(strokeColor.CGColor)[3] != 0.0) {
         self.entityStrokeColor = strokeColor;
     }
     
@@ -501,7 +501,7 @@
                                                     green:(CGFloat)((shapeBorderColorLong & 0x0000FF00) >> 8) / 0xFF
                                                      blue:(CGFloat)((shapeBorderColorLong & 0x000000FF)) / 0xFF
                                                     alpha:(CGFloat)((shapeBorderColorLong & 0xFF000000) >> 24) / 0xFF];
-        if (![[UIColor clearColor] isEqual:shapeBorderColor]) {
+        if (CGColorGetComponents(shapeBorderColor.CGColor)[3] != 0.0) {
             self.entityBorderColor = shapeBorderColor;
         }
     }
@@ -532,7 +532,7 @@
                                               green:(CGFloat)((shapeColorLong & 0x0000FF00) >> 8) / 0xFF
                                                blue:(CGFloat)((shapeColorLong & 0x000000FF)) / 0xFF
                                               alpha:(CGFloat)((shapeColorLong & 0xFF000000) >> 24) / 0xFF];
-        if (![[UIColor clearColor] isEqual:shapeColor]) {
+        if (CGColorGetComponents(shapeColor.CGColor)[3] != 0.0) {
             self.entityStrokeColor = shapeColor;
         }
     }
@@ -616,9 +616,12 @@
     if (entity) {
         [entity setIsSelected:YES];
         [entity setNeedsDisplay];
+        [self setFrozenImageNeedsUpdate];
+        [self setNeedsDisplayInRect:entity.bounds];
+    } else {
+        [self setNeedsDisplay];
     }
     self.selectedEntity = entity;
-    [self setNeedsDisplay];
 }
 
 - (void)updateSelectionOnTapWithLocationPoint:(CGPoint)tapLocation {
@@ -661,7 +664,6 @@
     if (sender.state == UIGestureRecognizerStateEnded) {
         CGPoint tapLocation = [sender locationInView:sender.view];
         [self updateSelectionOnTapWithLocationPoint:tapLocation];
-        [self setNeedsDisplay];
     }
 }
 
