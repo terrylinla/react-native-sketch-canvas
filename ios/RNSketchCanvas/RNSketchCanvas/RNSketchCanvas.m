@@ -655,7 +655,6 @@
         [entityToRemove removeFromSuperview];
         entityToRemove = nil;
         [self onShapeSelectionChanged:nil];
-        [self setNeedsDisplay];
     }
 }
 
@@ -672,7 +671,6 @@
     if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
         if (self.selectedEntity) {
             [self.selectedEntity rotateEntityBy:sender.rotation];
-            [self setNeedsDisplay];
         }
         [sender setRotation:0.0];
     }
@@ -684,7 +682,6 @@
         if (state != UIGestureRecognizerStateCancelled) {
             [self.selectedEntity moveEntityTo:[sender translationInView:self.selectedEntity]];
             [sender setTranslation:CGPointZero inView:sender.view];
-            [self setNeedsDisplay];
         }
     }
 }
