@@ -11,6 +11,7 @@
 #import "entities/RectEntity.h"
 #import "entities/TriangleEntity.h"
 #import "entities/ArrowEntity.h"
+#import "entities/TextEntity.h"
 
 @implementation RNSketchCanvas
 {
@@ -561,7 +562,7 @@
             [self addArrowEntity];
             break;
         case 5:
-            // addTextEntity(textShapeFontType, textShapeFontSize, textShapeText);
+            [self addTextEntity:textShapeFontType withFontSize:textShapeFontType withText:textShapeText];
             break;
         case 6:
             // TODO: ImageEntity Doesn't exist yet
@@ -666,6 +667,31 @@
                               borderStrokeColor:self.entityBorderColor
                               entityStrokeWidth:self.entityStrokeWidth
                               entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
+    [self onShapeSelectionChanged:entity];
+    [self selectEntity:entity];
+}
+
+- (void)addTextEntity:(NSString *)fontType withFontSize: (NSNumber *)fontSize withText: (NSString *)text {
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    
+    TextEntity *entity = [[TextEntity alloc]
+                           initAndSetupWithParent:self.bounds.size.width
+                           parentHeight:self.bounds.size.height
+                           parentCenterX:centerX
+                           parentCenterY:centerY
+                           parentScreenScale:self.window.screen.scale
+                           width:600
+                           height:150
+                           text:text
+                           bordersPadding:5.0f
+                           borderStyle:self.entityBorderStyle
+                           borderStrokeWidth:self.entityBorderStrokeWidth
+                           borderStrokeColor:self.entityBorderColor
+                           entityStrokeWidth:self.entityStrokeWidth
+                           entityStrokeColor:self.entityStrokeColor];
     
     [self.motionEntities addObject:entity];
     [self onShapeSelectionChanged:entity];

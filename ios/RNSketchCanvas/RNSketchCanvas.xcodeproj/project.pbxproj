@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8579D13721889DE500773C27 /* TextEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 8579D13621889DE500773C27 /* TextEntity.m */; };
 		858EE6372180DFBD009C9E08 /* CircleEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 858EE6362180DFBD009C9E08 /* CircleEntity.m */; };
 		85C9F6F2218879DB00BD64B4 /* RectEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 85C9F6F1218879DB00BD64B4 /* RectEntity.m */; };
 		85C9F6F5218885F400BD64B4 /* TriangleEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 85C9F6F4218885F400BD64B4 /* TriangleEntity.m */; };
@@ -33,6 +34,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8579D13521889D4800773C27 /* TextEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextEntity.h; sourceTree = "<group>"; };
+		8579D13621889DE500773C27 /* TextEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextEntity.m; sourceTree = "<group>"; };
 		858EE6312180DEC5009C9E08 /* CircleEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CircleEntity.h; sourceTree = "<group>"; };
 		858EE6362180DFBD009C9E08 /* CircleEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CircleEntity.m; sourceTree = "<group>"; };
 		85C9F6F0218878DB00BD64B4 /* RectEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RectEntity.h; sourceTree = "<group>"; };
@@ -88,6 +91,8 @@
 				85C9F6F4218885F400BD64B4 /* TriangleEntity.m */,
 				85E432F3218892AE00FDDA74 /* ArrowEntity.h */,
 				85E432F4218892CD00FDDA74 /* ArrowEntity.m */,
+				8579D13521889D4800773C27 /* TextEntity.h */,
+				8579D13621889DE500773C27 /* TextEntity.m */,
 			);
 			path = entities;
 			sourceTree = "<group>";
@@ -182,6 +187,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DEFBA25D1F322B6000A4545C /* RNSketchCanvas.m in Sources */,
+				8579D13721889DE500773C27 /* TextEntity.m in Sources */,
 				DED3A13720A4159A00D72FBF /* Utility.m in Sources */,
 				85C9F6F2218879DB00BD64B4 /* RectEntity.m in Sources */,
 				DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */,
