@@ -4,7 +4,7 @@
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
 #import <React/RCTUIManager.h>
-#import "entities/Enumerations.h"
+#import "entities/base/Enumerations.h"
 
 @implementation RNSketchCanvasManager
 

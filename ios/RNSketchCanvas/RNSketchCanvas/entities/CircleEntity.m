@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MotionEntity.h"
+#import "base/MotionEntity.h"
 #import "CircleEntity.h"
 
 @implementation CircleEntity

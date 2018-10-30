@@ -1,6 +1,6 @@
 #import <UIKit/UIKit.h>
-#import "entities/Enumerations.h"
-#import "entities/MotionEntity.h"
+#import "entities/base/Enumerations.h"
+#import "entities/base/MotionEntity.h"
 
 @class RCTEventDispatcher;
 

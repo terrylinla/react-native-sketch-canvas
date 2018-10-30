@@ -63,12 +63,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D7B7D3E0217DE80400902B8C /* entities */ = {
+		85C9F6F6218890F700BD64B4 /* base */ = {
 			isa = PBXGroup;
 			children = (
 				D7B7D3E1217DE92C00902B8C /* Enumerations.h */,
 				D7BC8411217F4FE600A275D3 /* MotionEntity.h */,
 				D7BC84172180814600A275D3 /* MotionEntity.m */,
+			);
+			path = base;
+			sourceTree = "<group>";
+		};
+		D7B7D3E0217DE80400902B8C /* entities */ = {
+			isa = PBXGroup;
+			children = (
+				85C9F6F6218890F700BD64B4 /* base */,
 				858EE6312180DEC5009C9E08 /* CircleEntity.h */,
 				858EE6362180DFBD009C9E08 /* CircleEntity.m */,
 				85C9F6F0218878DB00BD64B4 /* RectEntity.h */,

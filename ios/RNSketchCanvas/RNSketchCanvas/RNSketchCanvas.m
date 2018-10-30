@@ -5,8 +5,8 @@
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
 #import "Utility.h"
-#import "entities/Enumerations.h"
-#import "entities/MotionEntity.h"
+#import "entities/base/Enumerations.h"
+#import "entities/base/MotionEntity.h"
 #import "entities/CircleEntity.h"
 #import "entities/RectEntity.h"
 #import "entities/TriangleEntity.h"

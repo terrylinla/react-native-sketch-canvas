@@ -6,7 +6,7 @@
 //  Copyright © 2018 Terry. All rights reserved.
 //
 
-#import "MotionEntity.h"
+#import "base/MotionEntity.h"
 
 @interface TriangleEntity : MotionEntity
 
