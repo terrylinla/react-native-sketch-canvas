@@ -10,6 +10,7 @@
 #import "entities/CircleEntity.h"
 #import "entities/RectEntity.h"
 #import "entities/TriangleEntity.h"
+#import "entities/ArrowEntity.h"
 
 @implementation RNSketchCanvas
 {
@@ -557,7 +558,7 @@
             [self addTriangleEntity];
             break;
         case 4:
-            // addArrowEntity();
+            [self addArrowEntity];
             break;
         case 5:
             // addTextEntity(textShapeFontType, textShapeFontSize, textShapeText);
@@ -628,6 +629,30 @@
     CGFloat centerY = CGRectGetMidY(self.bounds);
     
     TriangleEntity *entity = [[TriangleEntity alloc]
+                              initAndSetupWithParent:self.bounds.size.width
+                              parentHeight:self.bounds.size.height
+                              parentCenterX:centerX
+                              parentCenterY:centerY
+                              parentScreenScale:self.window.screen.scale
+                              width:300
+                              height:300
+                              bordersPadding:5.0f
+                              borderStyle:self.entityBorderStyle
+                              borderStrokeWidth:self.entityBorderStrokeWidth
+                              borderStrokeColor:self.entityBorderColor
+                              entityStrokeWidth:self.entityStrokeWidth
+                              entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
+    [self onShapeSelectionChanged:entity];
+    [self selectEntity:entity];
+}
+
+- (void)addArrowEntity {
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    
+    ArrowEntity *entity = [[ArrowEntity alloc]
                               initAndSetupWithParent:self.bounds.size.width
                               parentHeight:self.bounds.size.height
                               parentCenterX:centerX

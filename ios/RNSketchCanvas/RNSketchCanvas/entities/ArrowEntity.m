@@ -1,16 +1,15 @@
 //
-//  TriangleEntity.m
+//  ArrowEntity.m
 //  RNSketchCanvas
 //
 //  Created by Thomas Steinbrüchel on 30.10.18.
 //  Copyright © 2018 Terry. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
 #import "base/MotionEntity.h"
-#import "TriangleEntity.h"
+#import "ArrowEntity.h"
 
-@implementation TriangleEntity
+@implementation ArrowEntity
 {
 }
 
@@ -57,20 +56,25 @@
 - (void)drawContent:(CGRect)rect withinContext:(CGContextRef)contextRef {
     CGContextSetLineWidth(contextRef, self.entityStrokeWidth / self.scale);
     CGContextSetStrokeColorWithColor(contextRef, [self.entityStrokeColor CGColor]);
-
+    CGContextSetLineJoin(contextRef, kCGLineJoinBevel);
+    
     CGRect entityRect = CGRectMake(0, 0, rect.size.width, rect.size.height);
     CGFloat padding = (self.bordersPadding + self.entityStrokeWidth) / self.scale;
     entityRect = CGRectInset(entityRect, padding , padding);
     
-    CGFloat minX = CGRectGetMinX(entityRect);
     CGFloat maxX = CGRectGetMaxX(entityRect);
+    CGFloat centerX = maxX / 2.0;
+    CGFloat oneThirdX = maxX / 3.0;
     CGFloat minY = CGRectGetMinY(entityRect);
+    CGFloat maxY = CGRectGetMaxY(entityRect);
+    CGFloat oneThirdY = maxY / 3.0;
     
     CGContextBeginPath(contextRef);
-    CGContextMoveToPoint(contextRef, minX, maxX);
-    CGContextAddLineToPoint(contextRef, maxX, maxX);
-    CGContextAddLineToPoint(contextRef, maxX / 2.0, minY);
-    CGContextClosePath(contextRef);
+    CGContextMoveToPoint(contextRef, centerX, maxY); // Start at bottom center
+    CGContextAddLineToPoint(contextRef, centerX, minY); // Draw line from bottom up
+    CGContextAddLineToPoint(contextRef, centerX - oneThirdX, minY + oneThirdY); // Draw left adjacent from top
+    CGContextAddLineToPoint(contextRef, centerX, minY); // Draw back to top
+    CGContextAddLineToPoint(contextRef, centerX + oneThirdX, minY + oneThirdY); // Draw right adjacent
     
     CGContextStrokePath(contextRef);
 }
