@@ -18,25 +18,28 @@
                          parentCenterY: (CGFloat)parentCenterY
                      parentScreenScale: (CGFloat)parentScreenScale
                                  width: (NSInteger)width
+                                height: (NSInteger)height
+                        bordersPadding: (CGFloat)bordersPadding
                            borderStyle: (enum BorderStyle)borderStyle
                      borderStrokeWidth: (CGFloat)borderStrokeWidth
                      borderStrokeColor: (UIColor *)borderStrokeColor
                      entityStrokeWidth: (CGFloat)entityStrokeWidth
                      entityStrokeColor: (UIColor *)entityStrokeColor {
     
-    self = [super initWithFrame:CGRectMake(parentCenterX - width / 4, parentCenterY - width / 4 , width / 2, width / 2)];
+    self = [super initWithFrame:CGRectMake(parentCenterX, parentCenterY, width, height)];
     
     if (self) {
         self.parentWidth = parentWidth;
         self.parentHeight = parentHeight;
         self.isSelected = false;
-        self.centerPoint = CGPointMake(parentCenterX - width / 4, parentCenterY - width / 4);
+        self.centerPoint = CGPointMake(parentCenterX, parentCenterY);
         self.scale = 1.0;
         self.MIN_SCALE = 0.15f;
         self.MAX_SCALE = 4.5f;
         self.parentScreenScale = parentScreenScale;
         self.borderStyle = borderStyle;
         self.borderStrokeWidth = borderStrokeWidth;
+        self.bordersPadding = bordersPadding;
         self.borderStrokeColor = borderStrokeColor;
         self.entityStrokeWidth = entityStrokeWidth;
         self.entityStrokeColor = entityStrokeColor;

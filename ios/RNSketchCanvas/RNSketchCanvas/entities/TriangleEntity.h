@@ -1,14 +1,14 @@
 //
-//  CircleEntity.h
+//  TriangleEntity.h
 //  RNSketchCanvas
 //
-//  Created by Thomas Steinbrüchel on 24.10.18.
+//  Created by Thomas Steinbrüchel on 30.10.18.
 //  Copyright © 2018 Terry. All rights reserved.
 //
 
 #import "MotionEntity.h"
 
-@interface CircleEntity : MotionEntity
+@interface TriangleEntity : MotionEntity
 
 - (instancetype)initAndSetupWithParent: (NSInteger)parentWidth
                           parentHeight: (NSInteger)parentHeight
@@ -25,3 +25,4 @@
                      entityStrokeColor: (UIColor *)entityStrokeColor;
 
 @end
+

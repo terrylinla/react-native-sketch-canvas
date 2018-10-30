@@ -8,6 +8,8 @@
 #import "entities/Enumerations.h"
 #import "entities/MotionEntity.h"
 #import "entities/CircleEntity.h"
+#import "entities/RectEntity.h"
+#import "entities/TriangleEntity.h"
 
 @implementation RNSketchCanvas
 {
@@ -546,13 +548,13 @@
     
     switch ([@[@"Circle", @"Rect", @"Square", @"Triangle", @"Arrow", @"Text", @"Image"] indexOfObject: entityType]) {
         case 1:
-            // addRectEntity(600, 300);
+            [self addRectEntity:300 andHeight:150];
             break;
         case 2:
-            // addSquareEntity(600);
+            [self addRectEntity:300 andHeight:300];
             break;
         case 3:
-            // addTriangleEntity();
+            [self addTriangleEntity];
             break;
         case 4:
             // addArrowEntity();
@@ -584,12 +586,61 @@
                             parentCenterY:centerY
                             parentScreenScale:self.window.screen.scale
                             width:300
-                            bordersPadding:10.0f
+                            height:300
+                            bordersPadding:5.0f
                             borderStyle:self.entityBorderStyle
                             borderStrokeWidth:self.entityBorderStrokeWidth
                             borderStrokeColor:self.entityBorderColor
                             entityStrokeWidth:self.entityStrokeWidth
                             entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
+    [self onShapeSelectionChanged:entity];
+    [self selectEntity:entity];
+}
+
+- (void)addRectEntity:(NSInteger)width andHeight: (NSInteger)height {
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    
+    RectEntity *entity = [[RectEntity alloc]
+                          initAndSetupWithParent:self.bounds.size.width
+                          parentHeight:self.bounds.size.height
+                          parentCenterX:centerX
+                          parentCenterY:centerY
+                          parentScreenScale:self.window.screen.scale
+                          width:width
+                          height:height
+                          bordersPadding:5.0f
+                          borderStyle:self.entityBorderStyle
+                          borderStrokeWidth:self.entityBorderStrokeWidth
+                          borderStrokeColor:self.entityBorderColor
+                          entityStrokeWidth:self.entityStrokeWidth
+                          entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
+    [self onShapeSelectionChanged:entity];
+    [self selectEntity:entity];
+}
+
+- (void)addTriangleEntity {
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    
+    TriangleEntity *entity = [[TriangleEntity alloc]
+                              initAndSetupWithParent:self.bounds.size.width
+                              parentHeight:self.bounds.size.height
+                              parentCenterX:centerX
+                              parentCenterY:centerY
+                              parentScreenScale:self.window.screen.scale
+                              width:300
+                              height:300
+                              bordersPadding:5.0f
+                              borderStyle:self.entityBorderStyle
+                              borderStrokeWidth:self.entityBorderStrokeWidth
+                              borderStrokeColor:self.entityBorderColor
+                              entityStrokeWidth:self.entityStrokeWidth
+                              entityStrokeColor:self.entityStrokeColor];
     
     [self.motionEntities addObject:entity];
     [self onShapeSelectionChanged:entity];
@@ -654,6 +705,7 @@
         [self.motionEntities removeObject:entityToRemove];
         [entityToRemove removeFromSuperview];
         entityToRemove = nil;
+        [self selectEntity:entityToRemove];
         [self onShapeSelectionChanged:nil];
     }
 }
@@ -671,6 +723,7 @@
     if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
         if (self.selectedEntity) {
             [self.selectedEntity rotateEntityBy:sender.rotation];
+            [self setNeedsDisplayInRect:self.selectedEntity.bounds];
         }
         [sender setRotation:0.0];
     }
@@ -682,6 +735,7 @@
         if (state != UIGestureRecognizerStateCancelled) {
             [self.selectedEntity moveEntityTo:[sender translationInView:self.selectedEntity]];
             [sender setTranslation:CGPointZero inView:sender.view];
+            [self setNeedsDisplayInRect:self.selectedEntity.bounds];
         }
     }
 }
@@ -691,7 +745,7 @@
     if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
         if (self.selectedEntity) {
             [self.selectedEntity scaleEntityBy:sender.scale];
-            [self setNeedsDisplay];
+            [self setNeedsDisplayInRect:self.selectedEntity.bounds];
         }
         [sender setScale:1.0];
     }

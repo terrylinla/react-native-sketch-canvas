@@ -25,6 +25,7 @@
 @property (nonatomic) NSInteger parentWidth;
 @property (nonatomic) NSInteger parentHeight;
 @property (nonatomic) enum BorderStyle borderStyle;
+@property (nonatomic) CGFloat bordersPadding;
 @property (nonatomic) CGFloat borderStrokeWidth;
 @property (nonatomic) UIColor* borderStrokeColor;
 @property (nonatomic) CGFloat entityStrokeWidth;
@@ -37,6 +38,8 @@
                          parentCenterY: (CGFloat)parentCenterY
                      parentScreenScale: (CGFloat)parentScreenScale
                                  width: (NSInteger)width
+                                height: (NSInteger)height
+                        bordersPadding: (CGFloat)bordersPadding
                            borderStyle: (enum BorderStyle)borderStyle
                      borderStrokeWidth: (CGFloat)borderStrokeWidth
                      borderStrokeColor: (UIColor *)borderStrokeColor

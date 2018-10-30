@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		858EE6372180DFBD009C9E08 /* CircleEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 858EE6362180DFBD009C9E08 /* CircleEntity.m */; };
+		85C9F6F2218879DB00BD64B4 /* RectEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 85C9F6F1218879DB00BD64B4 /* RectEntity.m */; };
+		85C9F6F5218885F400BD64B4 /* TriangleEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 85C9F6F4218885F400BD64B4 /* TriangleEntity.m */; };
 		D7BC84182180814600A275D3 /* MotionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = D7BC84172180814600A275D3 /* MotionEntity.m */; };
 		DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */ = {isa = PBXBuildFile; fileRef = DE0C997F1F32D596001BDE8B /* RNSketchData.m */; };
 		DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB694861F322F2A00DC6841 /* RNSketchCanvasManager.m */; };
@@ -32,6 +34,10 @@
 /* Begin PBXFileReference section */
 		858EE6312180DEC5009C9E08 /* CircleEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CircleEntity.h; sourceTree = "<group>"; };
 		858EE6362180DFBD009C9E08 /* CircleEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CircleEntity.m; sourceTree = "<group>"; };
+		85C9F6F0218878DB00BD64B4 /* RectEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RectEntity.h; sourceTree = "<group>"; };
+		85C9F6F1218879DB00BD64B4 /* RectEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RectEntity.m; sourceTree = "<group>"; };
+		85C9F6F3218885C600BD64B4 /* TriangleEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TriangleEntity.h; sourceTree = "<group>"; };
+		85C9F6F4218885F400BD64B4 /* TriangleEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TriangleEntity.m; sourceTree = "<group>"; };
 		D7B7D3E1217DE92C00902B8C /* Enumerations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Enumerations.h; sourceTree = "<group>"; };
 		D7BC8411217F4FE600A275D3 /* MotionEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MotionEntity.h; sourceTree = "<group>"; };
 		D7BC84172180814600A275D3 /* MotionEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MotionEntity.m; sourceTree = "<group>"; };
@@ -65,6 +71,10 @@
 				D7BC84172180814600A275D3 /* MotionEntity.m */,
 				858EE6312180DEC5009C9E08 /* CircleEntity.h */,
 				858EE6362180DFBD009C9E08 /* CircleEntity.m */,
+				85C9F6F0218878DB00BD64B4 /* RectEntity.h */,
+				85C9F6F1218879DB00BD64B4 /* RectEntity.m */,
+				85C9F6F3218885C600BD64B4 /* TriangleEntity.h */,
+				85C9F6F4218885F400BD64B4 /* TriangleEntity.m */,
 			);
 			path = entities;
 			sourceTree = "<group>";
@@ -160,9 +170,11 @@
 			files = (
 				DEFBA25D1F322B6000A4545C /* RNSketchCanvas.m in Sources */,
 				DED3A13720A4159A00D72FBF /* Utility.m in Sources */,
+				85C9F6F2218879DB00BD64B4 /* RectEntity.m in Sources */,
 				DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */,
 				D7BC84182180814600A275D3 /* MotionEntity.m in Sources */,
 				858EE6372180DFBD009C9E08 /* CircleEntity.m in Sources */,
+				85C9F6F5218885F400BD64B4 /* TriangleEntity.m in Sources */,
 				DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
