@@ -14,20 +14,27 @@
 @property (nonatomic) NSDictionary *textAttributes;
 @property (nonatomic) CGSize textSize;
 @property (nonatomic) NSMutableParagraphStyle *style;
+@property (nonatomic) CGFloat fontSize;
+@property (nonatomic) NSString *fontType;
+@property (nonatomic) UIFont *font;
+@property (nonatomic) CGSize initialBoundsSize;
 
 - (instancetype)initAndSetupWithParent: (NSInteger)parentWidth
                           parentHeight: (NSInteger)parentHeight
                          parentCenterX: (CGFloat)parentCenterX
                          parentCenterY: (CGFloat)parentCenterY
                      parentScreenScale: (CGFloat)parentScreenScale
-                                 width: (NSInteger)width
-                                height: (NSInteger)height
                                   text: (NSString *)text
+                              fontType: (NSString *)fontType
+                              fontSize: (CGFloat)fontSize
                         bordersPadding: (CGFloat)bordersPadding
                            borderStyle: (enum BorderStyle)borderStyle
                      borderStrokeWidth: (CGFloat)borderStrokeWidth
                      borderStrokeColor: (UIColor *)borderStrokeColor
                      entityStrokeWidth: (CGFloat)entityStrokeWidth
                      entityStrokeColor: (UIColor *)entityStrokeColor;
+
+- (void)updateText: (NSString *)newText;
+- (void)updateFontSize: (CGFloat)newFontSize;
 
 @end

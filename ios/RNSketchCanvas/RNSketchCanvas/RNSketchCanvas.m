@@ -562,7 +562,7 @@
             [self addArrowEntity];
             break;
         case 5:
-            [self addTextEntity:textShapeFontType withFontSize:textShapeFontType withText:textShapeText];
+            [self addTextEntity:textShapeFontType withFontSize:textShapeFontSize withText:textShapeText];
             break;
         case 6:
             // TODO: ImageEntity Doesn't exist yet
@@ -574,8 +574,6 @@
         }
     }
 }
-
-// TODO: Add add*Entity methods
 
 - (void)addCircleEntity {
     CGFloat centerX = CGRectGetMidX(self.bounds);
@@ -683,9 +681,9 @@
                            parentCenterX:centerX
                            parentCenterY:centerY
                            parentScreenScale:self.window.screen.scale
-                           width:600
-                           height:150
                            text:text
+                           fontType:fontType
+                           fontSize:[fontSize floatValue]
                            bordersPadding:5.0f
                            borderStyle:self.entityBorderStyle
                            borderStrokeWidth:self.entityBorderStrokeWidth
@@ -696,18 +694,6 @@
     [self.motionEntities addObject:entity];
     [self onShapeSelectionChanged:entity];
     [self selectEntity:entity];
-}
-
-- (void)increaseTextEntityFontSize {
-    // TODO: increase FontSize of TextEntity
-}
-
-- (void)decreaseTextEntityFontSize {
-    // TODO: decrease FontSize of TextEntity
-}
-
-- (void)setTextEntityText:(NSString *)newText {
-    // TODO: Set newText as text of selected TextEntity
 }
 
 - (void)selectEntity:(MotionEntity *)entity {
@@ -758,6 +744,38 @@
         entityToRemove = nil;
         [self selectEntity:entityToRemove];
         [self onShapeSelectionChanged:nil];
+    }
+}
+
+- (void)increaseTextEntityFontSize {
+    TextEntity *textEntity = [self getSelectedTextEntity];
+    if (textEntity) {
+        [textEntity updateFontSize:textEntity.fontSize + 1];
+        [textEntity setNeedsDisplay];
+    }
+}
+
+- (void)decreaseTextEntityFontSize {
+    TextEntity *textEntity = [self getSelectedTextEntity];
+    if (textEntity) {
+        [textEntity updateFontSize:textEntity.fontSize - 1];
+        [textEntity setNeedsDisplay];
+    }
+}
+
+- (void)setTextEntityText:(NSString *)newText {
+    TextEntity *textEntity = [self getSelectedTextEntity];
+    if (textEntity && newText && [newText length] > 0) {
+        [textEntity updateText:newText];
+        [textEntity setNeedsDisplay];
+    }
+}
+
+- (TextEntity *)getSelectedTextEntity {
+    if (self.selectedEntity && [self.selectedEntity isKindOfClass:[TextEntity class]]) {
+        return (TextEntity *)self.selectedEntity;
+    } else {
+        return nil;
     }
 }
 

@@ -18,9 +18,9 @@
                          parentCenterX: (CGFloat)parentCenterX
                          parentCenterY: (CGFloat)parentCenterY
                      parentScreenScale: (CGFloat)parentScreenScale
-                                 width: (NSInteger)width
-                                height: (NSInteger)height
                                   text: (NSString *)text
+                              fontType: (NSString *)fontType
+                              fontSize: (CGFloat)fontSize
                         bordersPadding: (CGFloat)bordersPadding
                            borderStyle: (enum BorderStyle)borderStyle
                      borderStrokeWidth: (CGFloat)borderStrokeWidth
@@ -28,18 +28,34 @@
                      entityStrokeWidth: (CGFloat)entityStrokeWidth
                      entityStrokeColor: (UIColor *)entityStrokeColor {
     
-    CGFloat realParentCenterX = parentCenterX - width / 4;
-    CGFloat realParentCenterY = parentCenterY - height / 4;
-    CGFloat realWidth = width / 2;
-    CGFloat realHeight = height / 2;
+    // Let's calculate the initial texts single line width here
+    NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    [style setAlignment:NSTextAlignmentCenter];
+    [style setLineHeightMultiple:1.05];
+    UIFont *font = [UIFont systemFontOfSize: fontSize];
+    if (fontType) {
+        font = [UIFont fontWithName: fontType size: fontSize];
+    }
+    NSDictionary *textAttributes = @{
+                            NSFontAttributeName: font,
+                            NSForegroundColorAttributeName: entityStrokeColor,
+                            NSParagraphStyleAttributeName: style
+                            };
+    CGRect initialTextRect = [text boundingRectWithSize:CGSizeMake(parentWidth, CGFLOAT_MAX)
+                                              options:NSStringDrawingUsesLineFragmentOrigin
+                                           attributes:textAttributes
+                                              context:nil];
+    CGFloat realParentCenterX = parentCenterX - (initialTextRect.size.width + bordersPadding * 2) / 2;
+    CGFloat realParentCenterY = parentCenterY - initialTextRect.size.height / 4;
+
     
     self = [super initAndSetupWithParent:parentWidth
                             parentHeight:parentHeight
                            parentCenterX:realParentCenterX
                            parentCenterY:realParentCenterY
                        parentScreenScale:parentScreenScale
-                                   width:realWidth
-                                  height:realHeight
+                                   width:initialTextRect.size.width + bordersPadding * 2
+                                  height:initialTextRect.size.height
                           bordersPadding:bordersPadding
                              borderStyle:borderStyle
                        borderStrokeWidth:borderStrokeWidth
@@ -52,34 +68,65 @@
         self.text = text;
         self.style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
         [self.style setAlignment:NSTextAlignmentCenter];
+        [self.style setLineHeightMultiple:1.05];
+        self.fontSize = fontSize;
+        self.fontType = fontType;
+        self.font = [UIFont systemFontOfSize: self.fontSize];
+        if (self.fontType) {
+            self.font = [UIFont fontWithName: self.fontType size: self.fontSize];
+        }
+        self.initialBoundsSize = self.bounds.size;
         self.textAttributes = @{
-                           NSFontAttributeName: [UIFont systemFontOfSize:20],
-                           NSForegroundColorAttributeName: self.entityStrokeColor,
-                           NSParagraphStyleAttributeName: self.style
-                           };
-        self.textSize = [self.text sizeWithAttributes:self.textAttributes];
+                                NSFontAttributeName: self.font,
+                                NSForegroundColorAttributeName: self.entityStrokeColor,
+                                NSParagraphStyleAttributeName: self.style
+                                };
+        
+        CGRect textRect = [self.text boundingRectWithSize:CGSizeMake(self.bounds.size.width, CGFLOAT_MAX)
+                                                  options:NSStringDrawingUsesLineFragmentOrigin
+                                               attributes:self.textAttributes
+                                                  context:nil];
+        self.textSize = textRect.size;
     }
     
     return self;
 }
 
+- (void)updateText:(NSString *)newText {
+    self.text = newText;
+}
+
+- (void)updateFontSize:(CGFloat)newFontSize {
+    if (newFontSize >= 5 && newFontSize <= 25) {
+        self.fontSize = newFontSize;
+        self.font = [self.font fontWithSize:self.fontSize];
+        self.textAttributes = @{
+                                NSFontAttributeName: self.font,
+                                NSForegroundColorAttributeName: self.entityStrokeColor,
+                                NSParagraphStyleAttributeName: self.style
+                                };
+        CGRect textRect = [self.text boundingRectWithSize:CGSizeMake(self.bounds.size.width, CGFLOAT_MAX)
+                                                  options:NSStringDrawingUsesLineFragmentOrigin
+                                               attributes:self.textAttributes
+                                                  context:nil];
+        self.textSize = textRect.size;
+        self.bounds = CGRectMake(self.bounds.origin.x, self.bounds.origin.y, self.bounds.size.width, self.initialBoundsSize.height +  textRect.size.height);
+    }
+}
+
 - (void)drawContent:(CGRect)rect withinContext:(CGContextRef)contextRef {
     self.textAttributes = @{
-                            NSFontAttributeName: [UIFont systemFontOfSize:20],
+                            NSFontAttributeName: self.font,
                             NSForegroundColorAttributeName: self.entityStrokeColor,
                             NSParagraphStyleAttributeName: self.style
                             };
-    self.textSize = [self.text sizeWithAttributes:self.textAttributes];
     
     UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0.0f); // This (0.0f scale) fixes blurry text when scaling
-    
     CGRect textRect = CGRectMake(rect.origin.x, rect.origin.y + (rect.size.height - self.textSize.height) / 2.0, rect.size.width, self.textSize.height);
-    
     [self.text drawInRect:textRect withAttributes:self.textAttributes];
-    
     UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    
+
     [result drawInRect:rect];
 }
 
