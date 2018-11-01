@@ -162,6 +162,7 @@ class SketchCanvas extends React.Component {
 
       onPanResponderGrant: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
+        if (gestureState.numberActiveTouches > 1) return
         const e = evt.nativeEvent
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
         this._path = {
