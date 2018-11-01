@@ -121,7 +121,7 @@
                             NSParagraphStyleAttributeName: self.style
                             };
     
-    UIGraphicsBeginImageContextWithOptions(rect.size, NO, self.parentScreenScale); // This (0.0f scale) fixes blurry text when scaling
+    UIGraphicsBeginImageContextWithOptions(rect.size, NO, self.parentScreenScale * self.scale); // This (self.parentScreenScale * self.scale) fixes blurry text when scaling
     CGRect textRect = CGRectMake(rect.origin.x, rect.origin.y + (rect.size.height - self.textSize.height) / 2.0, rect.size.width, self.textSize.height);
     [self.text drawInRect:textRect withAttributes:self.textAttributes];
     UIImage *result = UIGraphicsGetImageFromCurrentImageContext();

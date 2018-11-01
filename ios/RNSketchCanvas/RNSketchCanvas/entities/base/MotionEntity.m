@@ -75,6 +75,7 @@
     if (absoluteScale >= self.MIN_SCALE && absoluteScale <= self.MAX_SCALE) {
         self.scale *= newScale;
         [self setTransform:CGAffineTransformScale(self.transform, newScale, newScale)];
+        [self setContentScaleFactor:self.parentScreenScale * self.scale]; // Make it sharp :-)
     }
 }
 
