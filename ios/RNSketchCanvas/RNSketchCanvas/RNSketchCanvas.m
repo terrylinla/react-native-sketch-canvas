@@ -392,6 +392,24 @@
             }
         }
         
+        for (MotionEntity *entity in self.motionEntities) {
+            CGContextSaveGState(context);
+            
+            // Center the context around the view's anchor point
+            CGContextTranslateCTM(context, [entity center].x, [entity center].y);
+            
+            // Apply the view's transform about the anchor point
+            CGContextConcatCTM(context, [entity transform]);
+            
+            // Offset by the portion of the bounds left of and above the anchor point
+            CGContextTranslateCTM(context, -[entity bounds].size.width * [[entity layer] anchorPoint].x, -[entity bounds].size.height * [[entity layer] anchorPoint].y);
+            
+            // Render the entity
+            [entity.layer renderInContext:context];
+            
+            CGContextRestoreGState(context);
+        }
+        
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
@@ -422,6 +440,24 @@
             for (CanvasText *text in _arrTextOnSketch) {
                 [text.text drawInRect: text.drawRect withAttributes: text.attribute];
             }
+        }
+        
+        for (MotionEntity *entity in self.motionEntities) {
+            CGContextSaveGState(context);
+            
+            // Center the context around the view's anchor point
+            CGContextTranslateCTM(context, [entity center].x, [entity center].y);
+            
+            // Apply the view's transform about the anchor point
+            CGContextConcatCTM(context, [entity transform]);
+            
+            // Offset by the portion of the bounds left of and above the anchor point
+            CGContextTranslateCTM(context, -[entity bounds].size.width * [[entity layer] anchorPoint].x, -[entity bounds].size.height * [[entity layer] anchorPoint].y);
+            
+            // Render the entity
+            [entity.layer renderInContext:context];
+            
+            CGContextRestoreGState(context);
         }
         
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();

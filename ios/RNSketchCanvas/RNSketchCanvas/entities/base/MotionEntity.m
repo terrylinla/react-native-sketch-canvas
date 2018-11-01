@@ -98,7 +98,7 @@
     if (contextRef) {
         CGContextSaveGState(contextRef);
         if ([self respondsToSelector:@selector(drawContent:withinContext:)]) {
-            [self drawContent:self.bounds withinContext:contextRef];
+            [self drawContent:rect withinContext:contextRef];
         }
         CGContextRestoreGState(contextRef);
     }
@@ -114,7 +114,7 @@
                 CGFloat dashPattern[]= {2.5, 2.5};
                 CGContextSetLineDash(contextRef, 0.0, dashPattern, 2);
             }
-            CGContextStrokeRect(contextRef, self.bounds);
+            CGContextStrokeRect(contextRef, rect);
             
             CGContextRestoreGState(contextRef);
         }
