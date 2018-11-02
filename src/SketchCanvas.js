@@ -162,6 +162,7 @@ class SketchCanvas extends React.Component {
 
       onPanResponderGrant: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
+        if (gestureState.numberActiveTouches > 1) return
         const e = evt.nativeEvent
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
         this._path = {
@@ -209,6 +210,15 @@ class SketchCanvas extends React.Component {
           this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
         }
         UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, [])
+      },
+      onPanResponderTerminate: (evt, gestureState) => {
+        // Another component has become the responder, so this gesture should be cancelled
+        if (!this.props.touchEnabled) return;
+        if (this._path) {
+          this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user });
+          this._paths.push({ path: this._path, size: this._size, drawer: this.props.user });
+        }
+        UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, []);
       },
 
       onShouldBlockNativeResponder: (evt, gestureState) => {
