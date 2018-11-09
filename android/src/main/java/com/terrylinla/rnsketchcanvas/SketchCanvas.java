@@ -392,7 +392,7 @@ public class SketchCanvas extends View {
         if (mBackgroundImage != null && includeImage) {
             Rect targetRect = new Rect();
             Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), 
-                bitmap.getWidth(), bitmap.getHeight(), "AspectFit").roundOut(targetRect);
+                bitmap.getWidth(), bitmap.getHeight(), mContentMode).roundOut(targetRect);
             canvas.drawBitmap(mBackgroundImage, null, targetRect, null);
         }
 
