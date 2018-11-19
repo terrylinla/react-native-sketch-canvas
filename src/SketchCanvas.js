@@ -221,19 +221,19 @@ class SketchCanvas extends React.Component {
     });
     }
 
-    didTouchPath(evt, gestureState) {
+    didTouchPath(nativeEvent, eventContext = {}) {
         const e = evt.nativeEvent;
-        delete e.touches;
-        delete e.changedTouches;
-        this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY };
+        delete nativeEvent.touches;
+        delete nativeEvent.changedTouches;
+        this._offset = { x: nativeEvent.pageX - nativeEvent.locationX, y: nativeEvent.pageY - nativeEvent.locationY };
 
         UIManager.dispatchViewManagerCommand(
             this._handle,
             UIManager.RNSketchCanvas.Commands.didTouchPath,
             [
-                JSON.stringify({ nativeEvent: e, gestureState }),
-                Math.round(parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale)),
-                Math.round(parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale))
+                JSON.stringify({ nativeEvent, eventContext }),
+                Math.round(parseFloat((nativeEvent.locationX - this._offset.x).toFixed(2) * this._screenScale)),
+                Math.round(parseFloat((nativeEvent.locationY - this._offset.y).toFixed(2) * this._screenScale))
             ]
         );
     }
