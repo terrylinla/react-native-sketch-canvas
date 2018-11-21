@@ -221,7 +221,8 @@ class SketchCanvas extends React.Component {
     });
     }
 
-    didTouchPath(nativeEvent, eventContext = {}) {
+    didTouchPath(evt, eventContext = {}) {
+        const { nativeEvent } = evt;
         delete nativeEvent.touches;
         delete nativeEvent.changedTouches;
         this._offset = { x: nativeEvent.pageX - nativeEvent.locationX, y: nativeEvent.pageY - nativeEvent.locationY };
