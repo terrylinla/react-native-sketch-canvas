@@ -32,6 +32,8 @@ class SketchCanvas extends React.Component {
     onStrokeChanged: PropTypes.func,
     onStrokeEnd: PropTypes.func,
     onSketchSaved: PropTypes.func,
+    onShapeSelectionChanged: PropTypes.func,
+    shapeConfiguration: PropTypes.shape({ shapeBorderColor: PropTypes.string, shapeBorderStyle: PropTypes.string, shapeBorderStrokeWidth: PropTypes.number, shapeColor: PropTypes.string, shapeStrokeWidth: PropTypes.number }),
     user: PropTypes.string,
     scale: PropTypes.number,
 
@@ -64,6 +66,8 @@ class SketchCanvas extends React.Component {
     onStrokeChanged: () => { },
     onStrokeEnd: () => { },
     onSketchSaved: () => { },
+    onShapeSelectionChanged: () => { },
+    shapeConfiguration: { shapeBorderColor: 'transparent', shapeBorderStyle: 'Dashed', shapeBorderStrokeWidth: 1, shapeColor: '#000000', shapeStrokeWidth: 3 },
     user: null,
     scale: 1,
 
@@ -138,6 +142,29 @@ class SketchCanvas extends React.Component {
     UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deletePath, [id])
   }
 
+  addShape(config) {
+    if (config) {
+      let fontSize = config.textShapeFontSize ? config.textShapeFontSize : 0;
+      UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addShape, [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset]);
+    }
+  }
+
+  deleteSelectedShape() {
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deleteSelectedShape, []);
+  }
+
+  increaseSelectedShapeFontsize() {
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.increaseShapeFontsize, []);
+  }
+
+  decreaseSelectedShapeFontsize() {
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.decreaseShapeFontsize, []);
+  }
+
+  changeSelectedShapeText(newText) {
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.changeShapeText, [newText]);
+  }
+
   save(imageType, transparent, folder, filename, includeImage, includeText, cropToImageSize) {
     UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.save, [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize])
   }
@@ -170,7 +197,7 @@ class SketchCanvas extends React.Component {
           id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
           width: this.props.strokeWidth, data: []
         }
-        
+
         UIManager.dispatchViewManagerCommand(
           this._handle,
           UIManager.RNSketchCanvas.Commands.newPath,
@@ -185,7 +212,8 @@ class SketchCanvas extends React.Component {
           UIManager.RNSketchCanvas.Commands.addPoint,
           [
             parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
+            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale),
+            false
           ]
         )
         const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)), y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
@@ -194,6 +222,7 @@ class SketchCanvas extends React.Component {
       },
       onPanResponderMove: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
+        if (Math.abs(gestureState.dx) < 2.5 || Math.abs(gestureState.dy) < 2.5) return
         if (this._path) {
           const x = parseFloat((gestureState.x0 + gestureState.dx / this.props.scale - this._offset.x).toFixed(2)),
                 y = parseFloat((gestureState.y0 + gestureState.dy / this.props.scale - this._offset.y).toFixed(2))
@@ -247,11 +276,14 @@ class SketchCanvas extends React.Component {
             this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
           } else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
+          } else if (e.nativeEvent.hasOwnProperty('isShapeSelected')) {
+            this.props.onShapeSelectionChanged(e.nativeEvent.isShapeSelected);
           }
         }}
         localSourceImage={this.props.localSourceImage}
         permissionDialogTitle={this.props.permissionDialogTitle}
         permissionDialogMessage={this.props.permissionDialogMessage}
+        shapeConfiguration={{ shapeBorderColor: processColor(this.props.shapeConfiguration.shapeBorderColor), shapeBorderStyle: this.props.shapeConfiguration.shapeBorderStyle, shapeBorderStrokeWidth: this.props.shapeConfiguration.shapeBorderStrokeWidth, shapeColor: processColor(this.props.strokeColor), shapeStrokeWidth: this.props.strokeWidth }}
         text={this.state.text}
       />
     );

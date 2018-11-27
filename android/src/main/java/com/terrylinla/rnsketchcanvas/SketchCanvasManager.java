@@ -28,6 +28,8 @@ import android.graphics.PointF;
 
 import javax.annotation.Nullable;
 
+import com.terrylinla.rnsketchcanvas.utils.entities.EntityType;
+
 public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_ADD_POINT = 1;
     public static final int COMMAND_NEW_PATH = 2;
@@ -36,11 +38,17 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_DELETE_PATH = 5;
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
+    public static final int COMMAND_DELETE_SELECTED_SHAPE = 8;
+    public static final int COMMAND_ADD_SHAPE = 9;
+    public static final int COMMAND_INCREASE_SHAPE_FONTSIZE = 10;
+    public static final int COMMAND_DECREASE_SHAPE_FONTSIZE = 11;
+    public static final int COMMAND_CHANGE_SHAPE_TEXT = 12;
 
     public static SketchCanvas Canvas = null;
 
     private static final String PROPS_LOCAL_SOURCE_IMAGE = "localSourceImage";
     private static final String PROPS_TEXT = "text";
+    private static final String PROPS_SHAPE_CONFIGURATION = "shapeConfiguration";
 
     @Override
     public String getName() {
@@ -51,6 +59,13 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     protected SketchCanvas createViewInstance(ThemedReactContext context) {
         SketchCanvasManager.Canvas = new SketchCanvas(context);
         return SketchCanvasManager.Canvas;
+    }
+
+    @ReactProp(name = PROPS_SHAPE_CONFIGURATION)
+    public void setShapeConfiguration(SketchCanvas viewContainer, ReadableMap shapeConfiguration) {
+        if (shapeConfiguration != null) {
+            viewContainer.setShapeConfiguration(shapeConfiguration);
+        }
     }
 
     @ReactProp(name = PROPS_LOCAL_SOURCE_IMAGE)
@@ -80,6 +95,11 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("deletePath", COMMAND_DELETE_PATH);
         map.put("save", COMMAND_SAVE);
         map.put("endPath", COMMAND_END_PATH);
+        map.put("deleteSelectedShape", COMMAND_DELETE_SELECTED_SHAPE);
+        map.put("addShape", COMMAND_ADD_SHAPE);
+        map.put("increaseShapeFontsize", COMMAND_INCREASE_SHAPE_FONTSIZE);
+        map.put("decreaseShapeFontsize", COMMAND_DECREASE_SHAPE_FONTSIZE);
+        map.put("changeShapeText", COMMAND_CHANGE_SHAPE_TEXT);
 
         return map;
     }
@@ -93,7 +113,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public void receiveCommand(SketchCanvas view, int commandType, @Nullable ReadableArray args) {
         switch (commandType) {
             case COMMAND_ADD_POINT: {
-                view.addPoint((float)args.getDouble(0), (float)args.getDouble(1));
+                view.addPoint((float)args.getDouble(0), (float)args.getDouble(1), (boolean)args.getBoolean(2));
                 return;
             }
             case COMMAND_NEW_PATH: {
@@ -124,6 +144,59 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
             }
             case COMMAND_END_PATH: {
                 view.end();
+                return;
+            }
+            case COMMAND_DELETE_SELECTED_SHAPE: {
+                view.releaseSelectedEntity();
+                return;
+            }
+            case COMMAND_ADD_SHAPE: {
+                EntityType shapeType = null;
+                switch(args.getString(0)) {
+                    case "Circle":
+                        shapeType = EntityType.CIRCLE;
+                        break;
+                    case "Rect":
+                        shapeType = EntityType.RECT;
+                        break;
+                    case "Square":
+                        shapeType = EntityType.SQUARE;
+                        break;
+                    case "Triangle":
+                        shapeType = EntityType.TRIANGLE;
+                        break;
+                    case "Arrow":
+                        shapeType = EntityType.ARROW;
+                        break;
+                    case "Text":
+                        shapeType = EntityType.TEXT;
+                        break;
+                    case "Image":
+                        shapeType = EntityType.IMAGE;
+                        break;
+                    default:
+                        shapeType = EntityType.CIRCLE;
+                        break;
+                }
+
+                String typeFace = args.isNull(1) ? null : args.getString(1);
+                int fontSize = args.getInt(2);
+                String text = args.isNull(3) ? null : args.getString(3);
+                String imagePath = args.isNull(4) ? null : args.getString(4);
+                view.addEntity(shapeType, typeFace, fontSize, text, imagePath);
+                return;
+            }
+            case COMMAND_INCREASE_SHAPE_FONTSIZE: {
+                view.increaseTextEntityFontSize();
+                return;
+            }
+            case COMMAND_DECREASE_SHAPE_FONTSIZE: {
+                view.decreaseTextEntityFontSize();
+                return;
+            }
+            case COMMAND_CHANGE_SHAPE_TEXT: {
+                String newText = args.getString(0);
+                view.setTextEntityText(newText);
                 return;
             }
             default:

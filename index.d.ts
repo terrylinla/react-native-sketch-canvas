@@ -60,6 +60,22 @@ export interface LocalSourceImage {
   mode?: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
 }
 
+export interface ShapeConfiguration {
+  shapeBorderColor?: string
+  shapeBorderStyle?: 'Dashed' | 'Solid'
+  shapeBorderStrokeWidth?: number
+  shapeColor?: string
+  shapeStrokeWidth?: number
+}
+
+export interface AddShapeConfig {
+  shapeType: 'Circle' | 'Text' | 'Image' | 'Rect' | 'Square' | 'Triangle' | 'Arrow'
+  textShapeFontType?: string
+  textShapeFontSize?: number
+  textShapeText?: string
+  imageShapeAsset?: string;
+}
+
 export interface SketchCanvasProps {
   style?: StyleProp<ViewStyle>
   strokeColor?: string
@@ -69,6 +85,17 @@ export interface SketchCanvasProps {
   text?: CanvasText[]
   localSourceImage?: LocalSourceImage
   touchEnabled?: boolean
+
+  /**
+   * {
+   *    shapeBorderColor: string,
+   *    shapeBorderStyle?: 'Dashed' | 'Solid'
+   *    shapeBorderStrokeWidth?: number
+   *    shapeColor: string,
+   *    shapeStrokeWidth: number
+   * }
+  */
+  shapeConfiguration?: ShapeConfiguration
 
   /**
    * Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set
@@ -85,6 +112,7 @@ export interface SketchCanvasProps {
   onStrokeEnd?: (path: Path) => void
   onSketchSaved?: (result: boolean, path: string) => void
   onPathsChange?: (pathsCount: number) => void
+  onShapeSelectionChanged?: (isShapeSelected: boolean) => void
 }
 
 export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProperties> {
@@ -92,6 +120,11 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
   undo(): number
   addPath(data: Path): void
   deletePath(id: number): void
+  addShape(config: AddShapeConfig): void
+  deleteSelectedShape(): void
+  increaseSelectedShapeFontsize(): void
+  decreaseSelectedShapeFontsize(): void
+  changeSelectedShapeText(newText: String): void
 
   /**
    * @param imageType "png" or "jpg"
@@ -130,6 +163,7 @@ export interface RNSketchCanvasProps {
 
   closeComponent?: JSX.Element,
   eraseComponent?: JSX.Element,
+  deleteSelectedShapeComponent?: JSX.Element,
   undoComponent?: JSX.Element,
   clearComponent?: JSX.Element,
   saveComponent?: JSX.Element,
@@ -137,7 +171,7 @@ export interface RNSketchCanvasProps {
   strokeSelectedComponent?: (color: string, index: number, changed: boolean) => JSX.Element
   strokeWidthComponent?: (width: number) => JSX.Element
 
-  strokeColors?: {color: string}[]
+  strokeColors?: { color: string }[]
   defaultStrokeIndex?: number
   defaultStrokeWidth?: number
 
@@ -150,18 +184,30 @@ export interface RNSketchCanvasProps {
    * @param includeImage default true
    * @param cropToImageSize default false
    */
-  savePreference?: () => {folder: string, filename: string, transparent: boolean, imageType: ImageType, includeImage?: boolean, includeText?: boolean, cropToImageSize?: boolean}
+  savePreference?: () => { folder: string, filename: string, transparent: boolean, imageType: ImageType, includeImage?: boolean, includeText?: boolean, cropToImageSize?: boolean }
   onSketchSaved?: (result: boolean, path: string) => void
+  onShapeSelectionChanged?: (isShapeSelected: boolean) => void
 
   text?: CanvasText[]
   /**
    * {
-   *    path: string, 
-   *    directory: string, 
+   *    path: string,
+   *    directory: string,
    *    mode: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
    * }
    */
   localSourceImage?: LocalSourceImage
+  touchEnabled?: boolean
+  /**
+   * {
+   *    shapeBorderColor: string,
+   *    shapeBorderStyle?: 'Dashed' | 'Solid'
+   *    shapeBorderStrokeWidth?: number
+   *    shapeColor: string,
+   *    shapeStrokeWidth: number
+   * }
+  */
+  shapeConfiguration?: ShapeConfiguration
 }
 
 export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps & ViewProperties> {
@@ -169,6 +215,11 @@ export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps 
   undo(): number
   addPath(data: Path): void
   deletePath(id: number): void
+  addShape(config: AddShapeConfig): void
+  deleteSelectedShape(): void
+  increaseSelectedShapeFontsize(): void
+  decreaseSelectedShapeFontsize(): void
+  changeSelectedShapeText(newText: String): void
   save(): void
   nextStrokeWidth(): void
 

@@ -28,6 +28,7 @@ export default class RNSketchCanvas extends React.Component {
     undoComponent: PropTypes.node,
     clearComponent: PropTypes.node,
     saveComponent: PropTypes.node,
+    deleteSelectedShapeComponent: PropTypes.node,
     strokeComponent: PropTypes.func,
     strokeSelectedComponent: PropTypes.func,
     strokeWidthComponent: PropTypes.func,
@@ -42,6 +43,8 @@ export default class RNSketchCanvas extends React.Component {
 
     savePreference: PropTypes.func,
     onSketchSaved: PropTypes.func,
+    onShapeSelectionChanged: PropTypes.func,
+    shapeConfiguration: PropTypes.shape({ shapeBorderColor: PropTypes.string, shapeBorderStyle: PropTypes.string, shapeBorderStrokeWidth: PropTypes.number, shapeColor: PropTypes.string, shapeStrokeWidth: PropTypes.number }),
 
     text: PropTypes.arrayOf(PropTypes.shape({
       text: PropTypes.string,
@@ -78,6 +81,7 @@ export default class RNSketchCanvas extends React.Component {
     undoComponent: null,
     clearComponent: null,
     saveComponent: null,
+    deleteSelectedShapeComponent: null,
     strokeComponent: null,
     strokeSelectedComponent: null,
     strokeWidthComponent: null,
@@ -111,6 +115,8 @@ export default class RNSketchCanvas extends React.Component {
 
     savePreference: null,
     onSketchSaved: () => { },
+    onShapeSelectionChanged: () => { },
+    shapeConfiguration: { shapeBorderColor: 'transparent', shapeBorderStyle: 'Dashed', shapeBorderStrokeWidth: 1, shapeColor: '#000000', shapeStrokeWidth: 3 },
 
     text: null,
     localSourceImage: null,
@@ -150,13 +156,33 @@ export default class RNSketchCanvas extends React.Component {
     this._sketchCanvas.deletePath(id)
   }
 
+  deleteSelectedShape() {
+    this._sketchCanvas.deleteSelectedShape();
+  }
+
+  addShape(config) {
+    this._sketchCanvas.addShape(config);
+  }
+
+  increaseSelectedShapeFontsize() {
+    this._sketchCanvas.increaseSelectedShapeFontsize();
+  }
+
+  decreaseSelectedShapeFontsize() {
+    this._sketchCanvas.decreaseSelectedShapeFontsize();
+  }
+
+  changeSelectedShapeText(newText) {
+    this._sketchCanvas.changeSelectedShapeText(newText);
+  }
+
   save() {
     if (this.props.savePreference) {
       const p = this.props.savePreference()
       this._sketchCanvas.save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename, p.includeImage !== false, p.includeText !== false, p.cropToImageSize || false)
     } else {
       const date = new Date()
-      this._sketchCanvas.save('png', false, '', 
+      this._sketchCanvas.save('png', false, '',
         date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + ('0' + date.getDate()).slice(-2) + ' ' + ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-' + ('0' + date.getSeconds()).slice(-2),
         true, true, false)
     }
@@ -217,6 +243,12 @@ export default class RNSketchCanvas extends React.Component {
                 {this.props.eraseComponent}
               </TouchableOpacity>)
             }
+
+            {this.props.deleteSelectedShapeComponent && (
+              <TouchableOpacity style={{ opacity: this.props.touchEnabled ? 0.5 : 1 }} disabled={this.props.touchEnabled} onPress={() => { this.deleteSelectedShape() }}>
+                {this.props.deleteSelectedShapeComponent}
+              </TouchableOpacity>)
+            }
           </View>
           <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'flex-end' }}>
             {this.props.strokeWidthComponent && (
@@ -248,12 +280,15 @@ export default class RNSketchCanvas extends React.Component {
           ref={ref => this._sketchCanvas = ref}
           style={this.props.canvasStyle}
           strokeColor={this.state.color + (this.state.color.length === 9 ? '' : this.state.alpha)}
+          shapeConfiguration={this.props.shapeConfiguration}
           onStrokeStart={this.props.onStrokeStart}
           onStrokeChanged={this.props.onStrokeChanged}
           onStrokeEnd={this.props.onStrokeEnd}
           user={this.props.user}
           strokeWidth={this.state.strokeWidth}
           onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
+          onShapeSelectionChanged={(isShapeSelected) => this.props.onShapeSelectionChanged(isShapeSelected)}
+          touchEnabled={this.props.touchEnabled}
           onPathsChange={this.props.onPathsChange}
           text={this.props.text}
           localSourceImage={this.props.localSourceImage}

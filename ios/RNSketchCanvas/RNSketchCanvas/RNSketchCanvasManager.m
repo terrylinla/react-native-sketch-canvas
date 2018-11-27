@@ -4,6 +4,7 @@
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
 #import <React/RCTUIManager.h>
+#import "entities/base/Enumerations.h"
 
 @implementation RNSketchCanvasManager
 
@@ -28,6 +29,15 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_VIEW_PROPERTY(onChange, RCTBubblingEventBlock);
 
 #pragma mark - Props
+RCT_CUSTOM_VIEW_PROPERTY(shapeConfiguration, NSDictionary, RNSketchCanvas)
+{
+    RNSketchCanvas *currentView = !view ? defaultView : view;
+    NSDictionary *dict = [RCTConvert NSDictionary:json];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [currentView setShapeConfiguration:dict];
+    });
+}
+
 RCT_CUSTOM_VIEW_PROPERTY(localSourceImage, NSDictionary, RNSketchCanvas)
 {
     RNSketchCanvas *currentView = !view ? defaultView : view;
@@ -65,10 +75,10 @@ RCT_EXPORT_METHOD(save:(nonnull NSNumber *)reactTag type:(NSString*) type folder
     }];
 }
 
-RCT_EXPORT_METHOD(addPoint:(nonnull NSNumber *)reactTag x: (float)x y: (float)y)
+RCT_EXPORT_METHOD(addPoint:(nonnull NSNumber *)reactTag x: (float)x y: (float)y isMove: (BOOL)isMove)
 {
     [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
-        [canvas addPointX:x Y:y];
+        [canvas addPointX:x Y:y isMove:isMove];
     }];
 }
 
@@ -117,6 +127,41 @@ RCT_EXPORT_METHOD(transferToBase64:(nonnull NSNumber *)reactTag type: (NSString*
 {
     [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
         callback(@[[NSNull null], [canvas transferToBase64OfType: type withTransparentBackground: transparent includeImage:includeImage includeText:includeText cropToImageSize:cropToImageSize]]);
+    }];
+}
+
+RCT_EXPORT_METHOD(deleteSelectedShape:(nonnull NSNumber *)reactTag)
+{
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas releaseSelectedEntity];
+    }];
+}
+
+RCT_EXPORT_METHOD(addShape:(nonnull NSNumber *)reactTag shapeType:(NSString *) shapeType textShapeFontType:(NSString *) textShapeFontType textShapeFontSize:(nonnull NSNumber *) textShapeFontSize textShapeText:(NSString *) textShapeText imageShapeAsset:(NSString *)imageShapeAsset)
+{
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas addEntity:shapeType textShapeFontType:textShapeFontType textShapeFontSize:textShapeFontSize textShapeText:textShapeText imageShapeAsset:imageShapeAsset];
+    }];
+}
+
+RCT_EXPORT_METHOD(increaseShapeFontsize:(nonnull NSNumber *)reactTag)
+{
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas increaseTextEntityFontSize];
+    }];
+}
+
+RCT_EXPORT_METHOD(decreaseShapeFontsize:(nonnull NSNumber *)reactTag)
+{
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas decreaseTextEntityFontSize];
+    }];
+}
+
+RCT_EXPORT_METHOD(changeShapeText:(nonnull NSNumber *)reactTag newText:(NSString *) newText)
+{
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas setTextEntityText:newText];
     }];
 }
 

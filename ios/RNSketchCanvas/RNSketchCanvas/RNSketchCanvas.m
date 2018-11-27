@@ -5,6 +5,13 @@
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
 #import "Utility.h"
+#import "entities/base/Enumerations.h"
+#import "entities/base/MotionEntity.h"
+#import "entities/CircleEntity.h"
+#import "entities/RectEntity.h"
+#import "entities/TriangleEntity.h"
+#import "entities/ArrowEntity.h"
+#import "entities/TextEntity.h"
 
 @implementation RNSketchCanvas
 {
@@ -35,8 +42,42 @@
 
         self.backgroundColor = [UIColor clearColor];
         self.clearsContextBeforeDrawing = YES;
+        
+        self.motionEntities = [NSMutableArray new];
+        self.selectedEntity = nil;
+        self.entityBorderColor = [UIColor clearColor];
+        self.entityBorderStyle = DASHED;
+        self.entityBorderStrokeWidth = 1.0;
+        self.entityStrokeWidth = 5.0;
+        self.entityStrokeColor = [UIColor blackColor];
+        
+        self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+        self.tapGesture.delegate = self;
+        self.tapGesture.numberOfTapsRequired = 1;
+        
+        self.rotateGesture = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotate:)];
+        self.rotateGesture.delegate = self;
+        
+        self.moveGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleMove:)];
+        self.moveGesture.delegate = self;
+        self.moveGesture.minimumNumberOfTouches = 1;
+        self.moveGesture.maximumNumberOfTouches = 1;
+        
+        self.scaleGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handleScale:)];
+        self.scaleGesture.delegate = self;
+        
+        [self addGestureRecognizer:self.tapGesture];
+        [self addGestureRecognizer:self.rotateGesture];
+        [self addGestureRecognizer:self.moveGesture];
+        [self addGestureRecognizer:self.scaleGesture];
+        
     }
     return self;
+}
+
+// Make multiple GestureRecognizers work
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return TRUE;
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -83,6 +124,20 @@
     
     for (CanvasText *text in _arrTextOnSketch) {
         [text.text drawInRect: text.drawRect withAttributes: text.attribute];
+    }
+    
+    for (MotionEntity *entity in self.motionEntities) {
+        [entity updateStrokeSettings:self.entityBorderStyle
+                   borderStrokeWidth:self.entityBorderStrokeWidth
+                   borderStrokeColor:self.entityBorderColor
+                   entityStrokeWidth:self.entityStrokeWidth
+                   entityStrokeColor:self.entityStrokeColor];
+        
+        if ([entity isSelected]) {
+            [entity setNeedsDisplay];
+        }
+        
+        [self addSubview:entity];
     }
 }
 
@@ -221,6 +276,11 @@
 }
 
 - (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
+    if (CGColorGetComponents(strokeColor.CGColor)[3] != 0.0) {
+        self.entityStrokeColor = strokeColor;
+    }
+    self.entityStrokeWidth = strokeWidth;
+    
     _currentPath = [[RNSketchData alloc]
                     initWithId: pathId
                     strokeColor: strokeColor
@@ -229,6 +289,10 @@
 }
 
 - (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
+    if (CGColorGetComponents(strokeColor.CGColor)[3] != 0.0) {
+        self.entityStrokeColor = strokeColor;
+    }
+    
     bool exist = false;
     for(int i=0; i<_paths.count; i++) {
         if (((RNSketchData*)_paths[i]).pathId == pathId) {
@@ -267,19 +331,21 @@
     }
 }
 
-- (void)addPointX: (float)x Y: (float)y {
-    CGPoint newPoint = CGPointMake(x, y);
-    CGRect updateRect = [_currentPath addPoint: newPoint];
-
-    if (_currentPath.isTranslucent) {
-        CGContextClearRect(_translucentDrawingContext, self.bounds);
-        [_currentPath drawInContext:_translucentDrawingContext];
-    } else {
-        [_currentPath drawLastPointInContext:_drawingContext];
+- (void)addPointX: (float)x Y: (float)y isMove:(BOOL)isMove {
+    if (!self.selectedEntity && (![self findEntityAtPointX:x andY:y] || isMove)) {
+        CGPoint newPoint = CGPointMake(x, y);
+        CGRect updateRect = [_currentPath addPoint: newPoint];
+        
+        if (_currentPath.isTranslucent) {
+            CGContextClearRect(_translucentDrawingContext, self.bounds);
+            [_currentPath drawInContext:_translucentDrawingContext];
+        } else {
+            [_currentPath drawLastPointInContext:_drawingContext];
+        }
+        
+        [self setFrozenImageNeedsUpdate];
+        [self setNeedsDisplayInRect:updateRect];
     }
-
-    [self setFrozenImageNeedsUpdate];
-    [self setNeedsDisplayInRect:updateRect];
 }
 
 - (void)endPath {
@@ -326,6 +392,24 @@
             }
         }
         
+        for (MotionEntity *entity in self.motionEntities) {
+            CGContextSaveGState(context);
+            
+            // Center the context around the view's anchor point
+            CGContextTranslateCTM(context, [entity center].x, [entity center].y);
+            
+            // Apply the view's transform about the anchor point
+            CGContextConcatCTM(context, [entity transform]);
+            
+            // Offset by the portion of the bounds left of and above the anchor point
+            CGContextTranslateCTM(context, -[entity bounds].size.width * [[entity layer] anchorPoint].x, -[entity bounds].size.height * [[entity layer] anchorPoint].y);
+            
+            // Render the entity
+            [entity.layer renderInContext:context];
+            
+            CGContextRestoreGState(context);
+        }
+        
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
@@ -356,6 +440,24 @@
             for (CanvasText *text in _arrTextOnSketch) {
                 [text.text drawInRect: text.drawRect withAttributes: text.attribute];
             }
+        }
+        
+        for (MotionEntity *entity in self.motionEntities) {
+            CGContextSaveGState(context);
+            
+            // Center the context around the view's anchor point
+            CGContextTranslateCTM(context, [entity center].x, [entity center].y);
+            
+            // Apply the view's transform about the anchor point
+            CGContextConcatCTM(context, [entity transform]);
+            
+            // Offset by the portion of the bounds left of and above the anchor point
+            CGContextTranslateCTM(context, -[entity bounds].size.width * [[entity layer] anchorPoint].x, -[entity bounds].size.height * [[entity layer] anchorPoint].y);
+            
+            // Render the entity
+            [entity.layer renderInContext:context];
+            
+            CGContextRestoreGState(context);
         }
         
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
@@ -431,6 +533,330 @@
     return data;
 }
 
+#pragma mark - MotionEntites related code
+- (void)setShapeConfiguration:(NSDictionary *)dict {
+    if (![dict[@"shapeBorderColor"] isEqual:[NSNull null]]) {
+        long shapeBorderColorLong = [dict[@"shapeBorderColor"] longValue];
+        UIColor *shapeBorderColor = [UIColor colorWithRed:(CGFloat)((shapeBorderColorLong & 0x00FF0000) >> 16) / 0xFF
+                                                    green:(CGFloat)((shapeBorderColorLong & 0x0000FF00) >> 8) / 0xFF
+                                                     blue:(CGFloat)((shapeBorderColorLong & 0x000000FF)) / 0xFF
+                                                    alpha:(CGFloat)((shapeBorderColorLong & 0xFF000000) >> 24) / 0xFF];
+        if (CGColorGetComponents(shapeBorderColor.CGColor)[3] != 0.0) {
+            self.entityBorderColor = shapeBorderColor;
+        }
+    }
+    
+    if (![dict[@"shapeBorderStyle"] isEqual:[NSNull null]]) {
+        NSString *borderStyle = dict[@"shapeBorderStyle"];
+        switch ([@[@"Dashed", @"Solid"] indexOfObject: borderStyle]) {
+            case 0:
+                self.entityBorderStyle = DASHED;
+                break;
+            case 1:
+                self.entityBorderStyle = SOLID;
+            case NSNotFound:
+            default: {
+                self.entityBorderStyle = DASHED;
+                break;
+            }
+        }
+    }
+    
+    if (![dict[@"shapeBorderStrokeWidth"] isEqual:[NSNull null]]) {
+        self.entityBorderStrokeWidth = [dict[@"shapeBorderStrokeWidth"] doubleValue];
+    }
+    
+    if (![dict[@"shapeColor"] isEqual:[NSNull null]]) {
+        long shapeColorLong = [dict[@"shapeColor"] longValue];
+        UIColor *shapeColor = [UIColor colorWithRed:(CGFloat)((shapeColorLong & 0x00FF0000) >> 16) / 0xFF
+                                              green:(CGFloat)((shapeColorLong & 0x0000FF00) >> 8) / 0xFF
+                                               blue:(CGFloat)((shapeColorLong & 0x000000FF)) / 0xFF
+                                              alpha:(CGFloat)((shapeColorLong & 0xFF000000) >> 24) / 0xFF];
+        if (CGColorGetComponents(shapeColor.CGColor)[3] != 0.0) {
+            self.entityStrokeColor = shapeColor;
+        }
+    }
+    
+    if (![dict[@"shapeStrokeWidth"] isEqual:[NSNull null]]) {
+        self.entityStrokeWidth = [dict[@"shapeStrokeWidth"] doubleValue];
+    }
+}
+
+- (void)addEntity:(NSString *)entityType textShapeFontType:(NSString *)textShapeFontType textShapeFontSize:(NSNumber *)textShapeFontSize textShapeText:(NSString *)textShapeText imageShapeAsset:(NSString *)imageShapeAsset {
+    
+    switch ([@[@"Circle", @"Rect", @"Square", @"Triangle", @"Arrow", @"Text", @"Image"] indexOfObject: entityType]) {
+        case 1:
+            [self addRectEntity:300 andHeight:150];
+            break;
+        case 2:
+            [self addRectEntity:300 andHeight:300];
+            break;
+        case 3:
+            [self addTriangleEntity];
+            break;
+        case 4:
+            [self addArrowEntity];
+            break;
+        case 5:
+            [self addTextEntity:textShapeFontType withFontSize:textShapeFontSize withText:textShapeText];
+            break;
+        case 6:
+            // TODO: ImageEntity Doesn't exist yet
+        case 0:
+        case NSNotFound:
+        default: {
+            [self addCircleEntity];
+            break;
+        }
+    }
+}
+
+- (void)addCircleEntity {
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    
+    CircleEntity *entity = [[CircleEntity alloc]
+                            initAndSetupWithParent:self.bounds.size.width
+                            parentHeight:self.bounds.size.height
+                            parentCenterX:centerX
+                            parentCenterY:centerY
+                            parentScreenScale:self.window.screen.scale
+                            width:300
+                            height:300
+                            bordersPadding:5.0f
+                            borderStyle:self.entityBorderStyle
+                            borderStrokeWidth:self.entityBorderStrokeWidth
+                            borderStrokeColor:self.entityBorderColor
+                            entityStrokeWidth:self.entityStrokeWidth
+                            entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
+    [self onShapeSelectionChanged:entity];
+    [self selectEntity:entity];
+}
+
+- (void)addRectEntity:(NSInteger)width andHeight: (NSInteger)height {
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    
+    RectEntity *entity = [[RectEntity alloc]
+                          initAndSetupWithParent:self.bounds.size.width
+                          parentHeight:self.bounds.size.height
+                          parentCenterX:centerX
+                          parentCenterY:centerY
+                          parentScreenScale:self.window.screen.scale
+                          width:width
+                          height:height
+                          bordersPadding:5.0f
+                          borderStyle:self.entityBorderStyle
+                          borderStrokeWidth:self.entityBorderStrokeWidth
+                          borderStrokeColor:self.entityBorderColor
+                          entityStrokeWidth:self.entityStrokeWidth
+                          entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
+    [self onShapeSelectionChanged:entity];
+    [self selectEntity:entity];
+}
+
+- (void)addTriangleEntity {
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    
+    TriangleEntity *entity = [[TriangleEntity alloc]
+                              initAndSetupWithParent:self.bounds.size.width
+                              parentHeight:self.bounds.size.height
+                              parentCenterX:centerX
+                              parentCenterY:centerY
+                              parentScreenScale:self.window.screen.scale
+                              width:300
+                              height:300
+                              bordersPadding:5.0f
+                              borderStyle:self.entityBorderStyle
+                              borderStrokeWidth:self.entityBorderStrokeWidth
+                              borderStrokeColor:self.entityBorderColor
+                              entityStrokeWidth:self.entityStrokeWidth
+                              entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
+    [self onShapeSelectionChanged:entity];
+    [self selectEntity:entity];
+}
+
+- (void)addArrowEntity {
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    
+    ArrowEntity *entity = [[ArrowEntity alloc]
+                              initAndSetupWithParent:self.bounds.size.width
+                              parentHeight:self.bounds.size.height
+                              parentCenterX:centerX
+                              parentCenterY:centerY
+                              parentScreenScale:self.window.screen.scale
+                              width:300
+                              height:300
+                              bordersPadding:5.0f
+                              borderStyle:self.entityBorderStyle
+                              borderStrokeWidth:self.entityBorderStrokeWidth
+                              borderStrokeColor:self.entityBorderColor
+                              entityStrokeWidth:self.entityStrokeWidth
+                              entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
+    [self onShapeSelectionChanged:entity];
+    [self selectEntity:entity];
+}
+
+- (void)addTextEntity:(NSString *)fontType withFontSize: (NSNumber *)fontSize withText: (NSString *)text {
+    CGFloat centerX = CGRectGetMidX(self.bounds);
+    CGFloat centerY = CGRectGetMidY(self.bounds);
+    
+    TextEntity *entity = [[TextEntity alloc]
+                           initAndSetupWithParent:self.bounds.size.width
+                           parentHeight:self.bounds.size.height
+                           parentCenterX:centerX
+                           parentCenterY:centerY
+                           parentScreenScale:self.window.screen.scale
+                           text:text
+                           fontType:fontType
+                           fontSize:[fontSize floatValue]
+                           bordersPadding:5.0f
+                           borderStyle:self.entityBorderStyle
+                           borderStrokeWidth:self.entityBorderStrokeWidth
+                           borderStrokeColor:self.entityBorderColor
+                           entityStrokeWidth:self.entityStrokeWidth
+                           entityStrokeColor:self.entityStrokeColor];
+    
+    [self.motionEntities addObject:entity];
+    [self onShapeSelectionChanged:entity];
+    [self selectEntity:entity];
+}
+
+- (void)selectEntity:(MotionEntity *)entity {
+    if (self.selectedEntity) {
+        [self.selectedEntity setIsSelected:NO];
+        [self.selectedEntity setNeedsDisplay];
+    }
+    if (entity) {
+        [entity setIsSelected:YES];
+        [entity setNeedsDisplay];
+        [self setFrozenImageNeedsUpdate];
+        [self setNeedsDisplayInRect:entity.bounds];
+    } else {
+        [self setNeedsDisplay];
+    }
+    self.selectedEntity = entity;
+}
+
+- (void)updateSelectionOnTapWithLocationPoint:(CGPoint)tapLocation {
+    MotionEntity *nextEntity = [self findEntityAtPointX:tapLocation.x andY:tapLocation.y];
+    [self onShapeSelectionChanged:nextEntity];
+    [self selectEntity:nextEntity];
+}
+
+- (MotionEntity *)findEntityAtPointX:(CGFloat)x andY: (CGFloat)y {
+    MotionEntity *nextEntity = nil;
+    CGPoint point = CGPointMake(x, y);
+    for (MotionEntity *entity in self.motionEntities) {
+        if ([entity isPointInEntity:point]) {
+            nextEntity = entity;
+            break;
+        }
+    }
+    return nextEntity;
+}
+
+- (void)releaseSelectedEntity {
+    MotionEntity *entityToRemove = nil;
+    for (MotionEntity *entity in self.motionEntities) {
+        if ([entity isSelected]) {
+            entityToRemove = entity;
+            break;
+        }
+    }
+    if (entityToRemove) {
+        [self.motionEntities removeObject:entityToRemove];
+        [entityToRemove removeFromSuperview];
+        entityToRemove = nil;
+        [self selectEntity:entityToRemove];
+        [self onShapeSelectionChanged:nil];
+    }
+}
+
+- (void)increaseTextEntityFontSize {
+    TextEntity *textEntity = [self getSelectedTextEntity];
+    if (textEntity) {
+        [textEntity updateFontSize:textEntity.fontSize + 1];
+        [textEntity setNeedsDisplay];
+    }
+}
+
+- (void)decreaseTextEntityFontSize {
+    TextEntity *textEntity = [self getSelectedTextEntity];
+    if (textEntity) {
+        [textEntity updateFontSize:textEntity.fontSize - 1];
+        [textEntity setNeedsDisplay];
+    }
+}
+
+- (void)setTextEntityText:(NSString *)newText {
+    TextEntity *textEntity = [self getSelectedTextEntity];
+    if (textEntity && newText && [newText length] > 0) {
+        [textEntity updateText:newText];
+        [textEntity setNeedsDisplay];
+    }
+}
+
+- (TextEntity *)getSelectedTextEntity {
+    if (self.selectedEntity && [self.selectedEntity isKindOfClass:[TextEntity class]]) {
+        return (TextEntity *)self.selectedEntity;
+    } else {
+        return nil;
+    }
+}
+
+#pragma mark - UIGestureRecognizers
+- (void)handleTap:(UITapGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateEnded) {
+        CGPoint tapLocation = [sender locationInView:sender.view];
+        [self updateSelectionOnTapWithLocationPoint:tapLocation];
+    }
+}
+
+- (void)handleRotate:(UIRotationGestureRecognizer *)sender {
+    UIGestureRecognizerState state = [sender state];
+    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
+        if (self.selectedEntity) {
+            [self.selectedEntity rotateEntityBy:sender.rotation];
+            [self setNeedsDisplayInRect:self.selectedEntity.bounds];
+        }
+        [sender setRotation:0.0];
+    }
+}
+
+- (void)handleMove:(UIPanGestureRecognizer *)sender {
+    UIGestureRecognizerState state = [sender state];
+    if (self.selectedEntity) {
+        if (state != UIGestureRecognizerStateCancelled) {
+            [self.selectedEntity moveEntityTo:[sender translationInView:self.selectedEntity]];
+            [sender setTranslation:CGPointZero inView:sender.view];
+            [self setNeedsDisplayInRect:self.selectedEntity.bounds];
+        }
+    }
+}
+
+- (void)handleScale:(UIPinchGestureRecognizer *)sender {
+    UIGestureRecognizerState state = [sender state];
+    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged) {
+        if (self.selectedEntity) {
+            [self.selectedEntity scaleEntityBy:sender.scale];
+            [self setNeedsDisplayInRect:self.selectedEntity.bounds];
+        }
+        [sender setScale:1.0];
+    }
+}
+
+#pragma mark - Outgoing events
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo: (void *) contextInfo {
     if (_onChange) {
         _onChange(@{ @"success": error != nil ? @NO : @YES });
@@ -440,6 +866,21 @@
 - (void)notifyPathsUpdate {
     if (_onChange) {
         _onChange(@{ @"pathsUpdate": @(_paths.count) });
+    }
+}
+
+- (void)onShapeSelectionChanged:(MotionEntity *)nextEntity {
+    BOOL isShapeSelected = NO;
+    if (nextEntity) {
+        isShapeSelected = YES;
+    }
+    if (_onChange) {
+        if (isShapeSelected) {
+            _onChange(@{ @"isShapeSelected": @YES });
+        } else {
+            // Add delay!
+            _onChange(@{ @"isShapeSelected": @NO });
+        }
     }
 }
 
