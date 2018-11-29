@@ -172,7 +172,7 @@ class SketchCanvas extends React.Component {
             return new Promise((resolve, reject) => {
                 nativeMethod((err, success) => {
                     if (err) reject(err);
-                    else if (success) resolve(success);
+                    resolve(success);
                 });
             })
         }
