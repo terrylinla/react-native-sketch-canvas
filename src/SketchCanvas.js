@@ -24,7 +24,8 @@ const SketchCanvasManager = NativeModules.RNSketchCanvasManager || {};
 
 class SketchCanvas extends React.Component {
   static propTypes = {
-    style: ViewPropTypes.style,
+      style: ViewPropTypes.style,
+      onLayout: PropTypes.func,
     strokeColor: PropTypes.string,
     strokeWidth: PropTypes.number,
     onPathsChange: PropTypes.func,
@@ -56,7 +57,8 @@ class SketchCanvas extends React.Component {
   };
 
   static defaultProps = {
-    style: null,
+      style: null,
+      onLayout: () => { },
     strokeColor: '#000000',
     strokeWidth: 3,
     onPathsChange: () => { },
@@ -260,7 +262,8 @@ class SketchCanvas extends React.Component {
         onLayout={e => {
           this._size = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
           this._initialized = true
-          this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
+            this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p));
+            this.props.onLayout(e);
         }}
         {...this.panResponder.panHandlers}
         onChange={(e) => {
