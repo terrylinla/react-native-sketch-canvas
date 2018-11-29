@@ -92,7 +92,6 @@ class SketchCanvas extends React.Component {
     this._initialized = false
 
     this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null)
-      this.didTouchPath = this.didTouchPath.bind(this);
       this._loadPanResponder.call(this);
   }
 
