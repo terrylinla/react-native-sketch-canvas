@@ -154,7 +154,30 @@ class SketchCanvas extends React.Component {
     } else {
       NativeModules.SketchCanvasModule.transferToBase64(this._handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback)
     }
-  }
+    }
+
+    isPointOnPath(x, y, callback) {
+        const nativeX = Math.round(x * this._screenScale);
+        const nativeY = Math.round(y * this._screenScale);
+        const nativeMethod = (callback) => {
+            if (Platform.OS === 'ios') {
+                SketchCanvasManager.isPointOnPath(this._handle, nativeX, nativeY, callback);
+            } else {
+                NativeModules.SketchCanvasModule.isPointOnPath(this._handle, nativeX, nativeY, callback);
+            }
+        }
+        if (callback) {
+            nativeMethod(callback);
+        }
+        else {
+            return new Promise((resolve, reject) => {
+                nativeMethod((err, success) => {
+                    if (err) reject(err);
+                    else if (success) resolve(success);
+                });
+            })
+        }
+    }
 
   _loadPanResponder() {
     this.panResponder = PanResponder.create({
@@ -219,24 +242,6 @@ class SketchCanvas extends React.Component {
         return true;
       },
     });
-    }
-
-    didTouchPath(evt, eventContext = {}) {
-        const nativeEvent = {};
-        Object.assign(nativeEvent, evt.nativeEvent);
-        delete nativeEvent.touches;
-        delete nativeEvent.changedTouches;
-        this._offset = { x: nativeEvent.pageX - nativeEvent.locationX, y: nativeEvent.pageY - nativeEvent.locationY };
-
-        UIManager.dispatchViewManagerCommand(
-            this._handle,
-            UIManager.RNSketchCanvas.Commands.didTouchPath,
-            [
-                JSON.stringify({ nativeEvent, context: eventContext }),
-                Math.round(parseFloat((nativeEvent.locationX - this._offset.x).toFixed(2) * this._screenScale)),
-                Math.round(parseFloat((nativeEvent.locationY - this._offset.y).toFixed(2) * this._screenScale))
-            ]
-        );
     }
 
   async componentDidMount() {

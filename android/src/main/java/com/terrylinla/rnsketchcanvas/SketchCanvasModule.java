@@ -37,4 +37,21 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
             callback.invoke(e.getMessage(), null);
         }
     }
+
+    @ReactMethod
+    public void isPointOnPath(final int tag, final int x, final int y, final Callback callback){
+        try {
+            final ReactApplicationContext context = getReactApplicationContext();
+            UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
+            uiManager.addUIBlock(new UIBlock() {
+                public void execute(NativeViewHierarchyManager nvhm) {
+                    SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
+                    boolean isPointOnPath = view.pathHitTest(x, y);
+                    callback.invoke(null, isPointOnPath);
+                }
+            });
+        } catch (Exception e) {
+            callback.invoke(e.getMessage(), null);
+        }
+    }
 }
