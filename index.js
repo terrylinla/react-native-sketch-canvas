@@ -7,7 +7,8 @@ import ReactNative, {
   FlatList,
   ViewPropTypes,
 } from 'react-native'
-import SketchCanvas from './src/SketchCanvas'
+import SketchCanvas from './src/SketchCanvas';
+import TouchableSketchCanvas from './src/TouchableSketchCanvas';
 import { requestPermissions } from './src/handlePermissions';
 
 export default class RNSketchCanvas extends React.Component {
@@ -281,5 +282,6 @@ RNSketchCanvas.LIBRARY = SketchCanvas.LIBRARY;
 RNSketchCanvas.CACHES = SketchCanvas.CACHES;
 
 export {
-  SketchCanvas
+    SketchCanvas,
+    TouchableSketchCanvas
 }
