@@ -6,12 +6,23 @@ import ReactNative, {
     Platform,
     StyleSheet,
     View,
-    TouchableWithoutFeedback
+    TouchableWithoutFeedback,
+    ViewPropTypes
 } from 'react-native'
 
 import SketchCanvas from './SketchCanvas';
 
-const touchStates = {
+const styles = StyleSheet.create({
+    canvas: {
+        ...StyleSheet.absoluteFillObject,
+        opacity: 0
+    },
+    default: {
+        flex: 1
+    }
+});
+
+const TOUCH_STATES = {
     'true': true,
     'false': false,
     draw: 'draw',
@@ -20,31 +31,33 @@ const touchStates = {
 }
 
 class TouchableSketchCanvas extends React.Component {
-    static touchStates = touchStates;
+    static TOUCH_STATES = TOUCH_STATES;
 
     static propTypes = {
         ...SketchCanvas.propTypes,
-        touchEnabled: PropTypes.oneOf(Object.keys(touchStates).map((key) => touchStates[key])),
+        touchEnabled: PropTypes.oneOf(Object.keys(TOUCH_STATES).map((key) => TOUCH_STATES[key])),
         touchableComponent: PropTypes.element,
+        contentContainerStyle: ViewPropTypes.style,
         forwardedRef: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
         ...SketchCanvas.defaultProps,
         touchableComponent: <TouchableWithoutFeedback />,
+        contentContainerStyle: styles.default
     };
 
     static getLegacyTouchState(state) {
-        return state === this.touchStates.draw || state === this.touchStates.true;
+        return state === this.TOUCH_STATES.draw || state === this.TOUCH_STATES.true;
     }
 
     static getTouchState(state) {
         switch (state) {
-            case this.touchStates.true:
-                return this.touchStates.draw;
+            case this.TOUCH_STATES.true:
+                return this.TOUCH_STATES.draw;
                 break;
-            case this.touchStates.false:
-                return this.touchStates.none;
+            case this.TOUCH_STATES.false:
+                return this.TOUCH_STATES.none;
                 break;
             default:
                 return state;
@@ -68,7 +81,7 @@ class TouchableSketchCanvas extends React.Component {
         this.refHandler = this.refHandler.bind(this);
 
         this.state = {
-            touchEnabled: TouchableSketchCanvas.touchStates.draw,
+            touchEnabled: TouchableSketchCanvas.TOUCH_STATES.draw,
             pathIds: []
         }
         this._canvasChildren = [];
@@ -193,10 +206,10 @@ class TouchableSketchCanvas extends React.Component {
     }
 
     render() {
-        const { touchableComponent } = this.props;
+        const { touchableComponent, contentContainerStyle } = this.props;
 
         return (
-            <View style={styles.default} pointerEvents='box-none'>
+            <View style={contentContainerStyle} pointerEvents='box-none'>
                 {this._canvasChildren.map(child => child.canvas)}
                 <SketchCanvas
                     {...this.props}
@@ -206,7 +219,7 @@ class TouchableSketchCanvas extends React.Component {
                     onStrokeEnd={this.onStrokeEnd}
                     onPathsChange={this.onPathsChange}
                     touchEnabled={TouchableSketchCanvas.getLegacyTouchState(this.state.touchEnabled)} />
-                {this.state.touchEnabled === TouchableSketchCanvas.touchStates.touch && touchableComponent &&
+                {this.state.touchEnabled === TouchableSketchCanvas.TOUCH_STATES.touch && touchableComponent &&
                     React.cloneElement(touchableComponent,
                     {
                         ...touchableComponent.props,
@@ -225,13 +238,3 @@ function forwardRef(props, ref) {
 forwardRef.displayName = `TouchableSketchCanvas`;
 
 export default React.forwardRef(forwardRef);
-
-const styles = StyleSheet.create({
-    canvas: {
-        ...StyleSheet.absoluteFillObject,
-        opacity: 0
-    },
-    default: {
-        flex: 1
-    }
-});
