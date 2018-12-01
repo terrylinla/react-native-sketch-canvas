@@ -97,16 +97,20 @@ class SketchCanvas extends React.Component {
       this._loadPanResponder.call(this);
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      text: this._processText(nextProps.text ? nextProps.text.map(t => Object.assign({}, t)) : null)
-    })
-  }
+    static getDerivedStateFromProps(nextProps, prevState) {
+        return {
+            text: this._processText(nextProps.text ? nextProps.text.map(t => Object.assign({}, t)) : null)
+        }
+    }
 
-  _processText(text) {
+  static _processText(text) {
     text && text.forEach(t => t.fontColor = processColor(t.fontColor))
     return text
-  }
+    }
+
+    _processText(text) {
+        return SketchCanvas._processText(text);
+    }
 
   clear() {
     this._paths = []
