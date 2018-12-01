@@ -140,6 +140,7 @@ class TouchableSketchCanvas extends React.Component {
     }
 
     updatePaths() {
+        if (Platform.OS === 'ios') return;
         const paths = this.sketchCanvasInstance.getPaths();
         //  add paths
         paths
@@ -185,7 +186,7 @@ class TouchableSketchCanvas extends React.Component {
                     onStrokeEnd={this.onStrokeEnd}
                     onPathsChange={this.onPathsChange}
                     touchEnabled={TouchableSketchCanvas.getLegacyTouchState(this.state.touchEnabled)} />
-                {this.state.touchEnabled === TouchableSketchCanvas.touchStates.touch &&
+                {this.state.touchEnabled === TouchableSketchCanvas.touchStates.touch && touchableComponent &&
                     React.cloneElement(touchableComponent,
                     {
                         ...touchableComponent.props,
