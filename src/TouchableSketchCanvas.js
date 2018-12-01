@@ -26,12 +26,12 @@ class TouchableSketchCanvas extends React.Component {
         ...SketchCanvas.propTypes,
         touchEnabled: PropTypes.oneOf(Object.keys(touchStates).map((key) => touchStates[key])),
         touchableComponent: PropTypes.element,
-        forwardedRef: PropTypes.func.isRequired
+        forwardedRef: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
         ...SketchCanvas.defaultProps,
-        touchableComponent: <TouchableWithoutFeedback />
+        touchableComponent: <TouchableWithoutFeedback />,
     };
 
     static getLegacyTouchState(state) {
@@ -62,19 +62,22 @@ class TouchableSketchCanvas extends React.Component {
         this.canvasChildRef = this.canvasChildRef.bind(this);
         this.pushCanvasChild = this.pushCanvasChild.bind(this);
         this.updatePaths = this.updatePaths.bind(this);
+        this.onStrokeStart = this.onStrokeStart.bind(this);
         this.onStrokeEnd = this.onStrokeEnd.bind(this);
         this.onPathsChange = this.onPathsChange.bind(this);
         this.refHandler = this.refHandler.bind(this);
 
         this.state = {
-            touchEnabled: TouchableSketchCanvas.touchStates.draw
+            touchEnabled: TouchableSketchCanvas.touchStates.draw,
+            pathIds: []
         }
         this._canvasChildren = [];
+        this._drawing = false;
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
         return {
-            touchEnabled: TouchableSketchCanvas.getTouchState(nextProps.touchEnabled)
+            touchEnabled: TouchableSketchCanvas.getTouchState(nextProps.touchEnabled),
         }
     }
 
@@ -86,10 +89,11 @@ class TouchableSketchCanvas extends React.Component {
             return this.sketchCanvasInstance._isPointOnPath(x, y)
                 .then((isPointOnPath) => {
                     if (!isPointOnPath) return invokeCallback(pathId ? false : []);
-                    const promiseArr = this._canvasChildren.map(({ ref, key }) => ref._isPointOnPath(x, y)
-                        .then((isPointOnPath) => {
-                            return { key, isPointOnPath }
-                        }));
+                    const promiseArr = this._canvasChildren
+                        .map(({ ref, key }) => ref._isPointOnPath(x, y)
+                            .then((isPointOnPath) => {
+                                return { key, isPointOnPath }
+                            }));
                     return Promise.all(promiseArr)
                         .then((arr) => {
                             const retVal = arr.filter(({ isPointOnPath }) => isPointOnPath).map(({ key }) => key);
@@ -142,29 +146,44 @@ class TouchableSketchCanvas extends React.Component {
     updatePaths() {
         if (Platform.OS === 'ios') return;
         const paths = this.sketchCanvasInstance.getPaths();
+        let shouldSetState = false;
         //  add paths
         paths
             .filter(({ path }) => {
                 const pathId = path.id;
                 return this.getCanvasChildIndex(pathId) === -1;
             })
-            .map((path) => this.pushCanvasChild(path));
+            .map((path) => {
+                this.pushCanvasChild(path);
+                shouldSetState = true;
+            });
 
         //  delete paths
         this._canvasChildren
             .filter(({ key }) => {
                 return paths.findIndex(({ path }) => key === path.id) === -1;
             })
-            .map(({ key }) => this.deleteCanvasChild(key));
+            .map(({ key }) => {
+                this.deleteCanvasChild(key);
+                shouldSetState = true;
+            });
+
+        shouldSetState && this.setState({ pathIds: paths.map(({ path }) => path.id) });
+    }
+
+    onStrokeStart(...args) {
+        this._drawing = true;
+        this.props.onStrokeStart(...args);
     }
 
     onStrokeEnd(...args) {
         this.updatePaths();
+        this._drawing = false;
         this.props.onStrokeEnd(...args);
     }
 
     onPathsChange(numPaths) {
-        if (this._canvasChildren.length > numPaths) this.updatePaths();
+        if (!this._drawing) this.updatePaths();
         this.props.onPathsChange(numPaths);
     }
 
@@ -183,6 +202,7 @@ class TouchableSketchCanvas extends React.Component {
                     {...this.props}
                     ref={this.refHandler}
                     isPointOnPath={this.isPointOnPath.bind(this)}
+                    onStrokeStart={this.onStrokeStart}
                     onStrokeEnd={this.onStrokeEnd}
                     onPathsChange={this.onPathsChange}
                     touchEnabled={TouchableSketchCanvas.getLegacyTouchState(this.state.touchEnabled)} />
