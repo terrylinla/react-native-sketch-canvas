@@ -93,11 +93,12 @@ class SketchCanvas extends React.Component {
 
     this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null)
       this._loadPanResponder.call(this);
+      this.isPointOnPath = props.isPointOnPath || this._isPointOnPath.bind(this);
   }
 
     static getDerivedStateFromProps(nextProps, prevState) {
         return {
-            text: this._processText(nextProps.text ? nextProps.text.map(t => Object.assign({}, t)) : null)
+            text: SketchCanvas._processText(nextProps.text ? nextProps.text.map(t => Object.assign({}, t)) : null)
         }
     }
 
@@ -159,12 +160,12 @@ class SketchCanvas extends React.Component {
     }
     }
 
-    isPointOnPath(x, y, callback) {
+    _isPointOnPath(x, y, pathId, callback) {
         const nativeX = Math.round(x * this._screenScale);
         const nativeY = Math.round(y * this._screenScale);
         const nativeMethod = (callback) => {
             if (Platform.OS === 'ios') {
-                SketchCanvasManager.isPointOnPath(this._handle, nativeX, nativeY, callback);
+                SketchCanvasManager.isPointOnPath(this._handle, nativeX, nativeY, pathId, callback);
             } else {
                 NativeModules.SketchCanvasModule.isPointOnPath(this._handle, nativeX, nativeY, callback);
             }
@@ -235,8 +236,8 @@ class SketchCanvas extends React.Component {
       onPanResponderRelease: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
         if (this._path) {
-          this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user })
-          this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
+            this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
+            this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user })
         }
         UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, [])
       },
