@@ -36,7 +36,6 @@ class SketchCanvas extends React.Component {
     user: PropTypes.string,
 
       touchEnabled: PropTypes.bool,
-      onPathPress: PropTypes.func,
 
     text: PropTypes.arrayOf(PropTypes.shape({
       text: PropTypes.string,
@@ -69,7 +68,6 @@ class SketchCanvas extends React.Component {
     user: null,
 
     touchEnabled: true,
-      onPathPress: () => { },
 
     text: null,
     localSourceImage: null,
@@ -277,9 +275,6 @@ class SketchCanvas extends React.Component {
             this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
           } else if (e.nativeEvent.hasOwnProperty('success')) {
             this.props.onSketchSaved(e.nativeEvent.success)
-          } else if (e.nativeEvent.hasOwnProperty('didTouchPath')) {
-              e.nativeEvent.eventContext = JSON.parse(e.nativeEvent.eventContext);
-              this.props.onPathPress(e.nativeEvent);
           }
         }}
         localSourceImage={this.props.localSourceImage}
