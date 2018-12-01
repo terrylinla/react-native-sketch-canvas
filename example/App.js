@@ -12,13 +12,14 @@ import {
   View,
   Alert,
   TouchableOpacity,
-  ScrollView,
-  Platform
+    ScrollView,
+    Platform, 
+    Button,
+    Dimensions
 } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 
-import RNSketchCanvas from '@terrylinla/react-native-sketch-canvas';
-import { SketchCanvas } from '@terrylinla/react-native-sketch-canvas';
+import RNSketchCanvas, { SketchCanvas, TouchableSketchCanvas } from '@terrylinla/react-native-sketch-canvas';
 
 export default class example extends Component {
   constructor(props) {
@@ -30,7 +31,8 @@ export default class example extends Component {
       thickness: 5,
       message: '',
       photoPath: null,
-      scrollEnabled: true
+        scrollEnabled: true,
+        touchState: 'draw'
     }
   }
 
@@ -42,7 +44,7 @@ export default class example extends Component {
         photoPath: data.uri.replace('file://', '')
       })
     }
-  };
+    };
 
   render() {
     return (
@@ -91,7 +93,13 @@ export default class example extends Component {
             }}>
               <Text style={{ alignSelf: 'center', marginTop: 15, fontSize: 18 }}>- Example 7 -</Text>
               <Text>Multiple canvases in ScrollView</Text>
-            </TouchableOpacity>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => {
+                        this.setState({ example: 8 })
+                    }}>
+                        <Text style={{ alignSelf: 'center', marginTop: 15, fontSize: 18 }}>- Example 8 -</Text>
+                        <Text>Touchable SketchCanvas</Text>
+                    </TouchableOpacity>
           </View>
         }
 
@@ -595,10 +603,44 @@ export default class example extends Component {
               />
             </ScrollView>
           </View>
-        }
+            }
+
+            {
+                this.state.example === 8 &&
+                <View style={{ flex: 1, flexDirection: 'column' }}>
+                    <Text style={{ color: 'blue', alignContent: 'center', alignSelf: 'center', fontSize: 24, margin: 5, fontWeight: 'bold' }}>{this.state.touchState.toLocaleUpperCase()}</Text>
+                    <TouchableSketchCanvas
+                        style={{ flex: 1, width: Dimensions.get('window').width }}
+                        strokeWidth={24}
+                        strokeColor={this.state.color}
+                        ref={ref => this.canvas = ref}
+                        touchEnabled={this.state.touchState}
+                        touchableComponent={
+                            <TouchableOpacity
+                                onPress={(evt) => {
+                                    const { locationX, locationY } = evt.nativeEvent;
+                                    this.canvas.isPointOnPath(locationX, locationY)
+                                        .then((pathArr) => Alert.alert('TouchableSketchCanvas',
+                                            pathArr.length === 0 ? `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is NOT contained by any path` :
+                                            `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is contained by the following paths:\n\n${pathArr.join('\n')}`))
+                                }}
+                            />
+                        }
+                        onStrokeEnd={() => this.setState({ touchState: 'touch' })}
+                    />
+                    {
+                        this.state.touchState === 'touch' &&
+                        <Button title='Press to draw' onPress={() => this.setState({ touchState: 'draw', color: `rgba(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, 0.3)}` })} />
+                    }
+                    {
+                        this.state.touchState === 'touch' &&
+                        <Button title='Press to erase' onPress={() => this.setState({ touchState: 'draw', color: '#00000000' })} />
+                    }
+                </View>
+            }
       </View>
     );
-  }
+    }
 }
 
 const styles = StyleSheet.create({

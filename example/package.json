@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@terrylinla/react-native-sketch-canvas": "file:..",
-    "react": "^16.4.1",
-    "react-native": "^0.56.0",
+    "react": "^16.6.3",
+    "react-native": "^0.57.7",
     "react-native-camera": "1.1.4"
   },
   "devDependencies": {
