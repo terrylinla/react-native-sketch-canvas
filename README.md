@@ -102,6 +102,7 @@ AppRegistry.registerComponent('example', () => example);
 | save(imageType, transparent, folder, filename, includeImage, cropToImageSize) | Save image to camera roll or filesystem. If `localSourceImage` is set and a background image is loaded successfully, set `includeImage` to true to include background image and set `cropToImageSize` to true to crop output image to background image.<br/>Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to **/sdcard/Pictures/`folder`/`filename`** (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll or file system. If `folder` and `filename` are set, image will save to **temporary directory/`folder`/`filename`** (which is NSTemporaryDirectory())  |
 | getPaths() | Get the paths that drawn on the canvas |
 | getBase64(imageType, transparent, includeImage, cropToImageSize, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
+| isPointOnPath(x, y, pathId?, callback?) | Check if a point is part of a path. <br/>If `pathId` is passed, the method will return `true` or `false`. If it is omitted the method will return an array of `pathId`s that contain the point, defaulting to an empty array.<br/>If `callback` is omitted the method will return a promise. <br/>Android: In order to detect touches on specific paths use `<TouchableSketchCanvas>` instead of `<SketchCanvas>` (`<SketchCanvas>` can only detect if a point is drawn on the canvas). <br/>IOS: Can use both |
 
 #### Constants
 -------------
@@ -111,6 +112,91 @@ AppRegistry.registerComponent('example', () => example);
 | DOCUMENT | Android: empty string, '' <br/>iOS: equivalent to NSDocumentDirectory |
 | LIBRARY | Android: empty string, '' <br/>iOS: equivalent to NSLibraryDirectory |
 | CACHES | Android: empty string, '' <br/>iOS: equivalent to NSCachesDirectory |
+
+### ● Touchable Sketch Canvas (responding to path selection)
+```javascript
+import React, { Component } from 'react';
+import {
+  AppRegistry,
+  StyleSheet,
+  View,
+  Alert,
+  TouchableOpacity,
+  Button
+} from 'react-native';
+
+import { SketchCanvas, TouchableSketchCanvas } from '@terrylinla/react-native-sketch-canvas';
+
+export default class example extends Component {
+  state = { touchState: 'draw', color: 'black'  }
+  render() {
+    return (
+      <View style={styles.container}>
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <TouchableSketchCanvas
+            style={{ flex: 1, width: Dimensions.get('window').width }}
+            strokeWidth={24}
+            strokeColor={this.state.color}
+            ref={ref => this.canvas = ref}
+            touchEnabled={this.state.touchState}
+            touchableComponent={
+                <TouchableOpacity
+                    onPress={(evt) => {
+                        const { locationX, locationY } = evt.nativeEvent;
+                        this.canvas.isPointOnPath(locationX, locationY)
+                            .then((pathArr) => Alert.alert('TouchableSketchCanvas',
+                                pathArr.length === 0 ? `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is NOT contained by any path` :
+                                `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is contained by the following paths:\n\n${pathArr.join('\n')}`))
+                    }}
+                />
+            }
+            onStrokeEnd={() => this.setState({ touchState: 'touch' })}
+        />
+        {
+            this.state.touchState === 'touch' &&
+            <Button title='Press to draw' onPress={() => this.setState({ touchState: 'draw', color: `rgba(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, 0.3)}` })} />
+        }
+        {
+            this.state.touchState === 'touch' &&
+            <Button title='Press to erase' onPress={() => this.setState({ touchState: 'draw', color: '#00000000' })} />
+        }
+        </View>
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5FCFF',
+  },
+});
+
+AppRegistry.registerComponent('example', () => example);
+```
+
+**NOTICE**: `TouchableSketchCanvas` can be considered to be *extending* `SketchCanvas`. This means that `TouchableSketchCanvas` inherits all the **props** and **methods** of `SketchCanvas`.
+
+#### Properties
+-------------
+| Prop  | Type | Description |
+| :------------ |:---------------:| :---------------| 
+| touchEnabled | `string` or `bool` | `true` and `false` are provided for backward-compatibility and are equal to `draw` and `none`. See Constants.  |
+| touchableComponent | `element` | The touchable element instance.  |
+| containerStyle | `object` | Styles to be applied on container |
+
+#### Methods
+-------------
+| Method | Description |
+| :------------ |:---------------|
+| isPointOnPath(x, y, pathId?, callback?) | Check if a point is part of a path. <br/>If `pathId` is passed, the method will return `true` or `false`. If it is omitted the method will return an array of `pathId`s that contain the point, defaulting to an empty array.<br/>If `callback` is omitted the method will return a promise. |
+
+#### Constants
+-------------
+| Constant | Description |
+| :------------ |:---------------|
+| TOUCH_STATES | `true`, `false`, `draw`, `touch`, `none` |
+
 
 ### ● Using with build-in UI components
 <img src="https://i.imgur.com/O0vVdD6.png" height="400" />
