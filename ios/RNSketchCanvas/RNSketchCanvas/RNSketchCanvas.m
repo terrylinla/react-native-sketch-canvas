@@ -443,7 +443,7 @@
     }
 }
 
-- (NSArray*)isPointOnPath: (float)x y:(float)y pathId:(NSNumber*)pathId {
+- (NSArray*)isPointOnPath: (float)x y:(float)y pathId:(nullable NSNumber*)pathId {
     CGPoint point = CGPointMake(x, y);
     NSMutableArray *isPointOnPaths = [[NSMutableArray alloc]init];
     
