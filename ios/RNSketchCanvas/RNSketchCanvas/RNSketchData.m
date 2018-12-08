@@ -214,5 +214,9 @@
     return path;
 }
 
+- (UIBezierPath*) getPath {
+    return _path;
+}
+
 
 @end
