@@ -198,7 +198,8 @@ class SketchCanvas extends React.Component {
         this._path = {
           id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
           width: this.props.strokeWidth, data: []
-        }
+          }
+          const x = parseFloat((evt.nativeEvent.locationX).toFixed(2)), y = parseFloat((evt.nativeEvent.locationY).toFixed(2));
         
         UIManager.dispatchViewManagerCommand(
           this._handle,
@@ -213,22 +214,22 @@ class SketchCanvas extends React.Component {
           this._handle,
           UIManager.RNSketchCanvas.Commands.addPoint,
           [
-            parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
+            parseFloat(x * this._screenScale),
+            parseFloat(y * this._screenScale)
           ]
         )
-        const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)), y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
         this._path.data.push(`${x},${y}`)
         this.props.onStrokeStart(x, y)
       },
       onPanResponderMove: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
-        if (this._path) {
+          if (this._path) {
+              const x = parseFloat((evt.nativeEvent.locationX).toFixed(2)), y = parseFloat((evt.nativeEvent.locationY).toFixed(2));
           UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
-            parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
+            parseFloat(x * this._screenScale),
+            parseFloat(y * this._screenScale)
           ])
-          const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)), y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
+          
           this._path.data.push(`${x},${y}`)
           this.props.onStrokeChanged(x, y)
         }
