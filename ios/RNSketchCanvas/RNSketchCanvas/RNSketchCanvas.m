@@ -438,9 +438,11 @@
 }
 
 - (void)notifyPathsUpdate {
-    if (_onChange) {
-        _onChange(@{ @"pathsUpdate": @(_paths.count) });
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (_onChange) {
+            _onChange(@{ @"pathsUpdate": @(_paths.count) });
+        }
+    });
 }
 
 @end
