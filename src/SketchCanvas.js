@@ -34,6 +34,7 @@ class SketchCanvas extends React.Component {
     onSketchSaved: PropTypes.func,
     user: PropTypes.string,
     scale: PropTypes.number,
+    rotation: PropTypes.number,
 
     touchEnabled: PropTypes.bool,
 
@@ -66,6 +67,7 @@ class SketchCanvas extends React.Component {
     onSketchSaved: () => { },
     user: null,
     scale: 1,
+    rotation: 0,
 
     touchEnabled: true,
 
@@ -171,7 +173,10 @@ class SketchCanvas extends React.Component {
           id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
           width: this.props.strokeWidth, data: []
         }
-        
+
+        const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)),
+              y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
+
         UIManager.dispatchViewManagerCommand(
           this._handle,
           UIManager.RNSketchCanvas.Commands.newPath,
@@ -185,19 +190,26 @@ class SketchCanvas extends React.Component {
           this._handle,
           UIManager.RNSketchCanvas.Commands.addPoint,
           [
-            parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
+            parseFloat((x).toFixed(2) * this._screenScale),
+            parseFloat((y).toFixed(2) * this._screenScale)
           ]
         )
-        const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)), y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
         this._path.data.push(`${x},${y}`)
         this.props.onStrokeStart(x, y)
       },
       onPanResponderMove: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
         if (this._path) {
-          const x = parseFloat((gestureState.x0 + gestureState.dx / this.props.scale - this._offset.x).toFixed(2)),
-                y = parseFloat((gestureState.y0 + gestureState.dy / this.props.scale - this._offset.y).toFixed(2))
+
+          const clockwiseRotationModifier = -1;
+          const rotationAsRadians = this.props.rotation * (Math.PI / 180) * clockwiseRotationModifier;
+
+          const rotated_dx = Math.cos(rotationAsRadians) * gestureState.dx - Math.sin(rotationAsRadians) * gestureState.dy;
+          const rotated_dy = Math.sin(rotationAsRadians) * gestureState.dx + Math.cos(rotationAsRadians) * gestureState.dy;
+
+          const x = parseFloat((gestureState.x0 + rotated_dx / this.props.scale - this._offset.x).toFixed(2));
+          const y = parseFloat((gestureState.y0 + rotated_dy / this.props.scale - this._offset.y).toFixed(2));
+
           UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
             parseFloat(x * this._screenScale),
             parseFloat(y * this._screenScale)
