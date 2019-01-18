@@ -25,5 +25,6 @@
 - (void)drawLastPointInContext:(CGContextRef)context;
 - (void)drawInContext:(CGContextRef)context;
 - (UIBezierPath*)getPath;
+- (UIBezierPath*)evaluatePath;
 
 @end

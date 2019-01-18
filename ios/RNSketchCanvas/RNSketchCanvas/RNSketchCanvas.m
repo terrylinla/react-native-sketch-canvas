@@ -448,7 +448,7 @@
     NSMutableArray *isPointOnPaths = [[NSMutableArray alloc]init];
     
     for (RNSketchData *path in _paths) {
-        if((pathId && [pathId intValue] == path.pathId) || !pathId){
+        if(([pathId intValue] == path.pathId) || pathId == nil){
             BOOL containsPoint = [self containsPoint:point onPath:path inFillArea:NO];
             if(containsPoint){
                 [isPointOnPaths addObject:[NSNumber numberWithInt:path.pathId]];
@@ -461,34 +461,50 @@
 
 - (BOOL)containsPoint:(CGPoint)point onPath:(RNSketchData *)path inFillArea:(BOOL)inFill
 {
+    //  see this article: https://oleb.net/blog/2012/02/cgpath-hit-testing/
+    
     CGContextRef context = UIGraphicsGetCurrentContext();
-    UIBezierPath *_path = [path getPath];
-    CGPathRef cgPath = _path.CGPath;
+    UIBezierPath *_path = [path evaluatePath];
+    UIBezierPath *contour = [self tapTargetForPath:_path];
+    
     BOOL    isHit = NO;
     
-    // Determine the drawing mode to use. Default to
-    // detecting hits on the stroked portion of the path.
+    CGContextSaveGState(context);
+    CGContextAddPath(context, contour.CGPath);
+    isHit = CGPathContainsPoint(contour.CGPath, nil, point, false);
+    CGContextRestoreGState(context);
+    
+    return isHit;
+}
+
+- (UIBezierPath *)tapTargetForPath:(UIBezierPath *)path
+{
+    if (path == nil) {
+        return nil;
+    }
+    
+    CGPathRef tapTargetPath = CGPathCreateCopyByStrokingPath(path.CGPath, NULL, fmaxf(35.0f, path.lineWidth), path.lineCapStyle, path.lineJoinStyle, path.miterLimit);
+    if (tapTargetPath == NULL) {
+        return nil;
+    }
+    
+    UIBezierPath *tapTarget = [UIBezierPath bezierPathWithCGPath:tapTargetPath];
+    CGPathRelease(tapTargetPath);
+    return tapTarget;
+}
+
+- (CGPathDrawingMode)getFillMode:(UIBezierPath *)path inFillArea:(BOOL)inFill
+{
     CGPathDrawingMode mode = kCGPathStroke;
     if (inFill)
     {
-        // Look for hits in the fill area of the path instead.
-        if (_path.usesEvenOddFillRule)
+        if (path.usesEvenOddFillRule)
             mode = kCGPathEOFill;
         else
             mode = kCGPathFill;
     }
     
-    // Save the graphics state so that the path can be
-    // removed later.
-    CGContextSaveGState(context);
-    CGContextAddPath(context, cgPath);
-    
-    // Do the hit detection.
-    isHit = CGContextPathContainsPoint(context, point, mode);
-    
-    CGContextRestoreGState(context);
-    
-    return isHit;
+    return mode;
 }
 
 @end
