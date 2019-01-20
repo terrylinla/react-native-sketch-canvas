@@ -93,7 +93,7 @@ class SketchCanvas extends React.Component {
 
     this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null)
       this._loadPanResponder.call(this);
-      this.isPointOnPath = props.isPointOnPath || this._isPointOnPath.bind(this);
+      this.isPointOnPath = this.isPointOnPath.bind(this);
   }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -160,16 +160,18 @@ class SketchCanvas extends React.Component {
     }
     }
 
-    _isPointOnPath(x, y, pathId, callback) {
+    isPointOnPath(x, y, pathId, callback) {
         const nativeX = Math.round(x * this._screenScale);
         const nativeY = Math.round(y * this._screenScale);
+        const normalizedPathId = typeof pathId === 'number' ? pathId : -1;
         const nativeMethod = (callback) => {
             if (Platform.OS === 'ios') {
-                SketchCanvasManager.isPointOnPath(this._handle, nativeX, nativeY, pathId, callback);
+                SketchCanvasManager.isPointOnPath(this._handle, nativeX, nativeY, normalizedPathId, callback);
             } else {
-                NativeModules.SketchCanvasModule.isPointOnPath(this._handle, nativeX, nativeY, callback);
+                NativeModules.SketchCanvasModule.isPointOnPath(this._handle, nativeX, nativeY, normalizedPathId, callback);
             }
-        }
+        };
+
         if (callback) {
             nativeMethod(callback);
         }
@@ -179,7 +181,7 @@ class SketchCanvas extends React.Component {
                     if (err) reject(err);
                     resolve(success);
                 });
-            })
+            });
         }
     }
 

@@ -1,5 +1,7 @@
 package com.terrylinla.rnsketchcanvas;
 
+import android.annotation.TargetApi;
+import android.graphics.Region;
 import android.graphics.Typeface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
@@ -417,6 +420,45 @@ public class SketchCanvas extends View {
             }
         }
         return bitmap;
+    }
+
+    private int getPathIndex(int pathId){
+        int index = -1;
+        for (int i=0; i < mPaths.size(); i++) {
+            if(pathId == mPaths.get(i).id) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
+    @TargetApi(19)
+    private Region getRegion(){
+        return new Region(getLeft(), getTop(), getRight(), getBottom());
+    }
+
+    @TargetApi(19)
+    public boolean isPointOnPath(int x, int y, int pathId){
+        return mPaths.get(getPathIndex(pathId)).isPointOnPath(x, y, SketchData.touchRadius, getRegion());
+    }
+
+    @TargetApi(19)
+    public WritableArray isPointOnPath(int x, int y){
+        WritableArray array = Arguments.createArray();
+        Region mRegion = getRegion();
+        SketchData mPath;
+        for (int i=0; i < mPaths.size(); i++) {
+            mPath = mPaths.get(i);
+            if(mPath.isPointOnPath(x, y, SketchData.touchRadius, mRegion)){
+                array.pushInt(mPath.id);
+            }
+        }
+        return array;
+    }
+
+    public int sampleColor(int x, int y){
+        return mDrawingBitmap.getPixel(x, y);
     }
 
     public boolean pathHitTest(int x, int y) {

@@ -1,5 +1,6 @@
 package com.terrylinla.rnsketchcanvas;
 
+import android.annotation.TargetApi;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -9,6 +10,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Region;
 
 import java.util.ArrayList;
 
@@ -21,6 +23,8 @@ public class SketchData {
     private Paint mPaint;
     private Path mPath;
     private RectF mDirty = null;
+
+    public static int touchRadius = 1;
 
     public static PointF midPoint(PointF p1, PointF p2) {
         return new PointF((p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f);
@@ -218,10 +222,24 @@ public class SketchData {
         path.quadTo(pPoint.x, pPoint.y, mid2.x, mid2.y);
     }
 
+    //  see: https://stackoverflow.com/questions/11184397/path-intersection-in-android
+    @TargetApi(19)
+    boolean isPointOnPath(int x, int y, int r, Region boundingRegion) {
+        int radius = Math.max(Math.max(SketchData.touchRadius, (int)strokeWidth), r);
+        Path path = mPath == null ? evaluatePath(): mPath;
+        Path mTouchPath = new Path();
+        mTouchPath.addCircle(x, y, radius, Path.Direction.CW);
+
+        Region region1 = new Region();
+        region1.setPath(mTouchPath, new Region(Math.max(x - radius,0), Math.max(y - radius,0), Math.max(x + radius,0), Math.max(y + radius,0)));
+        Region region2 = new Region();
+        region2.setPath(path, boundingRegion);
+
+        return !region1.quickReject(region2) && region1.op(region2, Region.Op.INTERSECT);
+    }
+
 /*
     //  could not get these methods to work
-    //  and act instead of Bitmap.getPixel(x, y) to test touch
-
     @TargetApi(26)
     private float[][] mGetCoords() {
         float acceptableError = 0.5f;
@@ -237,27 +255,5 @@ public class SketchData {
         return new float[0][0];
     }
 
-
-    @TargetApi(19)
-    public boolean isPointOnPath(int x, int y) {
-        if(mPath == null) mPath = evaluatePath();
-        if (mPath != null && !this.isTranslucent) {
-            Path path = new Path();
-            Path tPath = new Path();
-            //path.addCircle(x, y, 1, Path.Direction.CW);
-            path.addRect((float)(x-0.5),(float)(y-0.5),(float)(x+0.5),(float)(y+0.5),Path.Direction.CW);
-            boolean op = tPath.op(mPath, path, Path.Op.INTERSECT);
-            boolean isRect = tPath.isRect(new RectF());
-            boolean is = tPath.isEmpty();
-
-            Log.d("RNSketchCanvas", "isEmpty: " + Boolean.toString(is));
-            Log.d("RNSketchCanvas", "isRect: " + Boolean.toString(isRect));
-            Log.d("RNSketchCanvas", "op: " + Boolean.toString(op));
-            return op;
-            //return tPath.isRect(new RectF());
-            //return tPath.isEmpty();
-        }
-        return false;
-    }
     */
 }
