@@ -148,7 +148,7 @@ dependencies {
             force = true
         }
     }
-    implementation project(':@terrylinla/react-native-sketch-canvas')
+    implementation project(':react-native-sketch-canvas')
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'com.android.support:appcompat-v7:28.0.0-alpha3'
     implementation "com.facebook.react:react-native:+"  // From node_modules
