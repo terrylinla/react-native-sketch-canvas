@@ -25,6 +25,8 @@ type Path = {
   path: PathData
 }
 
+export type TouchStates = boolean | 'draw' | 'touch' | 'none';
+
 type CanvasText = {
   text: string
   font?: string
@@ -108,12 +110,29 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
    * @param includeText Set to `true` to include the text drawn from `Text`.
    * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
    */
-  getBase64(imageType: ImageType, transparent: boolean, includeImage: boolean, includeText: boolean, cropToImageSize: boolean, callback: (error: any, result?: string) => void): void
+    getBase64(imageType: ImageType, transparent: boolean, includeImage: boolean, includeText: boolean, cropToImageSize: boolean, callback: (error: any, result?: string) => void): void
 
+    /**
+   * @param x Set to `evt.nativeEvent.locationX`
+   * @param y Set to `evt.nativeEvent.locationY`
+   * @param pathId Set to the pathId or undefined
+   * @param callback If omitted the method returns a Promise
+   */
+    isPointOnPath(x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
+    isPointOnPath(x: number, y: number, callback: (error: any, result?: Array<number>) => void): void
+    isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
+    isPointOnPath(x: number, y: number): Promise<Array<number>>
   static MAIN_BUNDLE: string
   static DOCUMENT: string
   static LIBRARY: string
   static CACHES: string
+}
+
+export class TouchableSketchCanvas extends SketchCanvas {
+    touchEnabled?: boolean
+    touchableComponent?: JSX.Element
+    contentContainerStyle?: StyleProp<ViewStyle>
+    forwardedRef?: any
 }
 
 export interface RNSketchCanvasProps {
