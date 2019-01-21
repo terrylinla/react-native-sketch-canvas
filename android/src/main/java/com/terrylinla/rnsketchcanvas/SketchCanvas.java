@@ -60,6 +60,8 @@ public class SketchCanvas extends View {
     private ArrayList<CanvasText> mArrTextOnSketch = new ArrayList<CanvasText>();
     private ArrayList<CanvasText> mArrSketchOnText = new ArrayList<CanvasText>();
 
+    private int mTouchRadius = 0;
+
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
@@ -438,9 +440,96 @@ public class SketchCanvas extends View {
         return new Region(getLeft(), getTop(), getRight(), getBottom());
     }
 
+    public void setTouchRadius(int value){
+        mTouchRadius = value;
+    }
+
+    private int getTouchRadius(float strokeWidth){
+        return mTouchRadius <= 0 && strokeWidth > 0? (int)(strokeWidth * 0.5): mTouchRadius;
+    }
+
+    public int sampleColor(int x, int y){
+        return mDrawingBitmap.getPixel(x, y);
+    }
+
+    private SketchCanvasPoint getSketchCanvasPoint(x, y){
+        return new SketchCanvasPoint(x, y, sampleColor(x, y));
+    }
+
+    private ArrayList<SketchCanvasPoint> getTouchPoints(int x, int y, int r) {
+        ArrayList<SketchCanvasPoint> range = new ArrayList<SketchCanvasPoint>();
+        SketchCanvasPoint middle = getSketchCanvasPoint(x, y);
+        SketchCanvasPoint point;
+
+        for (int i = -r; i <= r; i++){
+            for (int j = -r; j <= r; j++){
+                point = getSketchCanvasPoint(x + i, y + j);
+                if((int)SketchCanvasPoint.getHypot(point, middle) <= r){
+                    range.add(point);
+                }
+            }
+        }
+
+        return range;
+    }
+
+    private boolean getTouchTransparency(int x, int y, int r){
+        boolean transparent = true;
+        ArrayList<SketchCanvasPoint> points = getTouchPoints(x, y, r);
+        SketchCanvasPoint point;
+        if(r == 0){
+            point = points.get(0);
+            transparent = point.isTransparent();
+        }
+        else{
+            for (int i = 0; i < points.size(); i++){
+                point = points.get(i);
+                if(!point.isTransparent()){
+                    transparent = false;
+                    break;
+                }
+            }
+        }
+
+        return transparent;
+    }
+
+    private Map getColorMapForTouch(int x, int y, int r){
+        int red, green, blue, alpha;
+        SketchCanvasPoint point;
+        Map m = Map();
+        ArrayList<SketchCanvasPoint> points = getTouchPoints(x, y, r);
+
+        for (int i = 0; i < points.size(); i++){
+            point = points.get(i);
+            red += point.red();
+            green += point.green();
+            blue += point.blue();
+            alpha += point.alpha();
+        }
+
+        red /= points.size();
+        green /= points.size();
+        blue /= points.size();
+        alpha /= points.size();
+
+        m.put("red", red);
+        m.put("green", green);
+        m.put("blue", blue);
+        m.put("alpha", alpha);
+        m.put("color", Color.argb(alpha, red, green, blue));
+        return m;
+    }
+
     @TargetApi(19)
     public boolean isPointOnPath(int x, int y, int pathId){
-        return mPaths.get(getPathIndex(pathId)).isPointOnPath(x, y, SketchData.touchRadius, getRegion());
+        if(getTouchTransparency(x, y, 0)) {
+            return false;
+        }
+        else {
+            SketchData mPath = mPaths.get(getPathIndex(pathId));
+            return mPath.isPointOnPath(x, y, getTouchRadius(mPath.strokeWidth), getRegion());
+        }
     }
 
     @TargetApi(19)
@@ -448,17 +537,16 @@ public class SketchCanvas extends View {
         WritableArray array = Arguments.createArray();
         Region mRegion = getRegion();
         SketchData mPath;
+        int r;
+        boolean isTransparent;
         for (int i=0; i < mPaths.size(); i++) {
             mPath = mPaths.get(i);
-            if(mPath.isPointOnPath(x, y, SketchData.touchRadius, mRegion)){
+            r = getTouchRadius(mPath.strokeWidth);
+            if(mPath.isPointOnPath(x, y, r, mRegion) && !getTouchTransparency(x, y, r)){
                 array.pushInt(mPath.id);
             }
         }
         return array;
-    }
-
-    public int sampleColor(int x, int y){
-        return mDrawingBitmap.getPixel(x, y);
     }
 
     public boolean pathHitTest(int x, int y) {
