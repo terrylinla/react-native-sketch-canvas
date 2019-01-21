@@ -33,6 +33,25 @@ Link native code
 react-native link @terrylinla/react-native-sketch-canvas
 ```
 
+Android:
+settings.gradle
+```
+include ':react-native-sketch-canvas'
+project(':react-native-sketch-canvas').projectDir = new File(rootProject.projectDir, '../node_modules/@terrylinla/react-native-sketch-canvas/android')
+
+```
+
+app/build.gradle
+```
+
+dependencies {
+    ...
+    implementation project(':react-native-sketch-canvas')
+    ...
+}
+
+```
+
 ## Usage
 -------------
 <img src="https://i.imgur.com/4qpiX8m.png" height="400" />
