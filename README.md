@@ -1,11 +1,8 @@
 react-native-sketch-canvas
 ===================
 
-A React Native component for drawing by touching on both iOS and Android.
-
-<img src="https://media.giphy.com/media/3ov9kbuQg8ayvoYG8E/giphy.gif" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://media.giphy.com/media/3ov9jNZooUPTbWWbh6/giphy.gif" height="400" />
-<br/>
-<img src="https://i.imgur.com/lc5WlGz.png" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/NBZvKtp.png" height="400" />
+A React Native component that was build on the react-native-sketch-canvas library from Terry Lin.
+It features drawing and also moving the sketch by touching on both iOS and Android.
 
 Features
 -------------
@@ -22,58 +19,8 @@ Features
 * Can draw multiple multiline text on canvas.
 
 
-## Installation
--------------
-Install from `npm` (only support RN >= 0.40)
-```bash
-npm install @terrylinla/react-native-sketch-canvas --save
-```
-Link native code
-```bash
-react-native link @terrylinla/react-native-sketch-canvas
-```
 
-## Usage
--------------
-<img src="https://i.imgur.com/4qpiX8m.png" height="400" />
-
-### ● Using without UI component (for customizing UI)
-```javascript
-import React, { Component } from 'react';
-import {
-  AppRegistry,
-  StyleSheet,
-  View,
-} from 'react-native';
-
-import { SketchCanvas } from '@terrylinla/react-native-sketch-canvas';
-
-export default class example extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-          <SketchCanvas
-            style={{ flex: 1 }}
-            strokeColor={'red'}
-            strokeWidth={7}
-          />
-        </View>
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5FCFF',
-  },
-});
-
-AppRegistry.registerComponent('example', () => example);
-```
-
-#### Properties
+#### Properties for Sketch Canvas
 -------------
 | Prop  | Type | Description |
 | :------------ |:---------------:| :---------------| 
@@ -90,6 +37,8 @@ AppRegistry.registerComponent('example', () => example);
 | localSourceImage | `object` | Require an object (see [below](#objects)) which consists of `filename`, `directory`(optional) and `mode`(optional). If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan))([Here](#background-image) for details) |
 | permissionDialogTitle | `string` | Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set |
 | permissionDialogMessage | `string` | Android Only: Provide a Dialog Message for the Image Saving PermissionDialog. Defaults to empty string if not set |
+| requiredTouches | `number` | (Optional) Fingers on the screen for drawing to be active. If you set this to 1, drawing is only possible while the user only uses one finger. So for 2 fingers, you can use another action. |
+| startToDrawDelay | `number` | (Optional) Delay in milliseconds after which the drawing starts. Use it if you use another PanResponder in the parent. |
 
 #### Methods
 -------------
@@ -111,87 +60,6 @@ AppRegistry.registerComponent('example', () => example);
 | DOCUMENT | Android: empty string, '' <br/>iOS: equivalent to NSDocumentDirectory |
 | LIBRARY | Android: empty string, '' <br/>iOS: equivalent to NSLibraryDirectory |
 | CACHES | Android: empty string, '' <br/>iOS: equivalent to NSCachesDirectory |
-
-### ● Using with build-in UI components
-<img src="https://i.imgur.com/O0vVdD6.png" height="400" />
-
-```javascript
-import React, { Component } from 'react';
-import {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Alert,
-} from 'react-native';
-
-import RNSketchCanvas from '@terrylinla/react-native-sketch-canvas';
-
-export default class example extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-          <RNSketchCanvas
-            containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
-            canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
-            defaultStrokeIndex={0}
-            defaultStrokeWidth={5}
-            closeComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Close</Text></View>}
-            undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
-            clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
-            eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
-            strokeComponent={color => (
-              <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
-            )}
-            strokeSelectedComponent={(color, index, changed) => {
-              return (
-                <View style={[{ backgroundColor: color, borderWidth: 2 }, styles.strokeColorButton]} />
-              )
-            }}
-            strokeWidthComponent={(w) => {
-              return (<View style={styles.strokeWidthButton}>
-                <View  style={{
-                  backgroundColor: 'white', marginHorizontal: 2.5,
-                  width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
-                }} />
-              </View>
-            )}}
-            saveComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Save</Text></View>}
-            savePreference={() => {
-              return {
-                folder: 'RNSketchCanvas',
-                filename: String(Math.ceil(Math.random() * 100000000)),
-                transparent: false,
-                imageType: 'png'
-              }
-            }}
-          />
-        </View>
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5FCFF',
-  },
-  strokeColorButton: {
-    marginHorizontal: 2.5, marginVertical: 8, width: 30, height: 30, borderRadius: 15,
-  },
-  strokeWidthButton: {
-    marginHorizontal: 2.5, marginVertical: 8, width: 30, height: 30, borderRadius: 15,
-    justifyContent: 'center', alignItems: 'center', backgroundColor: '#39579A'
-  },
-  functionButton: {
-    marginHorizontal: 2.5, marginVertical: 8, height: 30, width: 60,
-    backgroundColor: '#39579A', justifyContent: 'center', alignItems: 'center', borderRadius: 5,
-  }
-});
-
-AppRegistry.registerComponent('example', () => example);
-```
 
 #### Properties
 -------------
@@ -263,14 +131,6 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
   1. Retrive photo complete path (including file extension) after snapping.
   2. Set `filename` to that path.
   3. Set `directory` to ''
-
-### Content Mode
-* AspectFill<br/>
-<img src="https://i.imgur.com/vRydI60.png" height="200" />
-* AspectFit (default)<br/>
-<img src="https://i.imgur.com/r8DtgIN.png" height="200" />
-* ScaleToFill<br/>
-<img src="https://i.imgur.com/r9dRnAC.png" height="200" />
 
 ## Objects
 -------------
@@ -359,14 +219,6 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 | alignment? | string | Specify how the text aligns inside container. Only work when `text` is multiline text. | Left |
 | lineHeightMultiple? | number | Multiply line height by this factor. Only work when `text` is multiline text. | 1.0 |
 
-## Performance
--------------
-1. For non-transparent path, both Android and iOS performances are good. Because when drawing non-transparent path, only last segment is drawn on canvas, no matter how long the path is, CPU usage is stable at about 20% and 15% in Android and iOS respectively. 
-2. For transparent path, CPU usage stays at around 25% in Android, however, in iOS, CPU usage grows to 100% :(.
-* Android (https://youtu.be/gXdCEN6Enmk)<br/>
-<img src="https://i.imgur.com/YQ2wVMc.jpg" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/CuIar4h.jpg" height="400" />
-* iOS (https://youtu.be/_jO4ky400Eo)<br/>
-<img src="https://i.imgur.com/AwkFu94.png" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/UDcaiaz.png" height="400" />
 
 ## Example
 -------------
