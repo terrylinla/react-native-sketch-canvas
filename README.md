@@ -1,4 +1,4 @@
-react-native-sketch-canvas
+react-native-responsive-sketch-canvas
 ===================
 
 A React Native component that was build on the react-native-sketch-canvas library from Terry Lin.
