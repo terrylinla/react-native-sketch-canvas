@@ -25,7 +25,7 @@ type Path = {
   path: PathData
 }
 
-export type TouchStates = boolean | 'draw' | 'touch' | 'none';
+export type TouchStates = true | false | 'draw' | 'touch' | 'none';
 
 type CanvasText = {
   text: string
@@ -129,10 +129,10 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
 }
 
 export class TouchableSketchCanvas extends SketchCanvas {
-    touchEnabled?: boolean
+    touchEnabled?: TouchStates
     touchableComponent?: JSX.Element
     contentContainerStyle?: StyleProp<ViewStyle>
-    forwardedRef?: any
+    private forwardedRef?: (ref: any) => void
 }
 
 export interface RNSketchCanvasProps {
