@@ -609,50 +609,9 @@ export default class example extends Component {
                 this.state.example === 8 &&
                 <View style={{ flex: 1 }}>
                     <Text style={{ color: 'blue', alignContent: 'center', alignSelf: 'center', fontSize: 24, margin: 5, fontWeight: 'bold' }}>{this.state.touchState.toLocaleUpperCase()}</Text>
-                    <TouchableOpacity
-                        onStartShouldSetResponderCapture={() => !(this.state.touchState === 'draw' || this.state.touchState === true)}
-                        style={{ flex: 1, width: Dimensions.get('window').width }}
-                        onPress={(evt) => {
-                            const { locationX, locationY } = evt.nativeEvent;
-                            const pathId = this.canvas.getPaths()[0].path.id;
-                            Promise.all([
-                                this.canvas.isPointOnPath(locationX, locationY),
-                                this.canvas.isPointOnPath(locationX, locationY, pathId)
-                            ]).then(([pathArr, isOnSpecifiedPath]) => {
-                                const message = (pathArr.length === 0 ? `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is NOT contained by any path` :
-                                    `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is contained by the following paths:\n\n${pathArr.join('\n')}`) + `\n\nAnd is ${isOnSpecifiedPath ? '' : 'NOT '}contained by path ${pathId}`
-                                Alert.alert('TouchableSketchCanvas', message);
-                            });
-                        }}
-                    >
-                        <SketchCanvas
-                            style={{ flex: 1 }}
-                            strokeWidth={24}
-                            strokeColor={this.state.color}
-                            ref={ref => this.canvas = ref}
-                            touchEnabled={this.state.touchState === 'draw' || this.state.touchState === true}
-                            onStrokeEnd={() => this.setState({ touchState: 'touch' })}
-                        />
-                        </TouchableOpacity>
-                    
-                    {
-                        this.state.touchState === 'touch' &&
-                        <Button title='Press to draw' onPress={() => this.setState({ touchState: 'draw', color: `rgba(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, 0.3)}` })} />
-                    }
-                    {
-                        this.state.touchState === 'touch' &&
-                        <Button title='Press to erase' onPress={() => this.setState({ touchState: 'draw', color: '#00000000' })} />
-                    }
-                </View>
-            }
-      </View>
-    );
-    }
-}
-
-/*
-<TouchableSketchCanvas
-                        style={{ flex: 1 }}
+                    <TouchableSketchCanvas
+                        style={styles.page}
+                        contentContainerStyle={{flex:1, minWidth: Dimensions.get('window').width}}
                         strokeWidth={24}
                         strokeColor={this.state.color}
                         ref={ref => this.canvas = ref}
@@ -671,11 +630,29 @@ export default class example extends Component {
                                         Alert.alert('TouchableSketchCanvas', message);
                                     });
                                 }}
+                                onLongPress={async () => {
+                                    await this.canvas.setTouchRadius(100);
+                                    Alert.alert('TouchRadius', 'The radius of the touch has been changed');
+                                }}
                             />
                         }
                         onStrokeEnd={() => this.setState({ touchState: 'touch' })}
                     />
- * */
+                    
+                    {
+                        this.state.touchState === 'touch' &&
+                        <Button title='Press to draw' onPress={() => this.setState({ touchState: 'draw', color: `rgba(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, 0.3)}` })} />
+                    }
+                    {
+                        this.state.touchState === 'touch' &&
+                        <Button title='Press to erase' onPress={() => this.setState({ touchState: 'draw', color: '#00000000' })} />
+                    }
+                </View>
+            }
+      </View>
+    );
+    }
+}
 
 const styles = StyleSheet.create({
   container: {
