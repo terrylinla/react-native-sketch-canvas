@@ -102,7 +102,7 @@ AppRegistry.registerComponent('example', () => example);
 | save(imageType, transparent, folder, filename, includeImage, cropToImageSize) | Save image to camera roll or filesystem. If `localSourceImage` is set and a background image is loaded successfully, set `includeImage` to true to include background image and set `cropToImageSize` to true to crop output image to background image.<br/>Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to **/sdcard/Pictures/`folder`/`filename`** (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll or file system. If `folder` and `filename` are set, image will save to **temporary directory/`folder`/`filename`** (which is NSTemporaryDirectory())  |
 | getPaths() | Get the paths that drawn on the canvas |
 | getBase64(imageType, transparent, includeImage, cropToImageSize, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
-| isPointOnPath(x, y, pathId?, callback?) | Check if a point is part of a path. <br/>If `pathId` is passed, the method will return `true` or `false`. If it is omitted the method will return an array of `pathId`s that contain the point, defaulting to an empty array.<br/>If `callback` is omitted the method will return a promise. <br/>Android: In order to detect touches on specific paths use `<TouchableSketchCanvas>` instead of `<SketchCanvas>` (`<SketchCanvas>` can only detect if a point is drawn on the canvas). <br/>IOS: Can use both |
+| isPointOnPath(x, y, pathId?, callback?) | Check if a point is part of a path. <br/>If `pathId` is passed, the method will return `true` or `false`. If it is omitted the method will return an array of `pathId`s that contain the point, defaulting to an empty array.<br/>If `callback` is omitted the method will return a promise.
 
 #### Constants
 -------------
@@ -130,6 +130,16 @@ import { SketchCanvas, TouchableSketchCanvas } from '@terrylinla/react-native-sk
 export default class example extends Component {
   state = { touchState: 'draw', color: 'black'  }
   render() {
+    const touchableComponent =  <TouchableOpacity
+      onPress={(evt) => {
+          const { locationX, locationY } = evt.nativeEvent;
+          this.canvas.isPointOnPath(locationX, locationY)
+              .then((pathArr) => Alert.alert('TouchableSketchCanvas',
+                  pathArr.length === 0 ? `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is NOT contained by any path` :
+                  `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is contained by the following paths:\n\n${pathArr.join('\n')}`))
+      }}
+  />;
+                
     return (
       <View style={styles.container}>
         <View style={{ flex: 1, flexDirection: 'row' }}>
@@ -139,17 +149,7 @@ export default class example extends Component {
             strokeColor={this.state.color}
             ref={ref => this.canvas = ref}
             touchEnabled={this.state.touchState}
-            touchableComponent={
-                <TouchableOpacity
-                    onPress={(evt) => {
-                        const { locationX, locationY } = evt.nativeEvent;
-                        this.canvas.isPointOnPath(locationX, locationY)
-                            .then((pathArr) => Alert.alert('TouchableSketchCanvas',
-                                pathArr.length === 0 ? `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is NOT contained by any path` :
-                                `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is contained by the following paths:\n\n${pathArr.join('\n')}`))
-                    }}
-                />
-            }
+            touchableComponent={touchableComponent}
             onStrokeEnd={() => this.setState({ touchState: 'touch' })}
         />
         {
@@ -176,12 +176,13 @@ AppRegistry.registerComponent('example', () => example);
 ```
 
 **NOTICE**: `TouchableSketchCanvas` can be considered to be *extending* `SketchCanvas`. This means that `TouchableSketchCanvas` inherits all the **props** and **methods** of `SketchCanvas`.
+The best way to use this component is by passing `onPressIn` or `onLongPress` to `touchableComponent` and test for touches with `isPointOnPath(evt.nativeEvent.locationX, evt.nativeEvent.locationY)`
 
 #### Properties
 -------------
 | Prop  | Type | Description |
 | :------------ |:---------------:| :---------------| 
-| touchEnabled | `string` or `bool` | `true` and `false` are provided for backward-compatibility and are equal to `draw` and `none`. See Constants.  |
+| touchEnabled | `string` or `bool` | `draw`, `touch` and `none`. `true` and `false` are provided for backward-compatibility and are equal to `draw` and `none`.  |
 | touchableComponent | `element` | The touchable element instance.  |
 | containerStyle | `object` | Styles to be applied on container |
 
