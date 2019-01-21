@@ -618,7 +618,7 @@ export default class example extends Component {
                         touchEnabled={this.state.touchState}
                         touchableComponent={
                             <TouchableOpacity
-                                onPress={(evt) => {
+                                onPressIn={(evt) => {
                                     const { locationX, locationY } = evt.nativeEvent;
                                     const pathId = this.canvas.getPaths()[0].path.id;
                                     Promise.all([
