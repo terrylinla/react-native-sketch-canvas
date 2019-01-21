@@ -626,7 +626,7 @@ export default class example extends Component {
                                         this.canvas.isPointOnPath(locationX, locationY, pathId)
                                     ]).then(([pathArr, isOnSpecifiedPath]) => {
                                         const message = (pathArr.length === 0 ? `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is NOT contained by any path` :
-                                            `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is contained by the following paths:\n\n${pathArr.join('\n')}`) + `\n\nAnd is ${isOnSpecifiedPath ? '' : 'NOT '}contained by path ${pathId}`
+                                            `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is contained by the following paths:\n\n${pathArr.join('\n')}`); //+ `\n\nAnd is ${isOnSpecifiedPath ? '' : 'NOT '}contained by path ${pathId}`
                                         Alert.alert('TouchableSketchCanvas', message);
                                     });
                                 }}

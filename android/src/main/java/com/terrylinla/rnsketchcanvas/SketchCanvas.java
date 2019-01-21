@@ -426,14 +426,12 @@ public class SketchCanvas extends View {
     }
 
     private int getPathIndex(int pathId){
-        int index = -1;
         for (int i=0; i < mPaths.size(); i++) {
             if(pathId == mPaths.get(i).id) {
-                index = i;
-                break;
+                return i;
             }
         }
-        return index;
+        return -1;
     }
 
     @TargetApi(19)
@@ -476,26 +474,6 @@ public class SketchCanvas extends View {
         return range;
     }
 
-    private boolean getTouchTransparency(int x, int y, int r){
-        boolean transparent = true;
-        ArrayList<SketchCanvasPoint> points = getTouchPoints(x, y, r);
-        SketchCanvasPoint point;
-        if(r == 0){
-            point = points.get(0);
-            transparent = point.isTransparent();
-        }
-        else{
-            for (int i = 0; i < points.size(); i++){
-                point = points.get(i);
-                if(!point.isTransparent()){
-                    transparent = false;
-                    break;
-                }
-            }
-        }
-        return transparent;
-    }
-
     private WritableMap getColorMapForTouch(int x, int y, int r){
         int red = 0, green = 0, blue = 0, alpha = 0;
         SketchCanvasPoint point;
@@ -522,23 +500,21 @@ public class SketchCanvas extends View {
         m.putInt("color", Color.argb(alpha, red, green, blue));
         return m;
     }
-
     @TargetApi(19)
-    public boolean isPointOnTransparentPath(int x, int y){
-        boolean retVal = false;
-        for (int i = 0; i < mPaths.size(); i++){
+    public boolean isPointUnderTransparentPath(int x, int y, int pathId){
+        int beginAt = Math.min(getPathIndex(pathId) + 1, mPaths.size() - 1);
+        for (int i = getPathIndex(pathId); i < mPaths.size(); i++){
             SketchData mPath = mPaths.get(i);
-            if(mPath.strokeColor == Color.TRANSPARENT && mPath.isPointOnPath(x, y, getTouchRadius(mPath.strokeWidth), getRegion())) {
-                retVal = true;
-                break;
+            if(mPath.isPointOnPath(x, y, getTouchRadius(mPath.strokeWidth), getRegion()) && mPath.strokeColor == Color.TRANSPARENT) {
+                return true;
             }
         }
-        return retVal;
+        return false;
     }
 
     @TargetApi(19)
     public boolean isPointOnPath(int x, int y, int pathId){
-        if(isPointOnTransparentPath(x, y)) {
+        if(isPointUnderTransparentPath(x, y, pathId)) {
             return false;
         }
         else {
@@ -553,40 +529,14 @@ public class SketchCanvas extends View {
         Region mRegion = getRegion();
         SketchData mPath;
         int r;
-        if(!isPointOnTransparentPath(x, y)){
-            for (int i=0; i < mPaths.size(); i++) {
-                mPath = mPaths.get(i);
-                r = getTouchRadius(mPath.strokeWidth);
-                if(mPath.isPointOnPath(x, y, r, mRegion)){
-                    array.pushInt(mPath.id);
-                }
+        for (int i=0; i < mPaths.size(); i++) {
+            mPath = mPaths.get(i);
+            r = getTouchRadius(mPath.strokeWidth);
+            if(mPath.isPointOnPath(x, y, r, mRegion) && !isPointUnderTransparentPath(x, y, mPath.id)){
+                array.pushInt(mPath.id);
             }
         }
 
         return array;
-    }
-
-    public boolean pathHitTest(int x, int y) {
-        //if(mDrawingBitmap.getWidth() < x || mDrawingBitmap.getHeight() < y) return false;
-        try {
-            int color = mDrawingBitmap.getPixel(x, y);
-            boolean didTouch = color != 0;
-            return didTouch;
-        }
-        catch (Exception e){
-            Log.d("RNSketchCanvas", "pathHitTest error: " + e.toString());
-            return false;
-        }
-    }
-
-    public void didTouchPath(String eventContext, int x, int y) {
-        WritableMap event = Arguments.createMap();
-        event.putBoolean("didTouchPath", pathHitTest(x, y));
-        event.putString("eventContext", eventContext);
-
-        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                getId(),
-                "topChange",
-                event);
     }
 }
