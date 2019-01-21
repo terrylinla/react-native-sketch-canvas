@@ -33,7 +33,8 @@ Link native code
 react-native link @terrylinla/react-native-sketch-canvas
 ```
 
-Android:
+**Fix android linking:**
+
 settings.gradle
 ```
 include ':react-native-sketch-canvas'
@@ -43,13 +44,11 @@ project(':react-native-sketch-canvas').projectDir = new File(rootProject.project
 
 app/build.gradle
 ```
-
 dependencies {
     ...
     implementation project(':react-native-sketch-canvas')
     ...
 }
-
 ```
 
 ## Usage
