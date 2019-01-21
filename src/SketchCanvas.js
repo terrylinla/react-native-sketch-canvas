@@ -185,6 +185,32 @@ class SketchCanvas extends React.Component {
         }
     }
 
+    setTouchRadius(radius, callback) {
+        const r = typeof radius === 'number' ? Math.round(radius * this._screenScale) : 0;
+
+        const nativeMethod = (callback) => {
+            if (Platform.OS === 'ios') {
+                //  need to implement native callback 
+                //SketchCanvasManager.setTouchRadius(this._handle, r, callback);
+            } else {
+                NativeModules.SketchCanvasModule.setTouchRadius(this._handle, r, callback);
+            }
+        };
+
+        if (callback) {
+            nativeMethod(callback);
+        }
+        else {
+            return new Promise((resolve, reject) => {
+                nativeMethod((err, success) => {
+                    if (err) reject(err);
+                    resolve(success);
+                });
+            });
+        }
+    }
+
+
   _loadPanResponder() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
