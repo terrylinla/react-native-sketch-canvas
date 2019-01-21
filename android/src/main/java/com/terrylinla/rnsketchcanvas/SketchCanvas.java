@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Map;
 
 class CanvasText {
     public String text;
@@ -452,7 +453,7 @@ public class SketchCanvas extends View {
         return mDrawingBitmap.getPixel(x, y);
     }
 
-    private SketchCanvasPoint getSketchCanvasPoint(x, y){
+    private SketchCanvasPoint getSketchCanvasPoint(int x, int y){
         return new SketchCanvasPoint(x, y, sampleColor(x, y));
     }
 
@@ -494,10 +495,10 @@ public class SketchCanvas extends View {
         return transparent;
     }
 
-    private Map getColorMapForTouch(int x, int y, int r){
-        int red, green, blue, alpha;
+    private WritableMap getColorMapForTouch(int x, int y, int r){
+        int red = 0, green = 0, blue = 0, alpha = 0;
         SketchCanvasPoint point;
-        Map m = Map();
+        WritableMap m = Arguments.createMap();
         ArrayList<SketchCanvasPoint> points = getTouchPoints(x, y, r);
 
         for (int i = 0; i < points.size(); i++){
@@ -513,11 +514,11 @@ public class SketchCanvas extends View {
         blue /= points.size();
         alpha /= points.size();
 
-        m.put("red", red);
-        m.put("green", green);
-        m.put("blue", blue);
-        m.put("alpha", alpha);
-        m.put("color", Color.argb(alpha, red, green, blue));
+        m.putInt("red", red);
+        m.putInt("green", green);
+        m.putInt("blue", blue);
+        m.putInt("alpha", alpha);
+        m.putInt("color", Color.argb(alpha, red, green, blue));
         return m;
     }
 

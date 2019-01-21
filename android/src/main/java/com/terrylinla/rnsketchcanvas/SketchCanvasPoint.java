@@ -12,6 +12,9 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
+
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -46,12 +49,12 @@ public class SketchCanvasPoint {
         return Color.alpha(color);
     }
 
-    public Map getColorMap() {
-        Map m = Map();
-        m.put("red", red());
-        m.put("green", green());
-        m.put("blue", blue());
-        m.put("alpha", alpha());
+    public WritableMap getColorMap() {
+        WritableMap m = Arguments.createMap();
+        m.putInt("red", red());
+        m.putInt("green", green());
+        m.putInt("blue", blue());
+        m.putInt("alpha", alpha());
         return m;
     }
 
@@ -59,8 +62,10 @@ public class SketchCanvasPoint {
         return color == Color.TRANSPARENT;
     }
 
-    public static float getHypot(SketchCanvasPoint a, SketchCanvasPoint b){
-        return Math.hypot(a.x - b.x, a.y - b.y);
+    public static double getHypot(SketchCanvasPoint a, SketchCanvasPoint b){
+        double dx = (double)(a.x - b.x);
+        double dy = (double)(a.y - b.y);
+        return Math.hypot(dx, dy);
     }
 
 }
