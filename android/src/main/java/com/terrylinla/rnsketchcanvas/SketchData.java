@@ -229,7 +229,7 @@ public class SketchData {
         mTouchPath.addCircle(x, y, radius, Path.Direction.CW);
 
         Region region1 = new Region();
-        region1.setPath(mTouchPath, new Region(Math.max(x - radius,0), Math.max(y - radius,0), Math.max(x + radius,0), Math.max(y + radius,0)));
+        region1.setPath(mTouchPath, new Region(Math.max(x - radius, 0), Math.max(y - radius, 0), Math.max(x + radius, 0), Math.max(y + radius, 0)));
         Region region2 = new Region();
         region2.setPath(path, boundingRegion);
 

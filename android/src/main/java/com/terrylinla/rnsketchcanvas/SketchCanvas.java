@@ -454,6 +454,9 @@ public class SketchCanvas extends View {
     }
 
     private SketchCanvasPoint getSketchCanvasPoint(int x, int y){
+        if(mDrawingBitmap.getWidth() < x || mDrawingBitmap.getHeight() < y){
+            return null;
+        }
         return new SketchCanvasPoint(x, y, sampleColor(x, y));
     }
 
@@ -465,12 +468,11 @@ public class SketchCanvas extends View {
         for (int i = -r; i <= r; i++){
             for (int j = -r; j <= r; j++){
                 point = getSketchCanvasPoint(x + i, y + j);
-                if((int)SketchCanvasPoint.getHypot(point, middle) <= r){
+                if(point != null && (int)SketchCanvasPoint.getHypot(point, middle) <= r){
                     range.add(point);
                 }
             }
         }
-
         return range;
     }
 
@@ -491,7 +493,6 @@ public class SketchCanvas extends View {
                 }
             }
         }
-
         return transparent;
     }
 
@@ -523,8 +524,21 @@ public class SketchCanvas extends View {
     }
 
     @TargetApi(19)
+    public boolean isPointOnTransparentPath(int x, int y){
+        boolean retVal = false;
+        for (int i = 0; i < mPaths.size(); i++){
+            SketchData mPath = mPaths.get(i);
+            if(mPath.strokeColor == Color.TRANSPARENT && mPath.isPointOnPath(x, y, getTouchRadius(mPath.strokeWidth), getRegion())) {
+                retVal = true;
+                break;
+            }
+        }
+        return retVal;
+    }
+
+    @TargetApi(19)
     public boolean isPointOnPath(int x, int y, int pathId){
-        if(getTouchTransparency(x, y, 0)) {
+        if(isPointOnTransparentPath(x, y)) {
             return false;
         }
         else {
@@ -539,14 +553,16 @@ public class SketchCanvas extends View {
         Region mRegion = getRegion();
         SketchData mPath;
         int r;
-        boolean isTransparent;
-        for (int i=0; i < mPaths.size(); i++) {
-            mPath = mPaths.get(i);
-            r = getTouchRadius(mPath.strokeWidth);
-            if(mPath.isPointOnPath(x, y, r, mRegion) && !getTouchTransparency(x, y, r)){
-                array.pushInt(mPath.id);
+        if(!isPointOnTransparentPath(x, y)){
+            for (int i=0; i < mPaths.size(); i++) {
+                mPath = mPaths.get(i);
+                r = getTouchRadius(mPath.strokeWidth);
+                if(mPath.isPointOnPath(x, y, r, mRegion)){
+                    array.pushInt(mPath.id);
+                }
             }
         }
+
         return array;
     }
 
