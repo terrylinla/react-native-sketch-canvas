@@ -618,7 +618,7 @@ export default class example extends Component {
                         touchEnabled={this.state.touchState}
                         touchableComponent={
                             <TouchableOpacity
-                                onPressIn={(evt) => {
+                                onPress={(evt) => {
                                     const { locationX, locationY } = evt.nativeEvent;
                                     const pathId = this.canvas.getPaths()[0].path.id;
                                     Promise.all([
@@ -630,23 +630,66 @@ export default class example extends Component {
                                         Alert.alert('TouchableSketchCanvas', message);
                                     });
                                 }}
-                                onLongPress={async () => {
-                                    await this.canvas.setTouchRadius(100);
-                                    Alert.alert('TouchRadius', 'The radius of the touch has been changed');
+                                onLongPress={(evt) => {
+                                    //await this.canvas.setTouchRadius(100);
+                                    //Alert.alert('TouchRadius', 'The radius of the touch has been changed');
+                                    const { locationX, locationY } = evt.nativeEvent;
+                                    this.canvas.isPointOnPath(locationX, locationY)
+                                        .then((paths) => {
+                                            if (paths.length > 0) {
+                                                const selectedPath = paths.pop();
+                                                //Alert.alert('Selection Change', `Path ${selectedPath} has been selected, change UI to signal user`);
+                                                
+                                                const replica = this.canvas.getPaths().find((p) => p.path.id === selectedPath);
+                                                const cb = this._restorePath;
+                                                this._restorePath = restorePath.bind(this, replica);
+
+                                                const selected = { ...replica };
+                                                selected.path.color = 'yellow';
+                                                
+                                                this.canvas.deletePath(selected.path.id);
+                                                this.canvas.addPath(selected);
+                                                cb && cb();
+
+                                                
+                                                
+                                                this.setState({ selectedPath });
+                                            }
+                                        });
+
+
+                                    function restorePath(path) {
+                                        if (this.state.selectedPath) {
+                                            this.canvas.deletePath(this.state.selectedPath);
+                                            path.path.id = Math.round(Math.random() * 1000000);
+                                            path.path.color = 'red';
+                                            this.canvas.addPath(path);
+
+                                            this.canvas.getPaths()
+                                                .splice(this.canvas.getPaths().findIndex((p) => p.path.id === path) + 1)
+                                                .forEach((p) => {
+                                                    this.canvas.deletePath(p.path.id);
+                                                    p.path.id = Math.round(Math.random() * 1000000);
+                                                    this.canvas.addPath(p);
+                                                });
+                                        }
+                                    }
+                                    
                                 }}
                             />
                         }
                         onStrokeEnd={() => this.setState({ touchState: 'touch' })}
                     />
-                    
-                    {
-                        this.state.touchState === 'touch' &&
-                        <Button title='Press to draw' onPress={() => this.setState({ touchState: 'draw', color: `rgba(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, 0.3)}` })} />
-                    }
-                    {
-                        this.state.touchState === 'touch' &&
-                        <Button title='Press to erase' onPress={() => this.setState({ touchState: 'draw', color: '#00000000' })} />
-                    }
+                    <Button
+                        disabled={this.state.touchState !== 'touch'}
+                        title='Press to draw'
+                        onPress={() => this.setState({ touchState: 'draw', color: 'red' })}
+                    />
+                    <Button
+                        disabled={this.state.touchState !== 'touch'}
+                        title='Press to erase'
+                        onPress={() => this.setState({ touchState: 'draw', color: '#00000000' })}
+                    />
                 </View>
             }
       </View>
