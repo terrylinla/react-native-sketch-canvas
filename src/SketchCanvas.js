@@ -36,6 +36,7 @@ class SketchCanvas extends React.Component {
     scale: PropTypes.number,
     rotation: PropTypes.number,
     startToDrawDelay: PropTypes.number,
+    requiredTouches: PropTypes.number,
 
     touchEnabled: PropTypes.bool,
 
@@ -70,6 +71,7 @@ class SketchCanvas extends React.Component {
     scale: 1,
     rotation: 0,
     startToDrawDelay: 0,
+    requiredTouches: null,
 
     touchEnabled: true,
 
@@ -212,14 +214,14 @@ class SketchCanvas extends React.Component {
   componentWillMount() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
-      onStartShouldSetPanResponder: (evt, gestureState) => true,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
-      onMoveShouldSetPanResponder: (evt, gestureState) => true,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onStartShouldSetPanResponder: (evt, gestureState) => !this.props.requiredTouches || gestureState.numberActiveTouches === this.props.requiredTouches,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => !this.props.requiredTouches || gestureState.numberActiveTouches === this.props.requiredTouches,
+      onMoveShouldSetPanResponder: (evt, gestureState) => !this.props.requiredTouches || gestureState.numberActiveTouches === this.props.requiredTouches,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !this.props.requiredTouches || gestureState.numberActiveTouches === this.props.requiredTouches,
 
       onPanResponderGrant: (evt, gestureState) => {
-        if (!this.props.touchEnabled) return
-        if (gestureState.numberActiveTouches > 1) return
+        if (!this.props.touchEnabled) return;
+        if (this.props.requiredTouches && gestureState.numberActiveTouches !== this.props.requiredTouches) return;
         
         const e = evt.nativeEvent
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
@@ -229,6 +231,7 @@ class SketchCanvas extends React.Component {
       },
       onPanResponderMove: (evt, gestureState) => {
         if (!this.props.touchEnabled) return;
+        if (this.props.requiredTouches && gestureState.numberActiveTouches !== this.props.requiredTouches) return;
         if (!this.validateDrawingState(evt, gestureState)) return;
         if (this._path) {
           const clockwiseRotationModifier = -1;
@@ -249,7 +252,8 @@ class SketchCanvas extends React.Component {
         }
       },
       onPanResponderRelease: (evt, gestureState) => {
-        if (!this.props.touchEnabled) return
+        if (!this.props.touchEnabled) return;
+        if (this.props.requiredTouches && gestureState.numberActiveTouches !== this.props.requiredTouches) return;
         if (!this.validateDrawingState(evt, gestureState)) return;
         if (this._path) {
           this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user })
