@@ -35,6 +35,7 @@ class SketchCanvas extends React.Component {
     user: PropTypes.string,
     scale: PropTypes.number,
     rotation: PropTypes.number,
+    startToDrawDelay: PropTypes.number,
 
     touchEnabled: PropTypes.bool,
 
@@ -68,6 +69,7 @@ class SketchCanvas extends React.Component {
     user: null,
     scale: 1,
     rotation: 0,
+    startToDrawDelay: 0,
 
     touchEnabled: true,
 
@@ -92,6 +94,8 @@ class SketchCanvas extends React.Component {
     this._offset = { x: 0, y: 0 }
     this._size = { width: 0, height: 0 }
     this._initialized = false
+    this.touchStartTime = 0;
+    this.isDrawing = false;
 
     this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null)
   }
@@ -156,6 +160,55 @@ class SketchCanvas extends React.Component {
     }
   }
 
+  validateDrawingState(evt, gestureState) {
+    if (this.props.startToDrawDelay === 0) {
+      if (!this.isDrawing) {
+        this.startDrawing(evt, gestureState);
+      }
+      return true;
+    }
+    if (this.isDrawing) {
+      return true;
+    }
+    if (this.touchStartTime + this.props.startToDrawDelay < new Date().getTime()) {
+      this.startDrawing(evt, gestureState);
+      return true;
+    }
+    return false;
+  }
+
+  startDrawing(evt, gestureState){
+    this.isDrawing = true;
+
+    this._path = {
+      id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
+      width: this.props.strokeWidth, data: []
+    }
+
+    const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)),
+          y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
+
+    UIManager.dispatchViewManagerCommand(
+      this._handle,
+      UIManager.RNSketchCanvas.Commands.newPath,
+      [
+        this._path.id,
+        processColor(this._path.color),
+        this._path.width * this._screenScale
+      ]
+    )
+    UIManager.dispatchViewManagerCommand(
+      this._handle,
+      UIManager.RNSketchCanvas.Commands.addPoint,
+      [
+        parseFloat(x * this._screenScale),
+        parseFloat(y * this._screenScale)
+      ]
+    )
+    this._path.data.push(`${x},${y}`)
+    this.props.onStrokeStart(x, y)
+  }
+
   componentWillMount() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
@@ -167,40 +220,17 @@ class SketchCanvas extends React.Component {
       onPanResponderGrant: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
         if (gestureState.numberActiveTouches > 1) return
+        
         const e = evt.nativeEvent
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
-        this._path = {
-          id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
-          width: this.props.strokeWidth, data: []
-        }
-
-        const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)),
-              y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
-
-        UIManager.dispatchViewManagerCommand(
-          this._handle,
-          UIManager.RNSketchCanvas.Commands.newPath,
-          [
-            this._path.id,
-            processColor(this._path.color),
-            this._path.width * this._screenScale
-          ]
-        )
-        UIManager.dispatchViewManagerCommand(
-          this._handle,
-          UIManager.RNSketchCanvas.Commands.addPoint,
-          [
-            parseFloat((x).toFixed(2) * this._screenScale),
-            parseFloat((y).toFixed(2) * this._screenScale)
-          ]
-        )
-        this._path.data.push(`${x},${y}`)
-        this.props.onStrokeStart(x, y)
+        
+        this.touchStartTime = new Date().getTime();
+        this.isDrawing = false;
       },
       onPanResponderMove: (evt, gestureState) => {
-        if (!this.props.touchEnabled) return
+        if (!this.props.touchEnabled) return;
+        if (!this.validateDrawingState(evt, gestureState)) return;
         if (this._path) {
-
           const clockwiseRotationModifier = -1;
           const rotationAsRadians = this.props.rotation * (Math.PI / 180) * clockwiseRotationModifier;
 
@@ -220,6 +250,7 @@ class SketchCanvas extends React.Component {
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
+        if (!this.validateDrawingState(evt, gestureState)) return;
         if (this._path) {
           this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user })
           this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
