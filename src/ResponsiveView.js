@@ -167,7 +167,10 @@ export default class ResponsiveView extends Component {
 
 	render() {
 		return (
-			<View style={styles.viewport} {...this.panGesture.panHandlers}>
+			<View
+				style={styles.viewport}
+				{...this.panGesture.panHandlers}
+			>
 				<Animated.View style={[this.props.initialStyle, this.dual.getLayout(), { transform: [{ scaleX: this.zoom }, { scaleY: this.zoom }] }]} ref='contentPane'>
 					{this.props.children}
 				</Animated.View>
