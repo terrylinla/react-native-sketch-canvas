@@ -40,6 +40,7 @@ export default class RNSketchCanvas extends React.Component {
     maxStrokeWidth: PropTypes.number,
     strokeWidthStep: PropTypes.number,
 
+    promptForExternalWritePermissions: PropTypes.bool,
     savePreference: PropTypes.func,
     onSketchSaved: PropTypes.func,
 
@@ -195,10 +196,12 @@ export default class RNSketchCanvas extends React.Component {
   }
 
   async componentDidMount() {
-    const isStoragePermissionAuthorized = await requestPermissions(
-      this.props.permissionDialogTitle,
-      this.props.permissionDialogMessage,
-    );
+    if (this.props.promptForExternalWritePermissions) {
+      const isStoragePermissionAuthorized = await requestPermissions(
+        this.props.permissionDialogTitle,
+        this.props.permissionDialogMessage,
+      );
+    }
   }
 
   render() {
