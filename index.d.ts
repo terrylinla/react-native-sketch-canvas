@@ -113,8 +113,8 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
     getBase64(imageType: ImageType, transparent: boolean, includeImage: boolean, includeText: boolean, cropToImageSize: boolean, callback: (error: any, result?: string) => void): void
 
     /**
-   * @param x Set to `evt.nativeEvent.locationX`
-   * @param y Set to `evt.nativeEvent.locationY`
+   * @param x Set it to `evt.nativeEvent.locationX`
+   * @param y Set it to `evt.nativeEvent.locationY`
    * @param pathId Set to the pathId or undefined
    * @param callback If omitted the method returns a Promise
    */
@@ -128,11 +128,49 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
   static CACHES: string
 }
 
-export class TouchableSketchCanvas extends SketchCanvas {
+export interface TouchableSketchCanvasProps extends SketchCanvasProps {
     touchEnabled?: TouchStates
     touchableComponent?: JSX.Element
     contentContainerStyle?: StyleProp<ViewStyle>
-    private forwardedRef?: (ref: any) => void
+}
+
+export class TouchableSketchCanvas extends React.Component<TouchableSketchCanvasProps & ViewProperties> {
+    clear(): void
+    undo(): number
+    addPath(data: Path): void
+    deletePath(id: number): void
+
+    /**
+     * @param imageType "png" or "jpg"
+     * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
+     * @param includeText Set to `true` to include the text drawn from `Text`.
+     * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
+     */
+    save(imageType: ImageType, transparent: boolean, folder: string, filename: string, includeImage: boolean, includeText: boolean, cropToImageSize: boolean): void
+    getPaths(): Path[]
+
+    /**
+     * @param imageType "png" or "jpg"
+     * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
+     * @param includeText Set to `true` to include the text drawn from `Text`.
+     * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
+     */
+    getBase64(imageType: ImageType, transparent: boolean, includeImage: boolean, includeText: boolean, cropToImageSize: boolean, callback: (error: any, result?: string) => void): void
+
+    /**
+   * @param x Set it to `evt.nativeEvent.locationX`
+   * @param y Set it to `evt.nativeEvent.locationY`
+   * @param pathId Set to the pathId or undefined
+   * @param callback If omitted the method returns a Promise
+   */
+    isPointOnPath(x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
+    isPointOnPath(x: number, y: number, callback: (error: any, result?: Array<number>) => void): void
+    isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
+    isPointOnPath(x: number, y: number): Promise<Array<number>>
+    static MAIN_BUNDLE: string
+    static DOCUMENT: string
+    static LIBRARY: string
+    static CACHES: string
 }
 
 export interface RNSketchCanvasProps {
