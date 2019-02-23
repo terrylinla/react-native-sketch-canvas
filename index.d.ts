@@ -67,7 +67,7 @@ export interface SketchCanvasPropsBase {
     strokeColor?: string
     strokeWidth?: number
     user?: string
-
+    paths?: Path[]
     text?: CanvasText[]
     localSourceImage?: LocalSourceImage
     //touchEnabled?: boolean

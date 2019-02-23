@@ -34,7 +34,19 @@ class SketchCanvas extends React.Component {
         onStrokeEnd: PropTypes.func,
         onSketchSaved: PropTypes.func,
         user: PropTypes.string,
-
+        paths: PropTypes.arrayOf(PropTypes.shape({
+            path: PropTypes.shape({
+                id: PropTypes.number,
+                color: PropTypes.string,
+                width: PropTypes.number,
+                data: PropTypes.arrayOf(PropTypes.string),
+            }),
+            size: PropTypes.shape({
+                width: PropTypes.number,
+                height: PropTypes.number
+            }),
+            drawer: PropTypes.string
+        })),
         touchEnabled: PropTypes.bool,
 
         text: PropTypes.arrayOf(PropTypes.shape({
@@ -66,7 +78,7 @@ class SketchCanvas extends React.Component {
         onStrokeEnd: () => { },
         onSketchSaved: () => { },
         user: null,
-
+        paths: [],
         touchEnabled: true,
 
         text: null,
@@ -82,7 +94,7 @@ class SketchCanvas extends React.Component {
 
     constructor(props) {
         super(props)
-        this._pathsToProcess = [];
+        this._pathsToProcess = props.paths;
         this._paths = []
         this._path = null
         this._handle = null
@@ -299,6 +311,7 @@ class SketchCanvas extends React.Component {
                 }}
                 {...this.panResponder.panHandlers}
                 onChange={(e) => {
+                    if (!this._initialized) return;
                     if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
                         this.props.onPathsChange(e.nativeEvent.pathsUpdate);
                     } else if (e.nativeEvent.hasOwnProperty('success') && e.nativeEvent.hasOwnProperty('path')) {
