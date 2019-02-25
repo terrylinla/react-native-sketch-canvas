@@ -444,7 +444,7 @@ public class SketchCanvas extends View {
     }
 
     private int getTouchRadius(float strokeWidth){
-        return mTouchRadius <= 0 && strokeWidth > 0? (int)(strokeWidth * 0.5): mTouchRadius;
+        return mTouchRadius <= 0 && strokeWidth > 0? (int)(strokeWidth): mTouchRadius;
     }
 
     public int sampleColor(int x, int y){
