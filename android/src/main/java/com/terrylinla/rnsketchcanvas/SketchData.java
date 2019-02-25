@@ -11,6 +11,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -233,9 +234,9 @@ public class SketchData {
         Region region2 = new Region();
         region2.setPath(path, boundingRegion);
 
-        Log.d("RNSketchCanvas", "isPointOnPath: r: " + r + ", left: " + Math.max(x - radius, 0)+ ", top: " + Math.max(y - radius, 0)+ ", right: " +Math.max(x + radius, 0)+ ", bottom: " + Math.max(y + radius, 0));
-
-        return !region1.quickReject(region2) && region1.op(region2, Region.Op.INTERSECT);
+        //Log.d("RNSketchCanvas", "isPointOnPath: r: " + r + ", left: " + Math.max(x - radius, 0)+ ", top: " + Math.max(y - radius, 0)+ ", right: " +Math.max(x + radius, 0)+ ", bottom: " + Math.max(y + radius, 0));
+        //return !region1.quickReject(region2) && region1.op(region2, Region.Op.INTERSECT);
+        return region1.op(region2, Region.Op.INTERSECT);
     }
 
 /*
