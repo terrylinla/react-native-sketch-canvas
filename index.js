@@ -15,7 +15,6 @@ class ResponsiveSketchCanvas extends React.Component {
 		activityIndicator: null,
 		strokeWidth: 7,
 		strokeColor: 'red',
-		contentStyle: { width: '100%', height: '100%'},
 
 		//RNSketchCanvas
 		style: null,
