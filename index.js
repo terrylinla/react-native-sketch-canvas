@@ -15,6 +15,7 @@ class ResponsiveSketchCanvas extends React.Component {
 		activityIndicator: null,
 		strokeWidth: 7,
 		strokeColor: 'red',
+		contentStyle: { width: '100%', height: '100%'},
 
 		//RNSketchCanvas
 		style: null,
@@ -70,16 +71,19 @@ class ResponsiveSketchCanvas extends React.Component {
 
 	constructor(props) {
 		super(props);
-		if(props.localSourceImage && props.localSourceImage.filename) {
+		if(props.contentStyle == null && props.localSourceImage && props.localSourceImage.filename) {
 			this.getBackgroundImageSize(props.localSourceImage.filename);
 		} else {
 			console.warn('did not try to get image ', props);
 		}
-		this.state = {};
+		this.state = {
+			contentStyle: props.contentStyle
+		};
 	}
 
 	componentWillReceiveProps(nextProps) {
-	  if(nextProps.localSourceImage !== this.props.localSourceImage
+		this.setState({ contentStyle: nextProps.contentStyle })
+	  if(nextProps.contentStyle == null && nextProps.localSourceImage !== this.props.localSourceImage
          && nextProps.localSourceImage.filename
           && (!this.props.localSourceImage || (nextProps.localSourceImage.filename !== this.props.localSourceImage.filename))
       ){
@@ -124,7 +128,7 @@ class ResponsiveSketchCanvas extends React.Component {
 					maxZoomScale={maxZoom}
 					minZoomScale={minZoom}
 					scrollEnabled={scrollEnabled}
-					initialStyle={this.state.initialStyle}
+					initialStyle={this.state.initialStyle ? this.state.initialStyle : this.state.contentStyle}
 					updateZoomLevel={this.updateZoomLevel.bind(this)}
 
 				>
