@@ -11,6 +11,7 @@ import ReactNative, {
 } from 'react-native';
 
 import SketchCanvas from './SketchCanvas';
+import ForwardRef from './ForwardRefHOC';
 
 const styles = StyleSheet.create({
     canvas: {
@@ -71,29 +72,22 @@ class TouchableSketchCanvas extends React.Component {
     constructor(props) {
         super(props);
 
-        this.refHandler = this.refHandler.bind(this);
-
         this.state = {
             touchEnabled: TouchableSketchCanvas.TOUCH_STATES.draw
         };
 
     }
 
-
-    refHandler(ref) {
-        this.sketchCanvasInstance = ref;
-        this.props.forwardedRef(ref);
-    }
-
     render() {
-        const { touchableComponent, contentContainerStyle } = this.props;
+        const { touchableComponent, contentContainerStyle, forwardedRef, ...props } = this.props;
 
         return (
             <View style={contentContainerStyle} pointerEvents='box-none'>
                 <SketchCanvas
-                    {...this.props}
-                    ref={this.refHandler}
-                    touchEnabled={TouchableSketchCanvas.getLegacyTouchState(this.state.touchEnabled)} />
+                    {...props}
+                    ref={forwardedRef}
+                    touchEnabled={TouchableSketchCanvas.getLegacyTouchState(this.state.touchEnabled)}
+                />
                 {this.state.touchEnabled === TouchableSketchCanvas.TOUCH_STATES.touch && touchableComponent &&
                     React.cloneElement(touchableComponent,
                     {
@@ -107,9 +101,4 @@ class TouchableSketchCanvas extends React.Component {
     }
 }
 
-function forwardRef(props, ref) {
-    return <TouchableSketchCanvas {...props} forwardedRef={ref} />;
-}
-forwardRef.displayName = `TouchableSketchCanvas`;
-
-export default React.forwardRef(forwardRef);
+export default ForwardRef(TouchableSketchCanvas);
