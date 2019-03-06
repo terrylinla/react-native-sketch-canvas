@@ -24,7 +24,7 @@
     UIBezierPath *_path;
 }
 
-- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
+- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(CGFloat) strokeWidth {
     self = [super init];
     if (self) {
         _pathId = pathId;
@@ -39,7 +39,7 @@
     return self;
 }
 
-- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points: (NSArray*) points {
+- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(CGFloat) strokeWidth points: (NSArray*) points {
     self = [super init];
     if (self) {
         _pathId = pathId;

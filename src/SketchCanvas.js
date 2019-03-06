@@ -119,12 +119,15 @@ class SketchCanvas extends React.Component {
   addPath(data) {
     if (this._initialized) {
       if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data)
+      const screenWidthAdjustment = (this._size.width / data.size.width) * this._screenScale;
+      const screenHeightAdjustment = (this._size.height / data.size.height) * this._screenScale;
+      const screenAverageAdjustment = (screenWidthAdjustment + screenHeightAdjustment) / 2.0;
       const pathData = data.path.data.map(p => {
         const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2))
-        return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
+        return `${coor[0] * screenWidthAdjustment},${coor[1] * screenHeightAdjustment}`;
       })
       UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPath, [
-        data.path.id, processColor(data.path.color), data.path.width * this._screenScale, pathData
+        data.path.id, processColor(data.path.color), data.path.width * screenAverageAdjustment, pathData
       ])
     } else {
       this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data)

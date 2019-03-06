@@ -220,7 +220,7 @@
     [self setNeedsDisplay];
 }
 
-- (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
+- (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(CGFloat) strokeWidth {
     _currentPath = [[RNSketchData alloc]
                     initWithId: pathId
                     strokeColor: strokeColor
@@ -228,7 +228,7 @@
     [_paths addObject: _currentPath];
 }
 
-- (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
+- (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(CGFloat) strokeWidth points:(NSArray*) points {
     bool exist = false;
     for(int i=0; i<_paths.count; i++) {
         if (((RNSketchData*)_paths[i]).pathId == pathId) {

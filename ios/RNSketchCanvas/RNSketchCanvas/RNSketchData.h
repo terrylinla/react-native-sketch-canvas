@@ -17,8 +17,8 @@
 @property (nonatomic, readonly) NSArray<NSValue*> *points;
 @property (nonatomic, readonly) BOOL isTranslucent;
 
-- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points: (NSArray*) points;
-- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth;
+- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(CGFloat) strokeWidth points: (NSArray*) points;
+- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(CGFloat) strokeWidth;
 
 - (CGRect)addPoint:(CGPoint) point;
 
