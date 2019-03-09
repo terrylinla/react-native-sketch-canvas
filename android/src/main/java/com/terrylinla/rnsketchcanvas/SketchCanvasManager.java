@@ -142,7 +142,9 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 return;
             }
             case COMMAND_DELETE_PATHS: {
-                view.deletePath(args.getInt(0));
+                for (int k = 0; k < args.size(); k++) {
+                    view.deletePath(args.getInt(k));
+                }
                 return;
             }
             case COMMAND_SAVE: {
