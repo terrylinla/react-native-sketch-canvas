@@ -19,5 +19,8 @@
     "draw"
   ],
   "nativePackage": true,
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "lodash.clone": "*"
+  }
 }
