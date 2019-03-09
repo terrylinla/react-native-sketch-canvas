@@ -13,7 +13,7 @@ import ReactNative, {
     processColor
 } from 'react-native';
 import { requestPermissions } from './handlePermissions';
-import cloneDeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
     nativeOnly: {
@@ -138,7 +138,6 @@ class SketchCanvas extends React.Component {
     }
 
     addPaths(paths) {
-        console.log(paths)
         if (this._initialized) {
             const parsedPaths = paths.map((data) => {
                 if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data);
@@ -152,9 +151,7 @@ class SketchCanvas extends React.Component {
                     })
                 };
             });
-
-            console.log(parsedPaths)
-
+            
             UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPaths, parsedPaths);
         }
         else {
@@ -181,7 +178,7 @@ class SketchCanvas extends React.Component {
     }
 
     getPaths() {
-        return cloneDeep(this._paths);
+        return this._paths;
     }
 
     getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback) {
