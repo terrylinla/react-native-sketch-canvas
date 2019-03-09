@@ -10,13 +10,16 @@
     "@terrylinla/react-native-sketch-canvas": "file:..",
     "react": "^16.6.3",
     "react-native": "^0.57.7",
-    "react-native-camera": "1.1.4"
+    "react-native-camera": "1.13.1"
   },
   "devDependencies": {
     "babel-jest": "23.4.0",
     "babel-preset-react-native": "5.0.0",
     "jest": "23.4.1",
-    "react-test-renderer": "16.4.1"
+    "react-test-renderer": "16.4.1",
+    "@babel/runtime": "7.3.4",
+    "@babel/core": "^7.3.4",
+    "prop-types": "^15.7.2"
   },
   "jest": {
     "preset": "react-native"

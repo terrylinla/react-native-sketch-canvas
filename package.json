@@ -20,7 +20,9 @@
   ],
   "nativePackage": true,
   "license": "MIT",
-  "dependencies": {
-    "lodash.clone": "*"
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "prop-types": "*"
   }
 }
