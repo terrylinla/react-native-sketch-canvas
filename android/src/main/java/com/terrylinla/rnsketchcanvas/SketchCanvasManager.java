@@ -41,6 +41,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     private static final String PROPS_LOCAL_SOURCE_IMAGE = "localSourceImage";
     private static final String PROPS_TEXT = "text";
+    private static final String PROPS_FILL_COLOR = "fillColor";
 
     @Override
     public String getName() {
@@ -67,6 +68,12 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     @ReactProp(name = PROPS_TEXT)
     public void setText(SketchCanvas viewContainer, ReadableArray text) {
         viewContainer.setCanvasText(text);
+    }
+
+    @ReactProp(name = PROPS_FILL_COLOR)
+    public void setFillColor(SketchCanvas viewContainer, int color) {
+        Log.d("canvasflow", "this is the color: " + color);
+        viewContainer.setFillColor(color);
     }
 
     @Override
