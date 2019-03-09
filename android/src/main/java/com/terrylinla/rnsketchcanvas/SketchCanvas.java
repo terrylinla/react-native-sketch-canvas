@@ -52,6 +52,7 @@ public class SketchCanvas extends View {
     private int mOriginalWidth, mOriginalHeight;
     private Bitmap mBackgroundImage;
     private String mContentMode;
+    private int fillColor = Color.YELLOW;
 
     private ArrayList<CanvasText> mArrCanvasText = new ArrayList<CanvasText>();
     private ArrayList<CanvasText> mArrTextOnSketch = new ArrayList<CanvasText>();
@@ -60,6 +61,17 @@ public class SketchCanvas extends View {
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
+    }
+
+    private void init(){
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(5);
+        mPaint.setAntiAlias(true);
+
+        // draw a rectangle
+        mPaint.setColor(fillColor);
+        mPaint.setStyle(Paint.Style.FILL); //fill the background with blue color
+        mDrawingCanvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
     }
 
     public boolean openImageFile(String filename, String directory, String mode) {
@@ -84,6 +96,10 @@ public class SketchCanvas extends View {
             }
         }
         return false;
+    }
+
+    public void setFillColor(int color){
+        fillColor = color;
     }
 
     public void setCanvasText(ReadableArray aText) {
@@ -341,6 +357,7 @@ public class SketchCanvas extends View {
             for(SketchData path: mPaths) {
                 path.draw(mDrawingCanvas);
             }
+            init();
             mNeedsFullRedraw = false;
         }
 
