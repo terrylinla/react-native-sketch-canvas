@@ -4,6 +4,7 @@ import {
   StyleProp,
   ViewStyle
 } from "react-native"
+import { static } from 'express';
 
 type ImageType = 'png' | 'jpg'
 
@@ -104,7 +105,9 @@ export function getSketchCanvas<Props>() {
         clear(): void
         undo(): number
         addPath(data: Path): void
+        addPaths(paths: Path[]): void
         deletePath(id: number): void
+        deletePaths(pathIds: number[]): void
 
         /**
          * @param imageType "png" or "jpg"
@@ -132,11 +135,12 @@ export function getSketchCanvas<Props>() {
         isPointOnPath(x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
         isPointOnPath(x: number, y: number, callback: (error: any, result?: Array<number>) => void): void
         isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
-        isPointOnPath(x: number, y: number): Promise<Array<number>>
+        isPointOnPath(x: number, y: number): Promise<number[]>
         static MAIN_BUNDLE: string
         static DOCUMENT: string
         static LIBRARY: string
         static CACHES: string
+        static generatePathId(): number
     }
 }
 
