@@ -13,7 +13,7 @@ import ReactNative, {
     processColor
 } from 'react-native';
 import { requestPermissions } from './handlePermissions';
-import clone from 'lodash/clone';
+import cloneDeep from 'lodash.clonedeep';
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
     nativeOnly: {
@@ -138,27 +138,30 @@ class SketchCanvas extends React.Component {
     }
 
     addPaths(paths) {
-        const parsedPaths = paths.map((data) => {
-            if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data);
-            return {
-                id: data.path.id,
-                color: processColor(data.path.color),
-                strokeWidth: data.path.width * this._screenScale,
-                coords: data.path.data.map(p => {
-                    const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2));
-                    return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
-                })
-            };
-        });
-
+        console.log(paths)
         if (this._initialized) {
+            const parsedPaths = paths.map((data) => {
+                if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data);
+                return {
+                    id: data.path.id,
+                    color: processColor(data.path.color),
+                    strokeWidth: data.path.width * this._screenScale,
+                    coords: data.path.data.map(p => {
+                        const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2));
+                        return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
+                    })
+                };
+            });
+
+            console.log(parsedPaths)
+
             UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPaths, parsedPaths);
         }
         else {
-            parsedPaths.map((data) => this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data));
+            paths.map((data) => this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data));
         }
-
     }
+
 
     addPath(data) {
         return this.addPaths([data]);
@@ -178,7 +181,7 @@ class SketchCanvas extends React.Component {
     }
 
     getPaths() {
-        return clone(this._paths);
+        return cloneDeep(this._paths);
     }
 
     getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback) {
