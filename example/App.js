@@ -665,13 +665,15 @@ export default class example extends Component {
                                             path.path.color = 'red';
                                             this.canvas.addPath(path);
 
-                                            this.canvas.getPaths()
+                                            const paths = this.canvas.getPaths()
                                                 .splice(this.canvas.getPaths().findIndex((p) => p.path.id === path) + 1)
-                                                .forEach((p) => {
+                                                .map((p) => {
                                                     this.canvas.deletePath(p.path.id);
                                                     p.path.id = Math.round(Math.random() * 1000000);
-                                                    this.canvas.addPath(p);
+                                                    //this.canvas.addPath(p);
+                                                    return p;
                                                 });
+                                            this.canvas.addPaths(paths);
                                         }
                                     }
                                     

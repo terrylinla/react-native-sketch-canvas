@@ -1,7 +1,7 @@
 'use strict';
 
-import React from 'react'
-import PropTypes from 'prop-types'
+import React from 'react';
+import PropTypes from 'prop-types';
 import ReactNative, {
     requireNativeComponent,
     NativeModules,
@@ -11,8 +11,9 @@ import ReactNative, {
     Platform,
     ViewPropTypes,
     processColor
-} from 'react-native'
+} from 'react-native';
 import { requestPermissions } from './handlePermissions';
+import clone from 'lodash/clone';
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
     nativeOnly: {
@@ -156,30 +157,20 @@ class SketchCanvas extends React.Component {
         else {
             parsedPaths.map((data) => this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data));
         }
-        
+
     }
 
     addPath(data) {
         return this.addPaths([data]);
+    }
 
-
-        if (this._initialized) {
-            if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data)
-            const pathData = data.path.data.map(p => {
-                const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2))
-                return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
-            })
-            UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPath, [
-                data.path.id, processColor(data.path.color), data.path.width * this._screenScale, pathData
-            ])
-        } else {
-            this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data)
-        }
+    deletePaths(pathIds) {
+        this._paths = this._paths.filter(p => pathIds.findIndex(id => p.path.id === id) === -1);
+        UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deletePath, pathIds);
     }
 
     deletePath(id) {
-        this._paths = this._paths.filter(p => p.path.id !== id)
-        UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deletePath, [id])
+        this.deletePaths([id]);
     }
 
     save(imageType, transparent, folder, filename, includeImage, includeText, cropToImageSize) {
@@ -187,7 +178,7 @@ class SketchCanvas extends React.Component {
     }
 
     getPaths() {
-        return this._paths
+        return clone(this._paths);
     }
 
     getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback) {

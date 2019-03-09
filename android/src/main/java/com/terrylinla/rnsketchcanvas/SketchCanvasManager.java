@@ -32,11 +32,11 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_ADD_POINT = 1;
     public static final int COMMAND_NEW_PATH = 2;
     public static final int COMMAND_CLEAR = 3;
-    public static final int COMMAND_ADD_PATH = 4;
-    public static final int COMMAND_DELETE_PATH = 5;
+    public static final int COMMAND_ADD_PATHS = 4;
+    public static final int COMMAND_DELETE_PATHS = 5;
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
-    public static final int COMMAND_ADD_PATHS = 8;
+    public static final int COMMAND_ADD_PATH = 8;
 
     public static SketchCanvas Canvas = null;
 
@@ -58,9 +58,9 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public void setLocalSourceImage(SketchCanvas viewContainer, ReadableMap localSourceImage) {
         if (localSourceImage != null && localSourceImage.getString("filename") != null) {
             viewContainer.openImageFile(
-                localSourceImage.hasKey("filename") ? localSourceImage.getString("filename") : null,
-                localSourceImage.hasKey("directory") ? localSourceImage.getString("directory") : "",
-                localSourceImage.hasKey("mode") ? localSourceImage.getString("mode") : ""
+                    localSourceImage.hasKey("filename") ? localSourceImage.getString("filename") : null,
+                    localSourceImage.hasKey("directory") ? localSourceImage.getString("directory") : "",
+                    localSourceImage.hasKey("mode") ? localSourceImage.getString("mode") : ""
             );
         }
     }
@@ -77,11 +77,12 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("addPoint", COMMAND_ADD_POINT);
         map.put("newPath", COMMAND_NEW_PATH);
         map.put("clear", COMMAND_CLEAR);
+        map.put("addPaths", COMMAND_ADD_PATHS);
         map.put("addPath", COMMAND_ADD_PATH);
-        map.put("deletePath", COMMAND_DELETE_PATH);
+        map.put("deletePath", COMMAND_DELETE_PATHS);
         map.put("save", COMMAND_SAVE);
         map.put("endPath", COMMAND_END_PATH);
-        map.put("addPaths", COMMAND_ADD_PATHS);
+
 
         return map;
     }
@@ -107,8 +108,6 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 return;
             }
             case COMMAND_ADD_PATH: {
-                ReadableArray paths = args.getArray(0);
-
                 ReadableArray path = args.getArray(3);
                 ArrayList<PointF> pointPath = new ArrayList<PointF>(path.size());
                 for (int i=0; i<path.size(); i++) {
@@ -119,15 +118,15 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 return;
             }
             case COMMAND_ADD_PATHS: {
-                ArrayList paths = args.getArray(0).toArrayList();
+                Log.d("RNSketchCanvas", "COMMAND_ADD_PATHS: " + args.toString());
                 int id, color;
                 float strokeWidth;
                 ArrayList<PointF> pointPath;
                 ReadableMap path;
                 ReadableArray coords;
 
-                for (int k = 0; k < paths.size(); k++){
-                    path = (ReadableMap)paths.get(k);
+                for (int k = 0; k < args.size(); k++){
+                    path = args.getMap(k);
                     id = path.getInt("id");
                     color = path.getInt("color");
                     strokeWidth = (float)path.getDouble("strokeWidth");
@@ -142,7 +141,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
                 return;
             }
-            case COMMAND_DELETE_PATH: {
+            case COMMAND_DELETE_PATHS: {
                 view.deletePath(args.getInt(0));
                 return;
             }
