@@ -36,6 +36,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_DELETE_PATH = 5;
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
+    public static final int COMMAND_ADD_PATHS = 8;
 
     public static SketchCanvas Canvas = null;
 
@@ -80,6 +81,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("deletePath", COMMAND_DELETE_PATH);
         map.put("save", COMMAND_SAVE);
         map.put("endPath", COMMAND_END_PATH);
+        map.put("addPaths", COMMAND_ADD_PATHS);
 
         return map;
     }
@@ -105,6 +107,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 return;
             }
             case COMMAND_ADD_PATH: {
+                ReadableArray paths = args.getArray(0);
+
                 ReadableArray path = args.getArray(3);
                 ArrayList<PointF> pointPath = new ArrayList<PointF>(path.size());
                 for (int i=0; i<path.size(); i++) {
@@ -112,6 +116,30 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                     pointPath.add(new PointF(Float.parseFloat(coor[0]), Float.parseFloat(coor[1])));
                 }
                 view.addPath(args.getInt(0), args.getInt(1), (float)args.getDouble(2), pointPath);
+                return;
+            }
+            case COMMAND_ADD_PATHS: {
+                ArrayList paths = args.getArray(0).toArrayList();
+                int id, color;
+                float strokeWidth;
+                ArrayList<PointF> pointPath;
+                ReadableMap path;
+                ReadableArray coords;
+
+                for (int k = 0; k < paths.size(); k++){
+                    path = (ReadableMap)paths.get(k);
+                    id = path.getInt("id");
+                    color = path.getInt("color");
+                    strokeWidth = (float)path.getDouble("strokeWidth");
+                    coords = path.getArray("coords");
+                    pointPath = new ArrayList<PointF>(coords.size());
+                    for (int i=0; i<coords.size(); i++) {
+                        String[] coor = coords.getString(i).split(",");
+                        pointPath.add(new PointF(Float.parseFloat(coor[0]), Float.parseFloat(coor[1])));
+                    }
+                    view.addPath(id, color, strokeWidth, pointPath);
+                }
+
                 return;
             }
             case COMMAND_DELETE_PATH: {

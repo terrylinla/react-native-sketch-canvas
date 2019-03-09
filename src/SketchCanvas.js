@@ -136,7 +136,33 @@ class SketchCanvas extends React.Component {
         return lastId
     }
 
+    addPaths(paths) {
+        const parsedPaths = paths.map((data) => {
+            if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data);
+            return {
+                id: data.path.id,
+                color: processColor(data.path.color),
+                strokeWidth: data.path.width * this._screenScale,
+                coords: data.path.data.map(p => {
+                    const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2));
+                    return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
+                })
+            };
+        });
+
+        if (this._initialized) {
+            UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPaths, parsedPaths);
+        }
+        else {
+            parsedPaths.map((data) => this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data));
+        }
+        
+    }
+
     addPath(data) {
+        return this.addPaths([data]);
+
+
         if (this._initialized) {
             if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data)
             const pathData = data.path.data.map(p => {
