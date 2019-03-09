@@ -636,6 +636,8 @@ export default class example extends Component {
                                     const { locationX, locationY } = evt.nativeEvent;
                                     this.canvas.isPointOnPath(locationX, locationY)
                                         .then((paths) => {
+                                            console.log(paths);
+                                            
                                             if (paths.length > 0) {
                                                 const selectedPath = paths.pop();
                                                 //Alert.alert('Selection Change', `Path ${selectedPath} has been selected, change UI to signal user`);
@@ -650,9 +652,6 @@ export default class example extends Component {
                                                 this.canvas.deletePath(selected.path.id);
                                                 this.canvas.addPath(selected);
                                                 cb && cb();
-
-                                                
-                                                
                                                 this.setState({ selectedPath });
                                             }
                                         });
@@ -660,19 +659,18 @@ export default class example extends Component {
 
                                     function restorePath(path) {
                                         if (this.state.selectedPath) {
-                                            this.canvas.deletePath(this.state.selectedPath);
                                             path.path.id = Math.round(Math.random() * 1000000);
                                             path.path.color = 'red';
-                                            this.canvas.addPath(path);
 
                                             const paths = this.canvas.getPaths()
                                                 .splice(this.canvas.getPaths().findIndex((p) => p.path.id === path) + 1)
                                                 .map((p) => {
-                                                    this.canvas.deletePath(p.path.id);
+                                                    //
                                                     p.path.id = Math.round(Math.random() * 1000000);
-                                                    //this.canvas.addPath(p);
                                                     return p;
                                                 });
+                                            paths.push(path);
+                                            this.canvas.deletePaths([...paths.map(p => p.path.id), this.state.selectedPath]);
                                             this.canvas.addPaths(paths);
                                         }
                                     }

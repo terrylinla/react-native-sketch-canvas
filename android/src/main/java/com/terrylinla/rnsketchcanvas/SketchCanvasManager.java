@@ -36,7 +36,6 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_DELETE_PATHS = 5;
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
-    public static final int COMMAND_ADD_PATH = 8;
 
     public static SketchCanvas Canvas = null;
 
@@ -78,8 +77,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("newPath", COMMAND_NEW_PATH);
         map.put("clear", COMMAND_CLEAR);
         map.put("addPaths", COMMAND_ADD_PATHS);
-        map.put("addPath", COMMAND_ADD_PATH);
-        map.put("deletePath", COMMAND_DELETE_PATHS);
+        map.put("deletePaths", COMMAND_DELETE_PATHS);
         map.put("save", COMMAND_SAVE);
         map.put("endPath", COMMAND_END_PATH);
 
@@ -90,6 +88,16 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     @Override
     protected void addEventEmitters(ThemedReactContext reactContext, SketchCanvas view) {
 
+    }
+
+    public static ArrayList<PointF> parsePathCoords(ReadableArray coords){
+        ArrayList<PointF> pointPath;
+        pointPath = new ArrayList<PointF>(coords.size());
+        for (int i=0; i<coords.size(); i++) {
+            String[] coor = coords.getString(i).split(",");
+            pointPath.add(new PointF(Float.parseFloat(coor[0]), Float.parseFloat(coor[1])));
+        }
+        return pointPath;
     }
 
     @Override
@@ -107,38 +115,12 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 view.clear();
                 return;
             }
-            case COMMAND_ADD_PATH: {
-                ReadableArray path = args.getArray(3);
-                ArrayList<PointF> pointPath = new ArrayList<PointF>(path.size());
-                for (int i=0; i<path.size(); i++) {
-                    String[] coor = path.getString(i).split(",");
-                    pointPath.add(new PointF(Float.parseFloat(coor[0]), Float.parseFloat(coor[1])));
-                }
-                view.addPath(args.getInt(0), args.getInt(1), (float)args.getDouble(2), pointPath);
-                return;
-            }
+
             case COMMAND_ADD_PATHS: {
-                Log.d("RNSketchCanvas", "COMMAND_ADD_PATHS: " + args.toString());
-                int id, color;
-                float strokeWidth;
-                ArrayList<PointF> pointPath;
-                ReadableMap path;
-                ReadableArray coords;
-
                 for (int k = 0; k < args.size(); k++){
-                    path = args.getMap(k);
-                    id = path.getInt("id");
-                    color = path.getInt("color");
-                    strokeWidth = (float)path.getDouble("strokeWidth");
-                    coords = path.getArray("coords");
-                    pointPath = new ArrayList<PointF>(coords.size());
-                    for (int i=0; i<coords.size(); i++) {
-                        String[] coor = coords.getString(i).split(",");
-                        pointPath.add(new PointF(Float.parseFloat(coor[0]), Float.parseFloat(coor[1])));
-                    }
-                    view.addPath(id, color, strokeWidth, pointPath);
+                    ReadableArray path = args.getArray(k);
+                    view.addPath(path.getInt(0), path.getInt(1), (float)path.getInt(2), SketchCanvasManager.parsePathCoords(path.getArray(3)));
                 }
-
                 return;
             }
             case COMMAND_DELETE_PATHS: {
