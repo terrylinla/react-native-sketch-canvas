@@ -89,6 +89,10 @@ class SketchCanvas extends React.Component {
         permissionDialogMessage: '',
     };
 
+    static generatePathId() {
+        return Math.round(Math.random() * 100000000);
+    }
+
     state = {
         text: null
     }
@@ -280,7 +284,8 @@ class SketchCanvas extends React.Component {
                 const e = evt.nativeEvent
                 this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
                 this._path = {
-                    id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
+                    id: SketchCanvas.generatePathId(),
+                    color: this.props.strokeColor,
                     width: this.props.strokeWidth, data: []
                 }
                 const x = parseFloat((evt.nativeEvent.locationX).toFixed(2)), y = parseFloat((evt.nativeEvent.locationY).toFixed(2));
