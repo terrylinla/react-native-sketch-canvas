@@ -28,7 +28,10 @@ import { ScratchCard } from "@thalesness/react-native-canvas-scratch-card";
 
 export default class example extends Component {
   render() {
-    return <ScratchCard strokeWidth={40} fillColor={"#FF0000"} />;
+    return <ScratchCard strokeWidth={40} fillColor={"#FF0000"} bgImage={{
+         filename: “bulb.png”,
+         directory: “”
+       }} />;
   }
 }
 
