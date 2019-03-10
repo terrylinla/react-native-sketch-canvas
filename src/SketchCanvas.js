@@ -26,8 +26,8 @@ class SketchCanvas extends React.Component {
   static propTypes = {
     style: ViewPropTypes.style,
     strokeColor: PropTypes.string,
+    fillColor: PropTypes.string,
     strokeWidth: PropTypes.number,
-    fillColor: PropTypes.number,
     onPathsChange: PropTypes.func,
     onStrokeStart: PropTypes.func,
     onStrokeChanged: PropTypes.func,

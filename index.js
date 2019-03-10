@@ -22,7 +22,6 @@ export default class RNSketchCanvas extends React.Component {
     onClearPressed: PropTypes.func,
     onPathsChange: PropTypes.func,
     user: PropTypes.string,
-    fillColor: PropTypes.string,
 
     closeComponent: PropTypes.node,
     eraseComponent: PropTypes.node,
