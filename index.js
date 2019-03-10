@@ -8,6 +8,7 @@ import ReactNative, {
   ViewPropTypes
 } from "react-native";
 import SketchCanvas from "./src/SketchCanvas";
+import ScratchCard from "./src/ScratchCard";
 import { requestPermissions } from "./src/handlePermissions";
 
 export default class RNSketchCanvas extends React.Component {
@@ -22,6 +23,7 @@ export default class RNSketchCanvas extends React.Component {
     onClearPressed: PropTypes.func,
     onPathsChange: PropTypes.func,
     user: PropTypes.string,
+    fillColor: PropTypes.string,
 
     closeComponent: PropTypes.node,
     eraseComponent: PropTypes.node,
@@ -376,4 +378,4 @@ RNSketchCanvas.DOCUMENT = SketchCanvas.DOCUMENT;
 RNSketchCanvas.LIBRARY = SketchCanvas.LIBRARY;
 RNSketchCanvas.CACHES = SketchCanvas.CACHES;
 
-export { SketchCanvas };
+export { SketchCanvas, ScratchCard };
