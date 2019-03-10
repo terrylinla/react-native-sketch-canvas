@@ -1,20 +1,6 @@
-# react-native-canvas-card-scratch
+# react-native-canvas-scratch-card
 
-A React Native component for drawing by touching on both iOS and Android.
-
-## Features
-
-- Support Android
-- Stroke thickness and color are changable while drawing.
-- Can undo strokes one by one.
-- Can serialize path data to JSON. So it can sync other devices or someone else and continue to edit.
-- Save drawing to a non-transparent image (png or jpg) or a transparent image (png only)
-- Use vector concept. So sketches won't be cropped in different sizes of canvas.
-- Support translucent colors and eraser.
-- Support drawing on an image (Thanks to diego-caceres-galvan)
-- High performance (See [below](#Performance). Thanks to jeanregisser)
-- Can draw multiple canvases in the same screen.
-- Can draw multiple multiline text on canvas.
+A React Native component for scratch card on Android.
 
 ## Installation
 
@@ -23,51 +9,35 @@ A React Native component for drawing by touching on both iOS and Android.
 Install from `npm` (only support RN >= 0.40)
 
 ```bash
-npm install @terrylinla/react-native-sketch-canvas --save
+npm install @thalesness/react-native-canvas-scratch-card --save
 ```
 
 Link native code
 
 ```bash
-react-native link @terrylinla/react-native-sketch-canvas
+react-native link @thalesness/react-native-canvas-scratch-card
 ```
 
 ## Usage
 
----
-
-### ● Using without UI component (for customizing UI)
-
 ```javascript
 import React, { Component } from "react";
-import { AppRegistry, StyleSheet, View } from "react-native";
+import { AppRegistry, View } from "react-native";
 
-import { SketchCanvas } from "@terrylinla/react-native-sketch-canvas";
+import { ScratchCard } from "@thalesness/react-native-canvas-scratch-card";
 
 export default class example extends Component {
   render() {
     return (
-      <View style={styles.container}>
-        <View style={{ flex: 1, flexDirection: "row" }}>
-          <SketchCanvas
-            style={{ flex: 1 }}
-            strokeColor={"red"}
-            strokeWidth={7}
-          />
-        </View>
-      </View>
+      <ScratchCard
+        style={{ flex: 1 }}
+        strokeColor={"#000000"}
+        strokeWidth={7}
+        fillColor={"#FF0000"}
+      />
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5FCFF"
-  }
-});
 
 AppRegistry.registerComponent("example", () => example);
 ```
