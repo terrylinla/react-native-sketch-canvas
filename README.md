@@ -1,4 +1,4 @@
-# react-native-sketch-canvas
+# react-native-canvas-card-scratch
 
 A React Native component for drawing by touching on both iOS and Android.
 
