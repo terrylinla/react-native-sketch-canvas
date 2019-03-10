@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/thalesgaldino/react-native-canvas-scratch-card"
   },
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "react-native-canvas-scratch-card allows you to scratch to reveal the image background",
   "author": "Terry Lin",
   "main": "index.js",
