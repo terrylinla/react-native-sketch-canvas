@@ -1,11 +1,11 @@
 {
-  "name": "@terrylinla/react-native-sketch-canvas",
+  "name": "@thalesness/react-native-canvas-scratch-card",
   "repository": {
     "type": "git",
-    "url": "https://github.com/terrylinla/react-native-sketch-canvas"
+    "url": "https://github.com/thalesgaldino/react-native-canvas-scratch-card"
   },
-  "version": "0.8.0",
-  "description": "react-native-sketch-canvas allows you to draw / sketch on both iOS and Android devices and sync the drawing data between users. Of course you can save as image.",
+  "version": "0.0.1",
+  "description": "react-native-canvas-scratch-card allows you to scratch to reveal the image background",
   "author": "Terry Lin",
   "main": "index.js",
   "keywords": [
@@ -16,7 +16,8 @@
     "native",
     "sketch",
     "svg",
-    "draw"
+    "draw",
+    "scratchcard"
   ],
   "nativePackage": true,
   "license": "MIT"
