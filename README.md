@@ -28,14 +28,7 @@ import { ScratchCard } from "@thalesness/react-native-canvas-scratch-card";
 
 export default class example extends Component {
   render() {
-    return (
-      <ScratchCard
-        style={{ flex: 1 }}
-        strokeColor={"#000000"}
-        strokeWidth={7}
-        fillColor={"#FF0000"}
-      />
-    );
+    return <ScratchCard strokeWidth={40} fillColor={"#FF0000"} />;
   }
 }
 

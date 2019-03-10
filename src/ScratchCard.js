@@ -7,7 +7,6 @@ type Props = {};
 export default class ScratchCard extends Component<Props> {
   static propTypes = {
     style: ViewPropTypes.style,
-    strokeColor: PropTypes.string,
     fillColor: PropTypes.string,
     strokeWidth: PropTypes.number,
     bgImage: PropTypes.shape({
@@ -24,7 +23,7 @@ export default class ScratchCard extends Component<Props> {
           <SketchCanvas
             localSourceImage={this.props.bgImage}
             style={{ flex: 1 }}
-            strokeColor={this.props.strokeColor}
+            strokeColor={"#00000000"}
             fillColor={this.props.fillColor}
             strokeWidth={this.props.strokeWidth}
           />
