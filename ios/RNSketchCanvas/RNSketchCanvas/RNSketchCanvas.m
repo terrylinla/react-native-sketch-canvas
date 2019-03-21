@@ -21,7 +21,7 @@
     UIImage *_backgroundImage;
     UIImage *_backgroundImageScaled;
     NSString *_backgroundImageContentMode;
-    
+
     NSArray *_arrTextOnSketch, *_arrSketchOnText;
 }
 
@@ -56,7 +56,7 @@
     if (!_frozenImage) {
         _frozenImage = CGBitmapContextCreateImage(_drawingContext);
     }
-    
+
     if (!_translucentFrozenImage && _currentPath.isTranslucent) {
         _translucentFrozenImage = CGBitmapContextCreateImage(_translucentDrawingContext);
     }
@@ -72,7 +72,7 @@
     for (CanvasText *text in _arrSketchOnText) {
         [text.text drawInRect: text.drawRect withAttributes: text.attribute];
     }
-    
+
     if (_frozenImage) {
         CGContextDrawImage(context, bounds, _frozenImage);
     }
@@ -80,7 +80,7 @@
     if (_translucentFrozenImage && _currentPath.isTranslucent) {
         CGContextDrawImage(context, bounds, _translucentFrozenImage);
     }
-    
+
     for (CanvasText *text in _arrTextOnSketch) {
         [text.text drawInRect: text.drawRect withAttributes: text.attribute];
     }
@@ -96,7 +96,7 @@
         [self createDrawingContext];
         _needsFullRedraw = YES;
         _backgroundImageScaled = nil;
-        
+
         for (CanvasText *text in [_arrTextOnSketch arrayByAddingObjectsFromArray: _arrSketchOnText]) {
             CGPoint position = text.position;
             if (!text.isAbsoluteCoordinate) {
@@ -107,7 +107,7 @@
             position.y -= text.drawRect.size.height * text.anchor.y;
             text.drawRect = CGRectMake(position.x, position.y, text.drawRect.size.width, text.drawRect.size.height);
         }
-        
+
         [self setNeedsDisplay];
     }
 }
@@ -164,7 +164,7 @@
                                  @"Center": [NSNumber numberWithInteger:NSTextAlignmentCenter],
                                  @"Right": [NSNumber numberWithInteger:NSTextAlignmentRight]
                                  };
-    
+
     for (NSDictionary *property in aText) {
         if (property[@"text"]) {
             NSMutableArray *arr = [@"TextOnSketch" isEqualToString: property[@"overlay"]] ? arrTextOnSketch : arrSketchOnText;
@@ -203,7 +203,7 @@
                                };
             text.isAbsoluteCoordinate = ![@"Ratio" isEqualToString:property[@"coordinate"]];
             CGSize textSize = [text.text sizeWithAttributes:text.attribute];
-            
+
             CGPoint position = text.position;
             if (!text.isAbsoluteCoordinate) {
                 position.x *= self.bounds.size.width;
@@ -236,7 +236,7 @@
             break;
         }
     }
-    
+
     if (!exist) {
         RNSketchData *data = [[RNSketchData alloc] initWithId: pathId
                                                   strokeColor: strokeColor
@@ -246,7 +246,6 @@
         [data drawInContext:_drawingContext];
         [self setFrozenImageNeedsUpdate];
         [self setNeedsDisplay];
-        [self notifyPathsUpdate];
     }
 }
 
@@ -258,7 +257,7 @@
             break;
         }
     }
-    
+
     if (index > -1) {
         [_paths removeObjectAtIndex: index];
         _needsFullRedraw = YES;
@@ -287,6 +286,7 @@
         [_currentPath drawInContext:_drawingContext];
     }
     _currentPath = nil;
+    [self notifyPathsUpdate];
 }
 
 - (void) clear {
@@ -310,25 +310,25 @@
         if (includeImage) {
             [_backgroundImage drawInRect:rect];
         }
-        
+
         if (includeText) {
             for (CanvasText *text in _arrSketchOnText) {
                 [text.text drawInRect: text.drawRect withAttributes: text.attribute];
             }
         }
-        
+
         CGContextDrawImage(context, targetRect, _frozenImage);
         CGContextDrawImage(context, targetRect, _translucentFrozenImage);
-        
+
         if (includeText) {
             for (CanvasText *text in _arrTextOnSketch) {
                 [text.text drawInRect: text.drawRect withAttributes: text.attribute];
             }
         }
-        
+
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
-        
+
         return img;
     } else {
         CGRect rect = self.bounds;
@@ -342,32 +342,32 @@
             CGRect targetRect = [Utility fillImageWithSize:_backgroundImage.size toSize:rect.size contentMode:_backgroundImageContentMode];
             [_backgroundImage drawInRect:targetRect];
         }
-        
+
         if (includeText) {
             for (CanvasText *text in _arrSketchOnText) {
                 [text.text drawInRect: text.drawRect withAttributes: text.attribute];
             }
         }
-        
+
         CGContextDrawImage(context, rect, _frozenImage);
         CGContextDrawImage(context, rect, _translucentFrozenImage);
-        
+
         if (includeText) {
             for (CanvasText *text in _arrTextOnSketch) {
                 [text.text drawInRect: text.drawRect withAttributes: text.attribute];
             }
         }
-        
+
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
-        
+
         return img;
     }
 }
 
 - (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize {
     UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage includeText:(BOOL)includeText cropToImageSize:cropToImageSize];
-    
+
     if (folder != nil && filename != nil) {
         NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];
         NSError * error = nil;
@@ -404,14 +404,14 @@
 
     CGRect targetRect = [Utility fillImageWithSize:originalImage.size toSize:size contentMode:mode];
     CGContextDrawImage(context, targetRect, originalImage.CGImage);
-    
+
     CGImageRef scaledImage = CGBitmapContextCreateImage(context);
     CGColorSpaceRelease(colorSpace);
     CGContextRelease(context);
-    
+
     UIImage *image = [UIImage imageWithCGImage:scaledImage];
     CGImageRelease(scaledImage);
-    
+
     return image;
 }
 
