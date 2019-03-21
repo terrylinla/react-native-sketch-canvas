@@ -246,6 +246,7 @@
         [data drawInContext:_drawingContext];
         [self setFrozenImageNeedsUpdate];
         [self setNeedsDisplay];
+        [self notifyPathsUpdate];
     }
 }
 
