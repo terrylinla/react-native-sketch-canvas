@@ -162,10 +162,10 @@ class SketchCanvas extends React.Component {
   componentWillMount() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
-      onStartShouldSetPanResponder: (evt, gestureState) => !this.props.requiredTouches || gestureState.numberActiveTouches === this.props.requiredTouches,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => !this.props.requiredTouches || gestureState.numberActiveTouches === this.props.requiredTouches,
-      onMoveShouldSetPanResponder: (evt, gestureState) => !this.props.requiredTouches || gestureState.numberActiveTouches === this.props.requiredTouches,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !this.props.requiredTouches || gestureState.numberActiveTouches === this.props.requiredTouches,
+      onStartShouldSetPanResponder: (evt, gestureState) => this.props.touchEnabled && gestureState.numberActiveTouches === this.props.requiredTouches,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => this.props.touchEnabled && gestureState.numberActiveTouches === this.props.requiredTouches,
+      onMoveShouldSetPanResponder: (evt, gestureState) => this.props.touchEnabled && gestureState.numberActiveTouches === this.props.requiredTouches,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => this.props.touchEnabled && gestureState.numberActiveTouches === this.props.requiredTouches,
 
       onPanResponderGrant: (evt, gestureState) => {
         if (!this.props.touchEnabled) return;
