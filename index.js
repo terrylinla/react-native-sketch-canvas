@@ -81,7 +81,10 @@ class ResponsiveSketchCanvas extends React.Component {
 	}
 
 	componentWillReceiveProps(nextProps) {
-		this.setState({ contentStyle: nextProps.contentStyle });
+		if(nextProps.contentStyle != null){
+			this.setState({ contentStyle: nextProps.contentStyle });
+		}
+		
 	  if(nextProps.contentStyle == null && nextProps.localSourceImage !== this.props.localSourceImage
          && nextProps.localSourceImage.filename
 				 && (!this.props.localSourceImage || (nextProps.localSourceImage.filename !== this.props.localSourceImage.filename))){
