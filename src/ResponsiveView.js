@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
 		width: screenWidth,
 		height: screenHeight - (Platform.OS === 'android' ? 80 : 62),
 		backgroundColor: 'transparent',
-		borderWidth: 1,
+		borderWidth: 0,
 
 		overflow: 'hidden',
 		justifyContent: 'center',
