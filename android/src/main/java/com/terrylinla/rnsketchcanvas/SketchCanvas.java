@@ -307,41 +307,50 @@ public class SketchCanvas extends View {
     }
 
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+    protected void onSizeChanged(final int w, final int h, final int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-
+        Log.d("ReactNative", "onSizeChanged: " + w +"   " + h);
         if (getWidth() > 0 && getHeight() > 0) {
-            mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                Bitmap.Config.ARGB_8888);
-            mDrawingCanvas = new Canvas(mDrawingBitmap);
-            mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                    Bitmap.Config.ARGB_8888);
-            mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
-            
-            for(CanvasText text: mArrCanvasText) {
-                PointF position = new PointF(text.position.x, text.position.y);
-                if (!text.isAbsoluteCoordinate) {
-                    position.x *= getWidth();
-                    position.y *= getHeight();
+            new Thread(new Runnable() {
+                public void run() {
+                    mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                            Bitmap.Config.ARGB_8888);
+                    mDrawingCanvas = new Canvas(mDrawingBitmap);
+                    mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                            Bitmap.Config.ARGB_8888);
+                    mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
+
+                    for(CanvasText text: mArrCanvasText) {
+                        PointF position = new PointF(text.position.x, text.position.y);
+                        if (!text.isAbsoluteCoordinate) {
+                            position.x *= getWidth();
+                            position.y *= getHeight();
+                        }
+
+                        position.x -= text.textBounds.left;
+                        position.y -= text.textBounds.top;
+                        position.x -= (text.textBounds.width() * text.anchor.x);
+                        position.y -= (text.height * text.anchor.y);
+                        text.drawPosition = position;
+
+                    }
+
+                    mNeedsFullRedraw = true;
+
+                    post(new Runnable() {
+                        public void run() {
+                            invalidate();
+                        }
+                    });
                 }
-
-                position.x -= text.textBounds.left;
-                position.y -= text.textBounds.top;
-                position.x -= (text.textBounds.width() * text.anchor.x);
-                position.y -= (text.height * text.anchor.y);
-                text.drawPosition = position;
-
-            }
-
-            mNeedsFullRedraw = true;
-            invalidate();
+            }).start();
         }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
+        Log.d("ReactNative", "onDraw: ");
         if (mNeedsFullRedraw && mDrawingCanvas != null) {
             mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
             for(SketchData path: mPaths) {
