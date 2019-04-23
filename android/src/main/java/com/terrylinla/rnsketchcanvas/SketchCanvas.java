@@ -17,18 +17,22 @@ import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.facebook.react.common.ReactConstants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 class CanvasText {
     public String text;
@@ -212,7 +216,15 @@ public class SketchCanvas extends View {
         invalidate(updateRect);
     }
 
-    public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+    public void  addPaths(@Nullable ReadableArray paths){
+        for (int k = 0; k < paths.size(); k++){
+            ReadableArray path = paths.getArray(k);
+            addPath(path.getInt(0), path.getInt(1), (float)path.getInt(2), SketchCanvasManager.parsePathCoords(path.getArray(3)));
+        }
+        invalidateCanvas(true);
+    }
+
+    private void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         boolean exist = false;
         for(SketchData data: mPaths) {
             if (data.id == id) {
@@ -230,7 +242,6 @@ public class SketchCanvas extends View {
                 setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             }
             newPath.draw(mDrawingCanvas);
-            invalidateCanvas(true);
         }
     }
 
@@ -270,76 +281,104 @@ public class SketchCanvas extends View {
             event);
     }
 
-    public void save(String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
+    public void save(final String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
         File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + folder);
         boolean success = f.exists() ? true : f.mkdirs();
         if (success) {
-            Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
+            final Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
 
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
+            final File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
                 File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
-            try {
-                bitmap.compress(
-                    format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
-                    format.equals("png") ? 100 : 90,
-                    new FileOutputStream(file));
-                this.onSaved(true, file.getPath());
-            } catch (Exception e) {
-                e.printStackTrace();
-                onSaved(false, null);
-            }
+
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        bitmap.compress(
+                                format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                                format.equals("png") ? 100 : 90,
+                                new FileOutputStream(file));
+                        post(new Runnable() {
+                            public void run() {
+                                onSaved(true, file.getPath());
+                            }
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        //Log.e(ReactConstants.TAG, e.toString());
+                        post(new Runnable() {
+                            public void run() {
+                                onSaved(false, null);
+                            }
+                        });
+                    }
+                }
+            }).start();
         } else {
-            Log.e("SketchCanvas", "Failed to create folder!");
+            Log.e(ReactConstants.TAG, "SketchCanvas: Failed to create folder!");
             onSaved(false, null);
         }
     }
 
-    public String getBase64(String format, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
+    public void getBase64(final String format, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize, final Callback callback) {
         WritableMap event = Arguments.createMap();
-        Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
-        ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+        final Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
+        final ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
 
-        bitmap.compress(
-            format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
-            format.equals("png") ? 100 : 90,
-            byteArrayOS);
-        return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
+        new Thread(new Runnable() {
+            public void run() {
+                bitmap.compress(
+                        format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                        format.equals("png") ? 100 : 90,
+                        byteArrayOS);
+                post(new Runnable() {
+                    public void run() {
+                        String base64 = Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
+                        callback.invoke(null, base64);
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override
     protected void onSizeChanged(final int w, final int h, final int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.d("ReactNative", "onSizeChanged: " + w +"   " + h);
         if (getWidth() > 0 && getHeight() > 0) {
             new Thread(new Runnable() {
                 public void run() {
                     mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
                             Bitmap.Config.ARGB_8888);
                     mDrawingCanvas = new Canvas(mDrawingBitmap);
-                    mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                            Bitmap.Config.ARGB_8888);
-                    mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
-
-                    for(CanvasText text: mArrCanvasText) {
-                        PointF position = new PointF(text.position.x, text.position.y);
-                        if (!text.isAbsoluteCoordinate) {
-                            position.x *= getWidth();
-                            position.y *= getHeight();
-                        }
-
-                        position.x -= text.textBounds.left;
-                        position.y -= text.textBounds.top;
-                        position.x -= (text.textBounds.width() * text.anchor.x);
-                        position.y -= (text.height * text.anchor.y);
-                        text.drawPosition = position;
-
-                    }
-
-                    mNeedsFullRedraw = true;
-
                     post(new Runnable() {
                         public void run() {
-                            invalidate();
+                            new Thread(new Runnable() {
+                                public void run() {
+                                    mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                                            Bitmap.Config.ARGB_8888);
+                                    mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
+                                    post(new Runnable() {
+                                        public void run() {
+                                            for(CanvasText text: mArrCanvasText) {
+                                                PointF position = new PointF(text.position.x, text.position.y);
+                                                if (!text.isAbsoluteCoordinate) {
+                                                    position.x *= getWidth();
+                                                    position.y *= getHeight();
+                                                }
+
+                                                position.x -= text.textBounds.left;
+                                                position.y -= text.textBounds.top;
+                                                position.x -= (text.textBounds.width() * text.anchor.x);
+                                                position.y -= (text.height * text.anchor.y);
+                                                text.drawPosition = position;
+
+                                            }
+
+                                            mNeedsFullRedraw = true;
+                                            invalidate();
+                                        }
+                                    });
+                                }
+                            }).start();
                         }
                     });
                 }
@@ -350,7 +389,6 @@ public class SketchCanvas extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.d("ReactNative", "onDraw: ");
         if (mNeedsFullRedraw && mDrawingCanvas != null) {
             mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
             for(SketchData path: mPaths) {

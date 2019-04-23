@@ -117,10 +117,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
             }
 
             case COMMAND_ADD_PATHS: {
-                for (int k = 0; k < args.size(); k++){
-                    ReadableArray path = args.getArray(k);
-                    view.addPath(path.getInt(0), path.getInt(1), (float)path.getInt(2), SketchCanvasManager.parsePathCoords(path.getArray(3)));
-                }
+                view.addPaths(args);
                 return;
             }
             case COMMAND_DELETE_PATHS: {

@@ -29,8 +29,7 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
-                    String base64 = view.getBase64(type, transparent, includeImage, includeText, cropToImageSize);
-                    callback.invoke(null, base64);
+                    view.getBase64(type, transparent, includeImage, includeText, cropToImageSize, callback);
                 }
             });
         } catch (Exception e) {
