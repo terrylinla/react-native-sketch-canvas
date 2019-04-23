@@ -26,7 +26,7 @@ type Path = {
   path: PathData
 }
 
-export type TouchStates = true | false | 'draw' | 'touch' | 'none';
+//export type TouchStates = true | false | 'draw' | 'touch' | 'none';
 
 type CanvasText = {
   text: string
@@ -94,59 +94,47 @@ export interface SketchCanvasProps extends SketchCanvasPropsBase {
   touchEnabled?: boolean
 }
 
-export interface TouchableSketchCanvasProps extends SketchCanvasPropsBase {
-    touchEnabled?: TouchStates
-    touchableComponent?: JSX.Element
-    contentContainerStyle?: StyleProp<ViewStyle>
+export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProperties> {
+    clear(): void
+    undo(): number
+    addPath(data: Path): void
+    addPaths(paths: Path[]): void
+    deletePath(id: number): void
+    deletePaths(pathIds: number[]): void
+
+    /**
+     * @param imageType "png" or "jpg"
+     * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
+     * @param includeText Set to `true` to include the text drawn from `Text`.
+     * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
+     */
+    save(imageType: ImageType, transparent: boolean, folder: string, filename: string, includeImage: boolean, includeText: boolean, cropToImageSize: boolean): void
+    getPaths(): Path[]
+
+    /**
+     * @param imageType "png" or "jpg"
+     * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
+     * @param includeText Set to `true` to include the text drawn from `Text`.
+     * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
+     */
+    getBase64(imageType: ImageType, transparent: boolean, includeImage: boolean, includeText: boolean, cropToImageSize: boolean, callback: (error: any, result?: string) => void): void
+
+    /**
+   * @param x Set it to `evt.nativeEvent.locationX`
+   * @param y Set it to `evt.nativeEvent.locationY`
+   * @param pathId Set to the pathId or undefined
+   * @param callback If omitted the method returns a Promise
+   */
+    isPointOnPath(x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
+    isPointOnPath(x: number, y: number, callback: (error: any, result?: Array<number>) => void): void
+    isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
+    isPointOnPath(x: number, y: number): Promise<number[]>
+    static MAIN_BUNDLE: string
+    static DOCUMENT: string
+    static LIBRARY: string
+    static CACHES: string
+    static generatePathId(): number
 }
-
-export function getSketchCanvas<Props>() {
-    return class SketchCanvas extends React.Component<Props> {
-        clear(): void
-        undo(): number
-        addPath(data: Path): void
-        addPaths(paths: Path[]): void
-        deletePath(id: number): void
-        deletePaths(pathIds: number[]): void
-
-        /**
-         * @param imageType "png" or "jpg"
-         * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
-         * @param includeText Set to `true` to include the text drawn from `Text`.
-         * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
-         */
-        save(imageType: ImageType, transparent: boolean, folder: string, filename: string, includeImage: boolean, includeText: boolean, cropToImageSize: boolean): void
-        getPaths(): Path[]
-
-        /**
-         * @param imageType "png" or "jpg"
-         * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
-         * @param includeText Set to `true` to include the text drawn from `Text`.
-         * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
-         */
-        getBase64(imageType: ImageType, transparent: boolean, includeImage: boolean, includeText: boolean, cropToImageSize: boolean, callback: (error: any, result?: string) => void): void
-
-        /**
-       * @param x Set it to `evt.nativeEvent.locationX`
-       * @param y Set it to `evt.nativeEvent.locationY`
-       * @param pathId Set to the pathId or undefined
-       * @param callback If omitted the method returns a Promise
-       */
-        isPointOnPath(x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-        isPointOnPath(x: number, y: number, callback: (error: any, result?: Array<number>) => void): void
-        isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
-        isPointOnPath(x: number, y: number): Promise<number[]>
-        static MAIN_BUNDLE: string
-        static DOCUMENT: string
-        static LIBRARY: string
-        static CACHES: string
-        static generatePathId(): number
-    }
-}
-
-export class SketchCanvas extends getSketchCanvas<SketchCanvasProps & ViewProperties>() { }
-
-export class TouchableSketchCanvas extends getSketchCanvas<TouchableSketchCanvasProps & ViewProperties>() { }
 
 export interface RNSketchCanvasProps {
   containerStyle?: StyleProp<ViewStyle>
