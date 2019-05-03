@@ -24,7 +24,6 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
-import com.facebook.react.common.ReactConstants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -66,6 +65,8 @@ public class SketchCanvas extends View {
     private ArrayList<CanvasText> mArrSketchOnText = new ArrayList<CanvasText>();
 
     private int mTouchRadius = 0;
+
+    public final String TAG = "RNSketchCanvas";
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
@@ -304,7 +305,7 @@ public class SketchCanvas extends View {
                         });
                     } catch (Exception e) {
                         e.printStackTrace();
-                        //Log.e(ReactConstants.TAG, e.toString());
+                        //Log.e(TAG, e.toString());
                         post(new Runnable() {
                             public void run() {
                                 onSaved(false, null);
@@ -314,7 +315,7 @@ public class SketchCanvas extends View {
                 }
             }).start();
         } else {
-            Log.e(ReactConstants.TAG, "SketchCanvas: Failed to create folder!");
+            Log.e(TAG, "SketchCanvas: Failed to create folder!");
             onSaved(false, null);
         }
     }
