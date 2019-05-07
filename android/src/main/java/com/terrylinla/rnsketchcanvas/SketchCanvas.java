@@ -43,7 +43,7 @@ class CanvasText {
 }
 
 public class SketchCanvas extends View {
-
+    //final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
     private ArrayList<SketchData> mPaths = new ArrayList<SketchData>();
     private SketchData mCurrentPath = null;
 
@@ -347,39 +347,37 @@ public class SketchCanvas extends View {
         if (getWidth() > 0 && getHeight() > 0) {
             new Thread(new Runnable() {
                 public void run() {
+                    if (mDrawingBitmap != null) mDrawingBitmap.recycle();
+                    if(mTranslucentDrawingBitmap!=null)mTranslucentDrawingBitmap.recycle();
+
+                    Log.d(TAG, "run: "+Runtime.getRuntime().freeMemory()/1024);
                     mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
                             Bitmap.Config.ARGB_8888);
                     mDrawingCanvas = new Canvas(mDrawingBitmap);
+
+                    mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                            Bitmap.Config.ARGB_8888);
+                    mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
+
                     post(new Runnable() {
                         public void run() {
-                            new Thread(new Runnable() {
-                                public void run() {
-                                    mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                                            Bitmap.Config.ARGB_8888);
-                                    mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
-                                    post(new Runnable() {
-                                        public void run() {
-                                            for(CanvasText text: mArrCanvasText) {
-                                                PointF position = new PointF(text.position.x, text.position.y);
-                                                if (!text.isAbsoluteCoordinate) {
-                                                    position.x *= getWidth();
-                                                    position.y *= getHeight();
-                                                }
-
-                                                position.x -= text.textBounds.left;
-                                                position.y -= text.textBounds.top;
-                                                position.x -= (text.textBounds.width() * text.anchor.x);
-                                                position.y -= (text.height * text.anchor.y);
-                                                text.drawPosition = position;
-
-                                            }
-
-                                            mNeedsFullRedraw = true;
-                                            invalidate();
-                                        }
-                                    });
+                            for(CanvasText text: mArrCanvasText) {
+                                PointF position = new PointF(text.position.x, text.position.y);
+                                if (!text.isAbsoluteCoordinate) {
+                                    position.x *= getWidth();
+                                    position.y *= getHeight();
                                 }
-                            }).start();
+
+                                position.x -= text.textBounds.left;
+                                position.y -= text.textBounds.top;
+                                position.x -= (text.textBounds.width() * text.anchor.x);
+                                position.y -= (text.height * text.anchor.y);
+                                text.drawPosition = position;
+
+                            }
+
+                            mNeedsFullRedraw = true;
+                            invalidate();
                         }
                     });
                 }
@@ -410,11 +408,11 @@ public class SketchCanvas extends View {
             canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
         }
 
-        if (mDrawingBitmap != null) {
+        if (mDrawingBitmap != null && !mDrawingBitmap.isRecycled()) {
             canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
         }
 
-        if (mTranslucentDrawingBitmap != null && mCurrentPath != null && mCurrentPath.isTranslucent) {
+        if (mTranslucentDrawingBitmap != null && !mTranslucentDrawingBitmap.isRecycled() && mCurrentPath != null && mCurrentPath.isTranslucent) {
             canvas.drawBitmap(mTranslucentDrawingBitmap, 0, 0, mPaint);
         }
 
