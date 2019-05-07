@@ -223,8 +223,8 @@ export default class example extends Component {
                               <Text style={{ marginRight: 8, fontSize: 20 }}>{this.state.message}</Text>
                               <TouchableOpacity style={[styles.functionButton, { backgroundColor: 'black', width: 90 }]} onPress={() => {
                                   console.log(this.canvas.getPaths())
-                                  Alert.alert(JSON.stringify(this.canvas.getPaths()))
-                                  this.canvas.getBase64('jpg', false, true, true, (err, result) => {
+                                  //Alert.alert(JSON.stringify(this.canvas.getPaths()))
+                                  this.canvas.getBase64('jpg', false, true, true, true, (err, result) => {
                                       console.log(result)
                                   })
                               }}>
