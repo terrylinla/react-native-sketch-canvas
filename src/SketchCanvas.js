@@ -22,6 +22,7 @@ const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
     }
 });
 const SketchCanvasManager = NativeModules.RNSketchCanvasManager || {};
+const { Commands, Constants } = UIManager.getViewManagerConfig ? UIManager.getViewManagerConfig('RNSketchCanvas') : UIManager.RNSketchCanvas;
 
 class SketchCanvas extends React.Component {
     static propTypes = {
@@ -131,7 +132,7 @@ class SketchCanvas extends React.Component {
     clear() {
         this._paths = []
         this._path = null
-        UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.clear, [])
+        UIManager.dispatchViewManagerCommand(this._handle, Commands.clear, [])
     }
 
     undo() {
@@ -168,7 +169,7 @@ class SketchCanvas extends React.Component {
                 ];
             });
             
-            UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPaths, parsedPaths);
+            UIManager.dispatchViewManagerCommand(this._handle, Commands.addPaths, parsedPaths);
         }
         else {
             paths.map((data) => this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data));
@@ -182,7 +183,7 @@ class SketchCanvas extends React.Component {
                 const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2))
                 return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
             })
-            UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPath, [
+            UIManager.dispatchViewManagerCommand(this._handle, Commands.addPath, [
                 data.path.id, processColor(data.path.color), data.path.width * this._screenScale, pathData
             ])
         } else {
@@ -197,7 +198,7 @@ class SketchCanvas extends React.Component {
 
     deletePaths(pathIds) {
         this._paths = this._paths.filter(p => pathIds.findIndex(id => p.path.id === id) === -1);
-        UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.deletePaths, pathIds);
+        UIManager.dispatchViewManagerCommand(this._handle, Commands.deletePaths, pathIds);
     }
 
     deletePath(id) {
@@ -205,7 +206,7 @@ class SketchCanvas extends React.Component {
     }
 
     save(imageType, transparent, folder, filename, includeImage, includeText, cropToImageSize) {
-        UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.save, [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize])
+        UIManager.dispatchViewManagerCommand(this._handle, Commands.save, [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize])
     }
 
     getPaths() {
@@ -292,7 +293,7 @@ class SketchCanvas extends React.Component {
 
                 UIManager.dispatchViewManagerCommand(
                     this._handle,
-                    UIManager.RNSketchCanvas.Commands.newPath,
+                    Commands.newPath,
                     [
                         this._path.id,
                         processColor(this._path.color),
@@ -301,7 +302,7 @@ class SketchCanvas extends React.Component {
                 )
                 UIManager.dispatchViewManagerCommand(
                     this._handle,
-                    UIManager.RNSketchCanvas.Commands.addPoint,
+                    Commands.addPoint,
                     [
                         parseFloat(x * this._screenScale),
                         parseFloat(y * this._screenScale)
@@ -314,7 +315,7 @@ class SketchCanvas extends React.Component {
                 if (!this.props.touchEnabled) return
                 if (this._path) {
                     const x = parseFloat((evt.nativeEvent.locationX).toFixed(2)), y = parseFloat((evt.nativeEvent.locationY).toFixed(2));
-                    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+                    UIManager.dispatchViewManagerCommand(this._handle, Commands.addPoint, [
                         parseFloat(x * this._screenScale),
                         parseFloat(y * this._screenScale)
                     ])
@@ -329,7 +330,7 @@ class SketchCanvas extends React.Component {
                     this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
                     this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user })
                 }
-                UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, [])
+                UIManager.dispatchViewManagerCommand(this._handle, Commands.endPath, [])
             },
 
             onShouldBlockNativeResponder: (evt, gestureState) => {
@@ -378,9 +379,9 @@ class SketchCanvas extends React.Component {
     }
 }
 
-SketchCanvas.MAIN_BUNDLE = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.MainBundlePath : '';
-SketchCanvas.DOCUMENT = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.NSDocumentDirectory : '';
-SketchCanvas.LIBRARY = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.NSLibraryDirectory : '';
-SketchCanvas.CACHES = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.NSCachesDirectory : '';
+SketchCanvas.MAIN_BUNDLE = Platform.OS === 'ios' ? Constants.MainBundlePath : '';
+SketchCanvas.DOCUMENT = Platform.OS === 'ios' ? Constants.NSDocumentDirectory : '';
+SketchCanvas.LIBRARY = Platform.OS === 'ios' ? Constants.NSLibraryDirectory : '';
+SketchCanvas.CACHES = Platform.OS === 'ios' ? Constants.NSCachesDirectory : '';
 
 module.exports = SketchCanvas;
