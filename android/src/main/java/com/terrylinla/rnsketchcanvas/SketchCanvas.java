@@ -348,9 +348,13 @@ public class SketchCanvas extends View {
             new Thread(new Runnable() {
                 public void run() {
                     if (mDrawingBitmap != null) mDrawingBitmap.recycle();
-                    if(mTranslucentDrawingBitmap!=null)mTranslucentDrawingBitmap.recycle();
+                    if (mTranslucentDrawingBitmap != null) mTranslucentDrawingBitmap.recycle();
 
-                    Log.d(TAG, "run: "+Runtime.getRuntime().freeMemory()/1024);
+                    long freeMem = Runtime.getRuntime().maxMemory() / 1024;
+                    long bitmapSize = getWidth() * getHeight() * 4 / 1024;
+
+                    if(freeMem<=bitmapSize*2) Log.e(TAG, "Not enough memory to alloc bitmap");
+
                     mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
                             Bitmap.Config.ARGB_8888);
                     mDrawingCanvas = new Canvas(mDrawingBitmap);
