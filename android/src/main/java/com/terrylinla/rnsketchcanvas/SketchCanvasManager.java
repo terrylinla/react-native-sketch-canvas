@@ -53,6 +53,11 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         return SketchCanvasManager.Canvas;
     }
 
+    @Override
+    public void onDropViewInstance(SketchCanvas view) {
+        view.tearDown();
+    }
+
     @ReactProp(name = PROPS_LOCAL_SOURCE_IMAGE)
     public void setLocalSourceImage(SketchCanvas viewContainer, ReadableMap localSourceImage) {
         if (localSourceImage != null && localSourceImage.getString("filename") != null) {

@@ -589,4 +589,9 @@ public class SketchCanvas extends View {
 
         return array;
     }
+
+    public void tearDown(){
+        mDrawingBitmap.recycle();
+        mTranslucentDrawingBitmap.recycle();
+    }
 }
