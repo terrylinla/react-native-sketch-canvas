@@ -66,7 +66,7 @@ public class SketchCanvas extends View {
 
     private int mTouchRadius = 0;
 
-    public final String TAG = "RNSketchCanvas";
+    public final static String TAG = "RNSketchCanvas";
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
@@ -305,7 +305,7 @@ public class SketchCanvas extends View {
                         });
                     } catch (Exception e) {
                         e.printStackTrace();
-                        //Log.e(TAG, e.toString());
+                        //Log.e(SketchCanvas.TAG, e.toString());
                         post(new Runnable() {
                             public void run() {
                                 onSaved(false, null);
@@ -315,7 +315,7 @@ public class SketchCanvas extends View {
                 }
             }).start();
         } else {
-            Log.e(TAG, "SketchCanvas: Failed to create folder!");
+            Log.e(SketchCanvas.TAG, "SketchCanvas: Failed to create folder!");
             onSaved(false, null);
         }
     }
@@ -347,20 +347,32 @@ public class SketchCanvas extends View {
         if (getWidth() > 0 && getHeight() > 0) {
             new Thread(new Runnable() {
                 public void run() {
-                    if (mDrawingBitmap != null) mDrawingBitmap.recycle();
-                    if (mTranslucentDrawingBitmap != null) mTranslucentDrawingBitmap.recycle();
+                    //long freeMem = Runtime.getRuntime().maxMemory() / 1024;
+                    //long bitmapSize = getWidth() * getHeight() * 4 / 1024;
+                    //if(freeMem - bitmapSize*2 <= 2) Log.e(SketchCanvas.TAG, "Not enough memory to alloc bitmap");
 
-                    long freeMem = Runtime.getRuntime().maxMemory() / 1024;
-                    long bitmapSize = getWidth() * getHeight() * 4 / 1024;
+                    if (mDrawingBitmap == null){
+                        mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                                Bitmap.Config.ARGB_8888);
 
-                    if(freeMem<=bitmapSize*2) Log.e(TAG, "Not enough memory to alloc bitmap");
+                    } else {
+                        Bitmap drawingBitmap = Bitmap.createScaledBitmap(mDrawingBitmap, getWidth(), getHeight(),true);
+                        mDrawingBitmap.recycle();
+                        mDrawingBitmap = drawingBitmap;
+                    }
 
-                    mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                            Bitmap.Config.ARGB_8888);
                     mDrawingCanvas = new Canvas(mDrawingBitmap);
 
-                    mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                            Bitmap.Config.ARGB_8888);
+                    if (mTranslucentDrawingBitmap == null){
+                        mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                                Bitmap.Config.ARGB_8888);
+
+                    } else {
+                        Bitmap tDrawingBitmap = Bitmap.createScaledBitmap(mTranslucentDrawingBitmap, getWidth(), getHeight(),true);
+                        mTranslucentDrawingBitmap.recycle();
+                        mTranslucentDrawingBitmap = tDrawingBitmap;
+                    }
+
                     mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
 
                     post(new Runnable() {
