@@ -55,6 +55,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @Override
     public void onDropViewInstance(SketchCanvas view) {
+        Log.i(SketchCanvas.TAG, "Tearing down SketchCanvas " +  view.toString());
         view.tearDown();
     }
 
