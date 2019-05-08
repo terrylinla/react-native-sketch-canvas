@@ -351,7 +351,7 @@ public class SketchCanvas extends View {
                     //long bitmapSize = getWidth() * getHeight() * 4 / 1024;
                     //if(freeMem - bitmapSize*2 <= 2) Log.e(SketchCanvas.TAG, "Not enough memory to alloc bitmap");
 
-                    if (mDrawingBitmap == null){
+                    if (mDrawingBitmap == null || mDrawingBitmap.isRecycled()){
                         mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
                                 Bitmap.Config.ARGB_8888);
 
@@ -363,7 +363,7 @@ public class SketchCanvas extends View {
 
                     mDrawingCanvas = new Canvas(mDrawingBitmap);
 
-                    if (mTranslucentDrawingBitmap == null){
+                    if (mTranslucentDrawingBitmap == null || mTranslucentDrawingBitmap.isRecycled()){
                         mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
                                 Bitmap.Config.ARGB_8888);
 
