@@ -68,9 +68,20 @@ public class SketchCanvas extends View {
 
     public final static String TAG = "RNSketchCanvas";
 
+    private Thread currentRunningThread;
+
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
+    }
+
+    public void setHardwareAccelerated(boolean useHardwareAccelerated) {
+        mDisableHardwareAccelerated = !useHardwareAccelerated;
+        if(useHardwareAccelerated) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        } else{
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
     }
 
     public boolean openImageFile(String filename, String directory, String mode) {
@@ -345,7 +356,8 @@ public class SketchCanvas extends View {
     protected void onSizeChanged(final int w, final int h, final int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         if (getWidth() > 0 && getHeight() > 0) {
-            new Thread(new Runnable() {
+            if(currentRunningThread != null) currentRunningThread.interrupt();
+            currentRunningThread = new Thread(new Runnable() {
                 public void run() {
                     //long freeMem = Runtime.getRuntime().maxMemory() / 1024;
                     //long bitmapSize = getWidth() * getHeight() * 4 / 1024;
@@ -375,29 +387,32 @@ public class SketchCanvas extends View {
 
                     mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
 
+                    for(CanvasText text: mArrCanvasText) {
+                        PointF position = new PointF(text.position.x, text.position.y);
+                        if (!text.isAbsoluteCoordinate) {
+                            position.x *= getWidth();
+                            position.y *= getHeight();
+                        }
+
+                        position.x -= text.textBounds.left;
+                        position.y -= text.textBounds.top;
+                        position.x -= (text.textBounds.width() * text.anchor.x);
+                        position.y -= (text.height * text.anchor.y);
+                        text.drawPosition = position;
+
+                    }
+
+
                     post(new Runnable() {
                         public void run() {
-                            for(CanvasText text: mArrCanvasText) {
-                                PointF position = new PointF(text.position.x, text.position.y);
-                                if (!text.isAbsoluteCoordinate) {
-                                    position.x *= getWidth();
-                                    position.y *= getHeight();
-                                }
-
-                                position.x -= text.textBounds.left;
-                                position.y -= text.textBounds.top;
-                                position.x -= (text.textBounds.width() * text.anchor.x);
-                                position.y -= (text.height * text.anchor.y);
-                                text.drawPosition = position;
-
-                            }
-
+                            currentRunningThread = null;
                             mNeedsFullRedraw = true;
                             invalidate();
                         }
                     });
                 }
-            }).start();
+            });
+            currentRunningThread.start();
         }
     }
 

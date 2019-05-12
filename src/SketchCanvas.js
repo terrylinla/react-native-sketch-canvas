@@ -67,6 +67,8 @@ class SketchCanvas extends React.Component {
 
         permissionDialogTitle: PropTypes.string,
         permissionDialogMessage: PropTypes.string,
+
+        hardwareAccelerated: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -88,6 +90,8 @@ class SketchCanvas extends React.Component {
 
         permissionDialogTitle: '',
         permissionDialogMessage: '',
+
+        hardwareAccelerated: Platform.OS === 'android' ? false : undefined
     };
 
     static generatePathId() {
@@ -374,6 +378,7 @@ class SketchCanvas extends React.Component {
                 permissionDialogTitle={this.props.permissionDialogTitle}
                 permissionDialogMessage={this.props.permissionDialogMessage}
                 text={this.state.text}
+                hardwareAccelerated={this.props.hardwareAccelerated}
             />
         );
     }

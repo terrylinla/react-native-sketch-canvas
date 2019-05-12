@@ -63,7 +63,7 @@ export interface LocalSourceImage {
   mode?: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
 }
 
-export interface SketchCanvasPropsBase {
+export interface SketchCanvasProps {
     style?: StyleProp<ViewStyle>
     strokeColor?: string
     strokeWidth?: number
@@ -71,7 +71,7 @@ export interface SketchCanvasPropsBase {
     paths?: Path[]
     text?: CanvasText[]
     localSourceImage?: LocalSourceImage
-    //touchEnabled?: boolean
+    touchEnabled?: boolean
 
     /**
      * Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set
@@ -83,6 +83,11 @@ export interface SketchCanvasPropsBase {
      */
     permissionDialogMessage?: string
 
+    /**
+     * Android Only: set hardware acceleration. Defaults to false. If you prefer performance over functionality try setting to true
+     */
+    hardwareAccelerated: boolean
+
     onStrokeStart?: () => void
     onStrokeChanged?: () => void
     onStrokeEnd?: (path: Path) => void
@@ -90,9 +95,6 @@ export interface SketchCanvasPropsBase {
     onPathsChange?: (pathsCount: number) => void
 }
 
-export interface SketchCanvasProps extends SketchCanvasPropsBase {
-  touchEnabled?: boolean
-}
 
 export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProperties> {
     clear(): void
@@ -133,6 +135,10 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
     static DOCUMENT: string
     static LIBRARY: string
     static CACHES: string
+
+    /**
+     * Utility function that provides an id for future use
+     * */
     static generatePathId(): number
 }
 

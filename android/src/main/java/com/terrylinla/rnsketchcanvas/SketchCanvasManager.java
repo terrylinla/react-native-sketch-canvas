@@ -41,6 +41,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     private static final String PROPS_LOCAL_SOURCE_IMAGE = "localSourceImage";
     private static final String PROPS_TEXT = "text";
+    private static final String PROPS_HARDWARE_ACCELERATED = "hardwareAccelerated";
 
     @Override
     public String getName() {
@@ -73,6 +74,11 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     @ReactProp(name = PROPS_TEXT)
     public void setText(SketchCanvas viewContainer, ReadableArray text) {
         viewContainer.setCanvasText(text);
+    }
+
+    @ReactProp(name = PROPS_HARDWARE_ACCELERATED)
+    public void setHardwareAccelerated(SketchCanvas viewContainer, boolean useAcceleration) {
+        viewContainer.setHardwareAccelerated(useAcceleration);
     }
 
     @Override
