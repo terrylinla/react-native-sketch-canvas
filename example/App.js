@@ -609,13 +609,16 @@ export default class example extends Component {
 
               {
                   this.state.example === 8 &&
-                  <View style={styles.page}>
+                  <View style={[styles.page]}
+                  >
                       <Text style={{ color: 'blue', alignContent: 'center', alignSelf: 'center', fontSize: 24, margin: 5, fontWeight: 'bold' }}>{this.state.touchState.toLocaleUpperCase()}</Text>
                       <TouchableOpacity
-                          style={{flex:1, minWidth:Dimensions.get('window').width}}
+                          style={{flex:1, flexDirection: 'column'}}
                           pointerEvents={this.state.touchState === 'touch' ? 'auto':'box-none'}
                           onPress={(evt) => {
                               const { locationX, locationY } = evt.nativeEvent;
+                              const paths = this.canvas.getPaths();
+                              if (!paths || paths.length === 0) return;
                               const pathId = this.canvas.getPaths()[0].path.id;
                               Promise.all([
                                   this.canvas.isPointOnPath(locationX, locationY),
@@ -678,13 +681,14 @@ export default class example extends Component {
                               pointerEvents={this.state.touchState === 'draw' ? 'box-none' : 'none'}
                           >
                           <SketchCanvas
-                              style={{ flex: 1 }}
-                              contentContainerStyle={{ flex: 1, minWidth: Dimensions.get('window').width }}
-                              strokeWidth={24}
-                              strokeColor={this.state.color}
-                              ref={ref => this.canvas = ref}
-                              touchEnabled={this.state.touchState==='draw'?true:false}
-                              onStrokeEnd={() => this.setState({ touchState: 'touch' })}
+                                  style={{ flex: 1 }}
+                                  contentContainerStyle={{ flex: 1 }}
+                                  strokeWidth={24}
+                                  strokeColor={this.state.color}
+                                  ref={ref => this.canvas = ref}
+                                  touchEnabled={this.state.touchState === 'draw' ? true : false}
+                                  onStrokeEnd={() => this.setState({ touchState: 'touch' })}
+                                  hardwareAccelerated={false}
                               />
                               </View>
                       </TouchableOpacity>
@@ -713,7 +717,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
   strokeColorButton: {
