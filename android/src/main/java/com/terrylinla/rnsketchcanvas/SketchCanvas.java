@@ -15,6 +15,7 @@ import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -359,10 +360,6 @@ public class SketchCanvas extends View {
             if(currentRunningThread != null) currentRunningThread.interrupt();
             currentRunningThread = new Thread(new Runnable() {
                 public void run() {
-                    //long freeMem = Runtime.getRuntime().maxMemory() / 1024;
-                    //long bitmapSize = getWidth() * getHeight() * 4 / 1024;
-                    //if(freeMem - bitmapSize*2 <= 2) Log.e(SketchCanvas.TAG, "Not enough memory to alloc bitmap");
-
                     if (mDrawingBitmap == null || mDrawingBitmap.isRecycled()){
                         mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
                                 Bitmap.Config.ARGB_8888);
@@ -416,9 +413,22 @@ public class SketchCanvas extends View {
         }
     }
 
+    /*
+    @Override
+    public void draw(Canvas canvas) {
+        layout(0,0, getWidth(), getHeight());
+        super.draw(drawViewOnCanvas(canvas));
+    }
+    */
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        drawViewOnCanvas(canvas);
+    }
+
+    private Canvas drawViewOnCanvas(Canvas canvas){
         if (mNeedsFullRedraw && mDrawingCanvas != null) {
             mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
             for(SketchData path: mPaths) {
@@ -430,9 +440,9 @@ public class SketchCanvas extends View {
         if (mBackgroundImage != null) {
             Rect dstRect = new Rect();
             canvas.getClipBounds(dstRect);
-            canvas.drawBitmap(mBackgroundImage, null, 
-                Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode), 
-                null);
+            canvas.drawBitmap(mBackgroundImage, null,
+                    Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode),
+                    null);
         }
 
         for(CanvasText text: mArrSketchOnText) {
@@ -450,6 +460,8 @@ public class SketchCanvas extends View {
         for(CanvasText text: mArrTextOnSketch) {
             canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
         }
+
+        return canvas;
     }
 
     private void invalidateCanvas(boolean shouldDispatchEvent) {
