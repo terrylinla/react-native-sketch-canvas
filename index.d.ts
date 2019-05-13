@@ -86,7 +86,7 @@ export interface SketchCanvasProps {
     /**
      * Android Only: set hardware acceleration. Defaults to false. If you prefer performance over functionality try setting to true
      */
-    hardwareAccelerated: boolean
+    hardwareAccelerated?: boolean
 
     onStrokeStart?: () => void
     onStrokeChanged?: () => void
