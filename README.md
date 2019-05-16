@@ -33,6 +33,22 @@ Link native code
 react-native link @terrylinla/react-native-sketch-canvas
 ```
 
+#### Update `metro.config.js`
+
+* Add the following config to programmatically select touch handling.
+* Uses `react-native-gesture-handler` if installed, otherwise defaults to `PanResponder`.
+* For more information see [metro-config](https://facebook.github.io/metro/docs/en/configuration#merging-example)
+
+```javascript
++ const { mergeConfig } = require("metro-config");
+...
++ const sketchCanvasConfig = require('@terrylinla/react-native-sketch-canvas/metro.config');
+const config = { ...your project's config }
+...
++ module.exports = mergeConfig(config, sketchCanvasConfig);
+```
+
+
 **Fix android linking:**
 
 settings.gradle
@@ -49,22 +65,6 @@ dependencies {
     implementation project(':react-native-sketch-canvas')
     ...
 }
-```
-
-metro.config.js
-Add the following config to programmatically select touch handling.
-Will use `react-native-gesture-handler` if installed, otherwise defaults to `PanResponder`.
-For more information see [metro-config](https://facebook.github.io/metro/docs/en/configuration#merging-example)
-
-```javascript
-+ const { mergeConfig } = require("metro-config");
-...
-+ const sketchCanvasConfig = require('@terrylinla/react-native-sketch-canvas/metro.config');
-const config = {
-	...
-}
-...
-+ module.exports = mergeConfig(config, sketchCanvasConfig);
 ```
 
 ## Usage
