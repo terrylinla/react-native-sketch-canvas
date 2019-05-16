@@ -51,6 +51,22 @@ dependencies {
 }
 ```
 
+metro.config.js
+Add the following config to programmatically select touch handling.
+Will use `react-native-gesture-handler` if installed, otherwise defaults to `PanResponder`.
+For more information see [metro-config](https://facebook.github.io/metro/docs/en/configuration#merging-example)
+
+```javascript
++ const { mergeConfig } = require("metro-config");
+...
++ const sketchCanvasConfig = require('@terrylinla/react-native-sketch-canvas/metro.config');
+const config = {
+	...
+}
+...
++ module.exports = mergeConfig(config, sketchCanvasConfig);
+```
+
 ## Usage
 -------------
 <img src="https://i.imgur.com/4qpiX8m.png" height="400" />

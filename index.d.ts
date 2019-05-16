@@ -1,10 +1,10 @@
 import * as React from 'react'
 import {
-  ViewProperties,
-  StyleProp,
-  ViewStyle
-} from "react-native"
-import { static } from 'express';
+    ViewProperties,
+    StyleProp,
+    ViewStyle
+} from "react-native";
+import { GestureHandlerProperties, PanGestureHandler } from "react-native-gesture-handler";
 
 type ImageType = 'png' | 'jpg'
 
@@ -92,11 +92,14 @@ export interface SketchCanvasProps {
     onStrokeChanged?: () => void
     onStrokeEnd?: (path: Path) => void
     onSketchSaved?: (result: boolean, path: string) => void
-    onPathsChange?: (pathsCount: number) => void
+    onPathsChange?: (pathsCount: number) => void,
+
+
 }
 
+export type GestureHandlerProps = Pick<GestureHandlerProperties, "simultaneousHandlers" | "waitFor"> & { panHandler: React.RefObject<PanGestureHandler> };
 
-export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProperties> {
+export class SketchCanvas extends React.Component<SketchCanvasProps & GestureHandlerProps & ViewProperties> {
     clear(): void
     undo(): number
     addPath(data: Path): void

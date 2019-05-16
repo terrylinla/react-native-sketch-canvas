@@ -21,8 +21,15 @@
   "nativePackage": true,
   "license": "MIT",
   "peerDependencies": {
+    "prop-types": "*",
     "react": "*",
-    "react-native": "*",
-    "prop-types": "*"
+    "react-native": "*"
+  },
+  "optionalDependencies": {
+    "react-native-gesture-handler": "*"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.4.4",
+    "prop-types": "^15.7.2"
   }
 }

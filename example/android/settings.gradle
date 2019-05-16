@@ -1,7 +1,9 @@
 rootProject.name = 'example'
+include ':react-native-gesture-handler'
+project(':react-native-gesture-handler').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-gesture-handler/android')
 include ':react-native-camera'
 project(':react-native-camera').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-camera/android')
 include ':react-native-sketch-canvas'
-project(':react-native-sketch-canvas').projectDir = new File(rootProject.projectDir, '../node_modules/@terrylinla/react-native-sketch-canvas/android')
+project(':react-native-sketch-canvas').projectDir = new File(rootProject.projectDir, '../../android')
 
 include ':app'
