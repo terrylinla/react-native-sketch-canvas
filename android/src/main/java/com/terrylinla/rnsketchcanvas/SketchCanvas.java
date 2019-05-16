@@ -52,8 +52,8 @@ public class SketchCanvas extends View {
     private boolean mDisableHardwareAccelerated = false;
 
     private Paint mPaint = new Paint();
-    private Bitmap mDrawingBitmap = null, mTranslucentDrawingBitmap = null;
-    private Canvas mDrawingCanvas = null, mTranslucentDrawingCanvas = null;
+    private Bitmap mDrawingBitmap = null;
+    private Canvas mDrawingCanvas = null;
 
     private boolean mNeedsFullRedraw = true;
 
@@ -221,8 +221,8 @@ public class SketchCanvas extends View {
         Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
 
         if (mCurrentPath.isTranslucent) {
-            mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-            mCurrentPath.draw(mTranslucentDrawingCanvas);
+            mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+            mCurrentPath.draw(mDrawingCanvas);
         } else {
             mCurrentPath.drawLastPoint(mDrawingCanvas);
         }
@@ -278,7 +278,7 @@ public class SketchCanvas extends View {
         if (mCurrentPath != null) {
             if (mCurrentPath.isTranslucent) {
                 mCurrentPath.draw(mDrawingCanvas);
-                mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+                mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
             }
             mCurrentPath = null;
         }
@@ -356,7 +356,7 @@ public class SketchCanvas extends View {
     @Override
     protected void onSizeChanged(final int w, final int h, final int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        if (getWidth() > 0 && getHeight() > 0) {
+        if (getWidth() > 0 && getHeight() > 0 && (w != oldw || h != oldh)) {
             if(currentRunningThread != null) currentRunningThread.interrupt();
             currentRunningThread = new Thread(new Runnable() {
                 public void run() {
@@ -371,18 +371,6 @@ public class SketchCanvas extends View {
                     }
 
                     mDrawingCanvas = new Canvas(mDrawingBitmap);
-
-                    if (mTranslucentDrawingBitmap == null || mTranslucentDrawingBitmap.isRecycled()){
-                        mTranslucentDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                                Bitmap.Config.ARGB_8888);
-
-                    } else {
-                        Bitmap tDrawingBitmap = Bitmap.createScaledBitmap(mTranslucentDrawingBitmap, getWidth(), getHeight(),true);
-                        mTranslucentDrawingBitmap.recycle();
-                        mTranslucentDrawingBitmap = tDrawingBitmap;
-                    }
-
-                    mTranslucentDrawingCanvas = new Canvas(mTranslucentDrawingBitmap);
 
                     for(CanvasText text: mArrCanvasText) {
                         PointF position = new PointF(text.position.x, text.position.y);
@@ -451,10 +439,6 @@ public class SketchCanvas extends View {
 
         if (mDrawingBitmap != null && !mDrawingBitmap.isRecycled()) {
             canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
-        }
-
-        if (mTranslucentDrawingBitmap != null && !mTranslucentDrawingBitmap.isRecycled() && mCurrentPath != null && mCurrentPath.isTranslucent) {
-            canvas.drawBitmap(mTranslucentDrawingBitmap, 0, 0, mPaint);
         }
 
         for(CanvasText text: mArrTextOnSketch) {
@@ -631,6 +615,5 @@ public class SketchCanvas extends View {
 
     public void tearDown(){
         mDrawingBitmap.recycle();
-        mTranslucentDrawingBitmap.recycle();
     }
 }
