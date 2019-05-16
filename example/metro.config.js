@@ -7,7 +7,7 @@ const configB = require('../metro.config');
 
 const config = {
     resolver: {
-        //blacklistRE: blacklist([path.resolve(__dirname, 'node_modules/react-native-gesture-handler')]),
+        blacklistRE: blacklist([path.resolve(__dirname, '../node_modules/react-native-gesture-handler')]),
         providesModuleNodeModules: Object.keys(pkg.dependencies)
     },
     watchFolders: [path.resolve(__dirname, '..')],
