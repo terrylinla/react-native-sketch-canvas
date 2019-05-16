@@ -342,7 +342,7 @@ class SketchCanvas extends React.Component {
         }
     }
 
-    closePath() {
+    endPath() {
         if (this._path) {
             this._paths.push({ path: this._path, size: this._size, drawer: this.props.user });
             this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user });
@@ -370,7 +370,7 @@ class SketchCanvas extends React.Component {
                 this.addPoint(evt.nativeEvent.locationX, evt.nativeEvent.locationY);
             },
             onPanResponderRelease: (evt, gestureState) => {
-                this.closePath();
+                this.endPath();
             },
 
             onShouldBlockNativeResponder: (evt, gestureState) => {
@@ -381,7 +381,7 @@ class SketchCanvas extends React.Component {
 
     onHandlerStateChange = (e) => {
         if (e.nativeEvent.state === GHState.BEGAN) this.startPath(e.nativeEvent.x, e.nativeEvent.y);
-        if (e.nativeEvent.oldState === GHState.ACTIVE) this.closePath();
+        if (e.nativeEvent.oldState === GHState.ACTIVE) this.endPath();
     }
 
     onGestureEvent = (e) => {

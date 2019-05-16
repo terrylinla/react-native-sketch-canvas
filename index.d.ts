@@ -134,6 +134,36 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & GestureHan
     isPointOnPath(x: number, y: number, callback: (error: any, result?: Array<number>) => void): void
     isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
     isPointOnPath(x: number, y: number): Promise<number[]>
+
+    /**
+     * start a new path
+     * use this method to customize touch handling or to mock drawing animations
+     * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
+     * [startPath, addPoint, endPath]
+     * 
+     * @param x
+     * @param y
+     */
+    startPath(x: number, y: number): void
+    /**
+     * add a point to the current path
+     * use this method to customize touch handling or to mock drawing animations
+     * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
+     * [startPath, addPoint, endPath]
+     * 
+     * @param x
+     * @param y
+     */
+    addPoint(x: number, y: number): void
+    /**
+     * close the current path
+     * use this method to customize touch handling or to mock drawing animations
+     * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
+     * [startPath, addPoint, endPath]
+     * */
+    endPath(): void
+
+
     static MAIN_BUNDLE: string
     static DOCUMENT: string
     static LIBRARY: string
