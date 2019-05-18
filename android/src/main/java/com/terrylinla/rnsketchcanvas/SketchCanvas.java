@@ -66,8 +66,6 @@ public class SketchCanvas extends View {
 
     public final static String TAG = "RNSketchCanvas";
 
-    private Thread currentRunningThread;
-
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
