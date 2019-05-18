@@ -15,7 +15,9 @@ import {
     ScrollView,
     Platform, 
     Button,
-    Dimensions
+    Modal,
+    TouchableHighlight,
+    Image
 } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 
@@ -32,7 +34,9 @@ export default class example extends Component {
       message: '',
       photoPath: null,
         scrollEnabled: true,
-        touchState: 'draw'
+        touchState: 'draw',
+        modalVisible: false,
+        uri: null
     }
   }
 
@@ -46,9 +50,50 @@ export default class example extends Component {
     }
     };
 
+    setModalVisible=(visible)=> {
+        this.setState({ modalVisible: visible });
+    }
+
+    onSketchSaved = (success, path) => {
+        //Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path);
+        if (success) {
+            this.setState({
+                modalVisible: true,
+                uri: path
+            });
+        }
+    }
+
+    renderImageModal() {
+        const { uri: path, modalVisible } = this.state;
+        const uri = `file://${path}`;
+        return (
+            <Modal
+                animationType="slide"
+                transparent={false}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    this.setModalVisible(false);
+                }}>
+                <View style={{ marginTop: 22 }}>
+                    <Text>Displaying image: {uri}</Text>
+                    <Image
+                        source={{ uri }}
+                        style={{ width: 200, height: 200 }}
+                    />
+                    <Button 
+                        title="close"
+                        onPress={()=>this.setModalVisible(false)}
+                        />
+                </View>
+            </Modal>
+        );
+    }
+
   render() {
       return (
           <View style={styles.container}>
+              {this.renderImageModal()}
               {
                   this.state.example === 0 &&
                   <View style={{ justifyContent: 'center', alignItems: 'center', width: 340 }}>
@@ -152,9 +197,7 @@ export default class example extends Component {
                                   imageType: "png"
                               }
                           }}
-                          onSketchSaved={(success, path) => {
-                              Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
-                          }}
+                          onSketchSaved={this.onSketchSaved}
                           onPathsChange={(pathsCount) => {
                               console.log('pathsCount', pathsCount)
                           }}
@@ -286,9 +329,7 @@ export default class example extends Component {
                                   imageType: 'jpg'
                               }
                           }}
-                          onSketchSaved={(success, path) => {
-                              Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
-                          }}
+                          onSketchSaved={this.onSketchSaved}
                           onStrokeEnd={(path) => {
                               this.canvas2.addPath(path)
                           }}
@@ -340,9 +381,7 @@ export default class example extends Component {
                                   imageType: 'jpg'
                               }
                           }}
-                          onSketchSaved={(success, path) => {
-                              Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
-                          }}
+                          onSketchSaved={this.onSketchSaved}
                           onStrokeEnd={(path) => {
                               this.canvas1.addPath(path)
                           }}
@@ -422,12 +461,13 @@ export default class example extends Component {
                                       folder: 'RNSketchCanvas',
                                       filename: String(Math.ceil(Math.random() * 100000000)),
                                       transparent: false,
-                                      imageType: 'png'
+                                      imageType: 'png',
+                                      transparent: false,
+                                      includeImage: true,
+                                      cropToImageSize: false,
                                   }
                               }}
-                              onSketchSaved={(success, path) => {
-                                  Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
-                              }}
+                              onSketchSaved={this.onSketchSaved}
                               onPathsChange={(pathsCount) => {
                                   console.log('pathsCount', pathsCount)
                               }}
@@ -482,15 +522,13 @@ export default class example extends Component {
                               return {
                                   folder: 'RNSketchCanvas',
                                   filename: String(Math.ceil(Math.random() * 100000000)),
-                                  transparent: false,
-                                  includeImage: false,
+                                  transparent: true,
+                                  includeImage: true,
                                   cropToImageSize: false,
                                   imageType: 'jpg'
                               }
                           }}
-                          onSketchSaved={(success, path) => {
-                              Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
-                          }}
+                          onSketchSaved={this.onSketchSaved}
                           onPathsChange={(pathsCount) => {
                               console.log('pathsCount', pathsCount)
                           }}
@@ -549,16 +587,14 @@ export default class example extends Component {
                               return {
                                   folder: 'RNSketchCanvas',
                                   filename: String(Math.ceil(Math.random() * 100000000)),
-                                  transparent: false,
+                                  transparent: true,
                                   includeImage: false,
-                                  includeText: false,
+                                  includeText: true,
                                   cropToImageSize: false,
                                   imageType: 'jpg'
                               }
                           }}
-                          onSketchSaved={(success, path) => {
-                              Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
-                          }}
+                          onSketchSaved={this.onSketchSaved}
                           onPathsChange={(pathsCount) => {
                               console.log('pathsCount', pathsCount)
                           }}
