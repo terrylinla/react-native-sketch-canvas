@@ -1,6 +1,7 @@
 package com.terrylinla.rnsketchcanvas;
 
 import android.annotation.TargetApi;
+import android.graphics.Picture;
 import android.graphics.Region;
 import android.graphics.Typeface;
 import android.graphics.Bitmap;
@@ -52,13 +53,9 @@ public class SketchCanvas extends View {
     private boolean mDisableHardwareAccelerated = false;
 
     private Paint mPaint = new Paint();
-    private Bitmap mDrawingBitmap = null;
-    private Canvas mDrawingCanvas = null;
-
-    private boolean mNeedsFullRedraw = true;
 
     private int mOriginalWidth, mOriginalHeight;
-    private Bitmap mBackgroundImage;
+    private Picture mBackgroundImage;
     private String mContentMode;
 
     private ArrayList<CanvasText> mArrCanvasText = new ArrayList<CanvasText>();
@@ -96,10 +93,16 @@ public class SketchCanvas extends View {
                 BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
                 BitmapFactory.decodeResource(mContext.getResources(), res);
             if(bitmap != null) {
-                mBackgroundImage = bitmap;
+                Picture picture = new Picture();
                 mOriginalHeight = bitmap.getHeight();
                 mOriginalWidth = bitmap.getWidth();
+                Canvas canvas = picture.beginRecording(mOriginalWidth, mOriginalHeight);
+                canvas.drawBitmap(bitmap, 0, 0, null);
+                picture.endRecording();
+
+                mBackgroundImage = picture;
                 mContentMode = mode;
+                bitmap.recycle();
 
                 invalidateCanvas(true);
 
@@ -202,7 +205,6 @@ public class SketchCanvas extends View {
     public void clear() {
         mPaths.clear();
         mCurrentPath = null;
-        mNeedsFullRedraw = true;
         invalidateCanvas(true);
     }
 
@@ -219,14 +221,7 @@ public class SketchCanvas extends View {
 
     public void addPoint(float x, float y) {
         Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
-
-        if (mCurrentPath.isTranslucent) {
-            mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-            mCurrentPath.draw(mDrawingCanvas);
-        } else {
-            mCurrentPath.drawLastPoint(mDrawingCanvas);
-        }
-        invalidate(updateRect);
+        invalidate();
     }
 
     public void  addPaths(@Nullable ReadableArray paths){
@@ -254,7 +249,7 @@ public class SketchCanvas extends View {
                 mDisableHardwareAccelerated = true;
                 setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             }
-            newPath.draw(mDrawingCanvas);
+            invalidate();
         }
     }
 
@@ -269,18 +264,14 @@ public class SketchCanvas extends View {
 
         if (index > -1) {
             mPaths.remove(index);
-            mNeedsFullRedraw = true;
             invalidateCanvas(true);
         }
     }
 
     public void end() {
         if (mCurrentPath != null) {
-            if (mCurrentPath.isTranslucent) {
-                mCurrentPath.draw(mDrawingCanvas);
-                mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-            }
             mCurrentPath = null;
+            invalidate();
         }
     }
 
@@ -310,6 +301,7 @@ public class SketchCanvas extends View {
                                 format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
                                 format.equals("png") ? 100 : 90,
                                 new FileOutputStream(file));
+                        bitmap.recycle();
                         post(new Runnable() {
                             public void run() {
                                 onSaved(true, file.getPath());
@@ -317,7 +309,6 @@ public class SketchCanvas extends View {
                         });
                     } catch (Exception e) {
                         e.printStackTrace();
-                        //Log.e(SketchCanvas.TAG, e.toString());
                         post(new Runnable() {
                             public void run() {
                                 onSaved(false, null);
@@ -343,6 +334,7 @@ public class SketchCanvas extends View {
                         format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
                         format.equals("png") ? 100 : 90,
                         byteArrayOS);
+                bitmap.recycle();
                 post(new Runnable() {
                     public void run() {
                         String base64 = Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
@@ -357,88 +349,45 @@ public class SketchCanvas extends View {
     protected void onSizeChanged(final int w, final int h, final int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         if (getWidth() > 0 && getHeight() > 0 && (w != oldw || h != oldh)) {
-            if(currentRunningThread != null) currentRunningThread.interrupt();
-            currentRunningThread = new Thread(new Runnable() {
-                public void run() {
-                    if (mDrawingBitmap == null || mDrawingBitmap.isRecycled()){
-                        mDrawingBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                                Bitmap.Config.ARGB_8888);
-
-                    } else {
-                        Bitmap drawingBitmap = Bitmap.createScaledBitmap(mDrawingBitmap, getWidth(), getHeight(),true);
-                        mDrawingBitmap.recycle();
-                        mDrawingBitmap = drawingBitmap;
-                    }
-
-                    mDrawingCanvas = new Canvas(mDrawingBitmap);
-
-                    for(CanvasText text: mArrCanvasText) {
-                        PointF position = new PointF(text.position.x, text.position.y);
-                        if (!text.isAbsoluteCoordinate) {
-                            position.x *= getWidth();
-                            position.y *= getHeight();
-                        }
-
-                        position.x -= text.textBounds.left;
-                        position.y -= text.textBounds.top;
-                        position.x -= (text.textBounds.width() * text.anchor.x);
-                        position.y -= (text.height * text.anchor.y);
-                        text.drawPosition = position;
-
-                    }
-
-
-                    post(new Runnable() {
-                        public void run() {
-                            currentRunningThread = null;
-                            mNeedsFullRedraw = true;
-                            invalidate();
-                        }
-                    });
+            for(CanvasText text: mArrCanvasText) {
+                PointF position = new PointF(text.position.x, text.position.y);
+                if (!text.isAbsoluteCoordinate) {
+                    position.x *= getWidth();
+                    position.y *= getHeight();
                 }
-            });
-            currentRunningThread.start();
+
+                position.x -= text.textBounds.left;
+                position.y -= text.textBounds.top;
+                position.x -= (text.textBounds.width() * text.anchor.x);
+                position.y -= (text.height * text.anchor.y);
+                text.drawPosition = position;
+
+            }
         }
     }
-
-    /*
-    @Override
-    public void draw(Canvas canvas) {
-        layout(0,0, getWidth(), getHeight());
-        super.draw(drawViewOnCanvas(canvas));
-    }
-    */
-
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        drawViewOnCanvas(canvas);
+        drawOnCanvas(canvas);
     }
 
-    private Canvas drawViewOnCanvas(Canvas canvas){
-        if (mNeedsFullRedraw && mDrawingCanvas != null) {
-            mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-            for(SketchData path: mPaths) {
-                path.draw(mDrawingCanvas);
-            }
-            mNeedsFullRedraw = false;
-        }
+    private Canvas drawOnCanvas(Canvas canvas){
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
 
         if (mBackgroundImage != null) {
             Rect dstRect = new Rect();
             canvas.getClipBounds(dstRect);
-            canvas.drawBitmap(mBackgroundImage, null,
-                    Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode),
-                    null);
+            Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode).roundOut(dstRect);
+            canvas.drawPicture(mBackgroundImage, dstRect);
         }
 
         for(CanvasText text: mArrSketchOnText) {
             canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
         }
 
-        if (mDrawingBitmap != null && !mDrawingBitmap.isRecycled()) {
-            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+        for(SketchData path: mPaths) {
+            path.draw(canvas);
         }
 
         for(CanvasText text: mArrTextOnSketch) {
@@ -467,12 +416,19 @@ public class SketchCanvas extends View {
             Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
 
         if (mBackgroundImage != null && includeImage) {
             Rect targetRect = new Rect();
-            Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), 
-                bitmap.getWidth(), bitmap.getHeight(), "AspectFit").roundOut(targetRect);
-            canvas.drawBitmap(mBackgroundImage, null, targetRect, null);
+            if(cropToImageSize){
+                Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(),
+                        bitmap.getWidth(), bitmap.getHeight(), "AspectFit").roundOut(targetRect);
+            }
+            else{
+                Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), bitmap.getWidth(), bitmap.getHeight(), mContentMode).roundOut(targetRect);
+            }
+            canvas.drawPicture(mBackgroundImage, targetRect);
+
         }
 
         if (includeText) {
@@ -481,13 +437,8 @@ public class SketchCanvas extends View {
             }
         }
 
-        if (mBackgroundImage != null && cropToImageSize) {
-            Rect targetRect = new Rect();
-            Utility.fillImage(mDrawingBitmap.getWidth(), mDrawingBitmap.getHeight(), 
-                bitmap.getWidth(), bitmap.getHeight(), "AspectFill").roundOut(targetRect);
-            canvas.drawBitmap(mDrawingBitmap, null, targetRect, mPaint);
-        } else {
-            canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
+        for(SketchData path: mPaths) {
+            path.draw(canvas);
         }
 
         if (includeText) {
@@ -495,6 +446,7 @@ public class SketchCanvas extends View {
                 canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
             }
         }
+
         return bitmap;
     }
 
@@ -520,59 +472,6 @@ public class SketchCanvas extends View {
         return mTouchRadius <= 0 && strokeWidth > 0? (int)(strokeWidth * 0.5): mTouchRadius;
     }
 
-    public int sampleColor(int x, int y){
-        return mDrawingBitmap.getPixel(x, y);
-    }
-
-    private SketchCanvasPoint getSketchCanvasPoint(int x, int y){
-        if(mDrawingBitmap.getWidth() < x || mDrawingBitmap.getHeight() < y){
-            return null;
-        }
-        return new SketchCanvasPoint(x, y, sampleColor(x, y));
-    }
-
-    private ArrayList<SketchCanvasPoint> getTouchPoints(int x, int y, int r) {
-        ArrayList<SketchCanvasPoint> range = new ArrayList<SketchCanvasPoint>();
-        SketchCanvasPoint middle = getSketchCanvasPoint(x, y);
-        SketchCanvasPoint point;
-
-        for (int i = -r; i <= r; i++){
-            for (int j = -r; j <= r; j++){
-                point = getSketchCanvasPoint(x + i, y + j);
-                if(point != null && (int)SketchCanvasPoint.getHypot(point, middle) <= r){
-                    range.add(point);
-                }
-            }
-        }
-        return range;
-    }
-
-    private WritableMap getColorMapForTouch(int x, int y, int r){
-        int red = 0, green = 0, blue = 0, alpha = 0;
-        SketchCanvasPoint point;
-        WritableMap m = Arguments.createMap();
-        ArrayList<SketchCanvasPoint> points = getTouchPoints(x, y, r);
-
-        for (int i = 0; i < points.size(); i++){
-            point = points.get(i);
-            red += point.red();
-            green += point.green();
-            blue += point.blue();
-            alpha += point.alpha();
-        }
-
-        red /= points.size();
-        green /= points.size();
-        blue /= points.size();
-        alpha /= points.size();
-
-        m.putInt("red", red);
-        m.putInt("green", green);
-        m.putInt("blue", blue);
-        m.putInt("alpha", alpha);
-        m.putInt("color", Color.argb(alpha, red, green, blue));
-        return m;
-    }
     @TargetApi(19)
     public boolean isPointUnderTransparentPath(int x, int y, int pathId){
         int beginAt = Math.min(getPathIndex(pathId) + 1, mPaths.size() - 1);
@@ -614,6 +513,6 @@ public class SketchCanvas extends View {
     }
 
     public void tearDown(){
-        mDrawingBitmap.recycle();
+
     }
 }
