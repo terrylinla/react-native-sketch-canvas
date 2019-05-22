@@ -188,12 +188,9 @@ const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
 
 	viewport: {
-		flex: 0,
-		width: screenWidth,
-		height: screenHeight - (Platform.OS === 'android' ? 80 : 62),
+		flex: 1,
 		backgroundColor: 'transparent',
 		borderWidth: 0,
-
 		overflow: 'hidden',
 		justifyContent: 'center',
 		alignItems: 'center',
