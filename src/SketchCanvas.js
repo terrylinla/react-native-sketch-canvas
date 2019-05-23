@@ -14,15 +14,7 @@ import ReactNative, {
     View
 } from 'react-native';
 import { requestPermissions } from './handlePermissions';
-let PanGestureHandler, GHState;
-try {
-    const { PanGestureHandler: Handler, State } = require('react-native-gesture-handler');
-    PanGestureHandler = Handler;
-    GHState = State;
-}
-catch (err) {
-    console.warn(err);
-}
+import { PanGestureHandler, State as GHState } from 'react-native-gesture-handler';
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
     nativeOnly: {
