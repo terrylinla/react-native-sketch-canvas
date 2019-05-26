@@ -433,6 +433,7 @@ class SketchCanvas extends React.Component {
                 waitFor={waitFor}
                 onHandlerStateChange={this.onHandlerStateChange}
                 onGestureEvent={this.onGestureEvent}
+                disallowInterruption
             >
                 {this.renderBaseView()}
             </PanGestureHandler>
