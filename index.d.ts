@@ -88,8 +88,8 @@ export interface SketchCanvasProps {
      */
     hardwareAccelerated?: boolean
 
-    onStrokeStart?: () => void
-    onStrokeChanged?: () => void
+    onStrokeStart?: (x: number, y: number) => void
+    onStrokeChanged?: (x: number, y: number) => void
     onStrokeEnd?: (path: Path) => void
     onSketchSaved?: (result: boolean, path: string) => void
     onPathsChange?: (pathsCount: number) => void,
@@ -178,8 +178,8 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & GestureHan
 export interface RNSketchCanvasProps {
   containerStyle?: StyleProp<ViewStyle>
   canvasStyle?: StyleProp<ViewStyle>
-  onStrokeStart?: () => void
-  onStrokeChanged?: () => void
+  onStrokeStart?: (x: number, y: number) => void
+  onStrokeChanged?: (x: number, y: number) => void
   onStrokeEnd?: (path: Path) => void
   onClosePressed?: () => void
   onUndoPressed?: (id: number) => void
