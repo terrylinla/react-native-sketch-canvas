@@ -2,7 +2,6 @@
 const { mergeConfig } = require("metro-config");
 const path = require('path');
 const pkg = require('./package.json');
-const _ = require('lodash');
 const configB = require('../metro.config');
 
 const config = {
