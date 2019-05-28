@@ -7,3 +7,4 @@ console.log(chalk.bold.bgYellow.yellow.inverse(packageName));
 console.log(chalk.bold.yellow.underline(title));
 console.log(chalk.bold(message));
 console.log(chalk.bold.magentaBright(link));
+console.log('\n\n');
