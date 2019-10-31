@@ -37,3 +37,5 @@ export default class example extends Component {
 
 AppRegistry.registerComponent("example", () => example);
 ```
+
+Set up your image in the in a drawable folder, as you can see [here](https://github.com/thalesgaldino/react-native-canvas-scratch-card-demo/tree/master/android/app/src/main/res/drawable-xxhdpi). To check out the demo, have a look [here](https://github.com/thalesgaldino/react-native-canvas-scratch-card-demo)
