@@ -99,7 +99,7 @@ class SketchCanvas extends React.Component {
     this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null)
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({
       text: this._processText(nextProps.text ? nextProps.text.map(t => Object.assign({}, t)) : null)
     })
@@ -159,7 +159,7 @@ class SketchCanvas extends React.Component {
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
       onStartShouldSetPanResponder: (evt, gestureState) => this.props.touchEnabled && gestureState.numberActiveTouches === this.props.requiredTouches,
