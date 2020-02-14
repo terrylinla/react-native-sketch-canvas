@@ -195,26 +195,28 @@ class SketchCanvas extends React.Component {
               this._path.width * this._screenScale
             ]
         )
-        if(!this.state.prevX && !this.state.prevY) {
-          UIManager.dispatchViewManagerCommand(
-              this._handle,
-              UIManager.RNSketchCanvas.Commands.addPoint,
-              [
-                parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
-                parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
-              ]
-          )
-          this.setState({
-            isFirstPoint: true,
-            firstPointPathId: this._path.id,
-            prevPointPathId: this._path.id,
-          })
-        }
-        if (!this.state.previewX && !this.state.previewY) {
-          this.setState({
-            previewX: parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
-            previewY: parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale),
-          })
+        if (this.props.lineEnabled) {
+          if(!this.state.prevX && !this.state.prevY) {
+            UIManager.dispatchViewManagerCommand(
+                this._handle,
+                UIManager.RNSketchCanvas.Commands.addPoint,
+                [
+                  parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
+                  parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
+                ]
+            )
+            this.setState({
+              isFirstPoint: true,
+              firstPointPathId: this._path.id,
+              prevPointPathId: this._path.id,
+            })
+          }
+          if (!this.state.previewX && !this.state.previewY) {
+            this.setState({
+              previewX: parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
+              previewY: parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale),
+            })
+          }
         }
         const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)), y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
         this._path.data.push(`${x},${y}`)
@@ -356,32 +358,32 @@ class SketchCanvas extends React.Component {
 
   render() {
     return (
-    <RNSketchCanvas
-      ref={ref => {
-        this._handle = ReactNative.findNodeHandle(ref)
-      }}
-      style={this.props.style}
-      onLayout={e => {
-        this._size = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
-        this._initialized = true
-        this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
-      }}
-      {...this.panResponder.panHandlers}
-      onChange={(e) => {
-        if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
-          this.props.onPathsChange(e.nativeEvent.pathsUpdate)
-        } else if (e.nativeEvent.hasOwnProperty('success') && e.nativeEvent.hasOwnProperty('path')) {
-          this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
-        } else if (e.nativeEvent.hasOwnProperty('success')) {
-          this.props.onSketchSaved(e.nativeEvent.success)
-        }
-      }}
-      localSourceImage={this.props.localSourceImage}
-      permissionDialogTitle={this.props.permissionDialogTitle}
-      permissionDialogMessage={this.props.permissionDialogMessage}
-      text={this.state.text}
-    />
-  );
+      <RNSketchCanvas
+          ref={ref => {
+            this._handle = ReactNative.findNodeHandle(ref)
+          }}
+          style={this.props.style}
+          onLayout={e => {
+            this._size = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
+            this._initialized = true
+            this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
+          }}
+          {...this.panResponder.panHandlers}
+          onChange={(e) => {
+            if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
+              this.props.onPathsChange(e.nativeEvent.pathsUpdate)
+            } else if (e.nativeEvent.hasOwnProperty('success') && e.nativeEvent.hasOwnProperty('path')) {
+              this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
+            } else if (e.nativeEvent.hasOwnProperty('success')) {
+              this.props.onSketchSaved(e.nativeEvent.success)
+            }
+          }}
+          localSourceImage={this.props.localSourceImage}
+          permissionDialogTitle={this.props.permissionDialogTitle}
+          permissionDialogMessage={this.props.permissionDialogMessage}
+          text={this.state.text}
+      />
+    );
   }
 }
 
