@@ -195,15 +195,17 @@ public class SketchCanvas extends View {
     }
 
     public void addPoint(float x, float y) {
-        Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
+        if (mCurrentPath != null) {
+            Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
 
-        if (mCurrentPath.isTranslucent) {
-            mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-            mCurrentPath.draw(mTranslucentDrawingCanvas);
-        } else {
-            mCurrentPath.drawLastPoint(mDrawingCanvas);
+            if (mCurrentPath.isTranslucent) {
+                mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+                mCurrentPath.draw(mTranslucentDrawingCanvas);
+            } else {
+                mCurrentPath.drawLastPoint(mDrawingCanvas);
+            }
+            invalidate(updateRect);
         }
-        invalidate(updateRect);
     }
 
     public void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
