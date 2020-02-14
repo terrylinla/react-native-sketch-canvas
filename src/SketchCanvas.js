@@ -37,6 +37,8 @@ class SketchCanvas extends React.Component {
 
     touchEnabled: PropTypes.bool,
 
+    lineEnabled: PropTypes.bool,
+
     text: PropTypes.arrayOf(PropTypes.shape({
       text: PropTypes.string,
       font: PropTypes.string,
@@ -69,6 +71,8 @@ class SketchCanvas extends React.Component {
 
     touchEnabled: true,
 
+    lineEnabled: false,
+
     text: null,
     localSourceImage: null,
 
@@ -77,7 +81,15 @@ class SketchCanvas extends React.Component {
   };
 
   state = {
-    text: null
+    text: null,
+    prevX: null,
+    prevY: null,
+    previewX: null,
+    previewY: null,
+    prevPathId: null,
+    isFirstPoint: false,
+    firstPointPathId: null,
+    prevPointPathId: null,
   }
 
   constructor(props) {
@@ -114,7 +126,10 @@ class SketchCanvas extends React.Component {
   undo() {
     let lastId = -1;
     this._paths.forEach(d => lastId = d.drawer === this.props.user ? d.path.id : lastId)
-    if (lastId >= 0) this.deletePath(lastId)
+    if (lastId >= 0) {
+      this.deletePath(lastId)
+    }
+
     return lastId
   }
 
@@ -172,47 +187,161 @@ class SketchCanvas extends React.Component {
         }
 
         UIManager.dispatchViewManagerCommand(
-          this._handle,
-          UIManager.RNSketchCanvas.Commands.newPath,
-          [
-            this._path.id,
-            processColor(this._path.color),
-            this._path.width * this._screenScale
-          ]
+            this._handle,
+            UIManager.RNSketchCanvas.Commands.newPath,
+            [
+              this._path.id,
+              processColor(this._path.color),
+              this._path.width * this._screenScale
+            ]
         )
-        UIManager.dispatchViewManagerCommand(
-          this._handle,
-          UIManager.RNSketchCanvas.Commands.addPoint,
-          [
-            parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
-          ]
-        )
+        if(!this.state.prevX && !this.state.prevY) {
+          UIManager.dispatchViewManagerCommand(
+              this._handle,
+              UIManager.RNSketchCanvas.Commands.addPoint,
+              [
+                parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
+                parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
+              ]
+          )
+          this.setState({
+            isFirstPoint: true,
+            firstPointPathId: this._path.id,
+            prevPointPathId: this._path.id,
+          })
+        }
+        if (!this.state.previewX && !this.state.previewY) {
+          this.setState({
+            previewX: parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
+            previewY: parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale),
+          })
+        }
         const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)), y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
         this._path.data.push(`${x},${y}`)
         this.props.onStrokeStart(x, y)
       },
       onPanResponderMove: (evt, gestureState) => {
-        if (!this.props.touchEnabled) return
-        if (this._path) {
-          UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
-            parseFloat((gestureState.x0 + ((gestureState.moveX - gestureState.x0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.y0 + ((gestureState.moveY - gestureState.y0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.y).toFixed(2) * this._screenScale)
-          ])
-          const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)), y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
-          this._path.data.push(`${x},${y}`)
-          this.props.onStrokeChanged(x, y)
+        const prevX = parseFloat((gestureState.x0 + ((gestureState.moveX - gestureState.x0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.x).toFixed(2) * this._screenScale);
+        const prevY = parseFloat((gestureState.y0 + ((gestureState.moveY - gestureState.y0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.y).toFixed(2) * this._screenScale);
+        if (!this.props.lineEnabled) {
+          if (!this.props.touchEnabled) return
+          if (this._path) {
+            UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+              prevX,
+              prevY
+            ])
+            const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)),
+                y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
+            this._path.data.push(`${x},${y}`)
+            this.props.onStrokeChanged(x, y)
+          }
+        } else {
+          if((gestureState.moveX !== (gestureState.x0))
+              && (gestureState.moveY !== (gestureState.y0))) {
+            this.setState({
+              prevX: null,
+              prevY: null,
+            })
+            this._path.id = parseInt(Math.random() * 100000000)
+            if(this.state.previewX && this.state.previewY) {
+              if (this.state.isFirstPoint) {
+                UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, [])
+                this.deletePath(this.state.firstPointPathId)
+              }
+              UIManager.dispatchViewManagerCommand(
+                  this._handle,
+                  UIManager.RNSketchCanvas.Commands.newPath,
+                  [
+                    this._path.id,
+                    processColor(this._path.color),
+                    this._path.width * this._screenScale
+                  ]
+              )
+              UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+                this.state.previewX,
+                this.state.previewY
+              ])
+            }
+            UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+              prevX,
+              prevY
+            ])
+            this.setState({
+              prevPathId: this._path.id,
+            })
+            const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)),
+                y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
+            this._path.data.push(`${x},${y}`)
+            this.props.onStrokeChanged(x, y)
+            UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, [])
+            if (this.state.prevPathId) {
+              this.deletePath(this.state.prevPathId)
+            }
+          }
+          return true;
         }
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
+
+        if (this.props.lineEnabled) {
+          const prevX = parseFloat((gestureState.x0 + ((gestureState.moveX - gestureState.x0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.x).toFixed(2) * this._screenScale);
+          const prevY = parseFloat((gestureState.y0 + ((gestureState.moveY - gestureState.y0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.y).toFixed(2) * this._screenScale);
+          if((gestureState.moveX !== (gestureState.x0))
+              && (gestureState.moveY !== (gestureState.y0))) {
+            UIManager.dispatchViewManagerCommand(
+                this._handle,
+                UIManager.RNSketchCanvas.Commands.newPath,
+                [
+                  this._path.id,
+                  processColor(this._path.color),
+                  this._path.width * this._screenScale
+                ]
+            )
+          } else {
+            if(!this.state.prevX && !this.state.prevY) {
+              this.setState({
+                prevX: prevX,
+                prevY: prevY,
+              })
+              UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+                prevX,
+                prevY
+              ])
+            }
+            else {
+              UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+                this.state.prevX,
+                this.state.prevY
+              ])
+              UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+                prevX,
+                prevY
+              ])
+              this.deletePath(this.state.prevPointPathId)
+              this.setState({
+                prevX: null,
+                prevY: null,
+              })
+            }
+          }
+        }
         if (this._path) {
           this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user })
           this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
         }
         UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, [])
-      },
 
+        if (this.state.previewX || this.state.previewY) {
+          this.setState({
+            previewX: null,
+            previewY: null,
+            prevPathId: null,
+            isFirstPoint: false,
+            firstPointPathId: null,
+          })
+        }
+      },
       onShouldBlockNativeResponder: (evt, gestureState) => {
         return true;
       },
@@ -221,39 +350,39 @@ class SketchCanvas extends React.Component {
 
   async componentDidMount() {
     const isStoragePermissionAuthorized = await requestPermissions(
-      this.props.permissionDialogTitle,
-      this.props.permissionDialogMessage,
+        this.props.permissionDialogTitle,
+        this.props.permissionDialogMessage,
     );
   }
 
   render() {
     return (
-      <RNSketchCanvas
-        ref={ref => {
-          this._handle = ReactNative.findNodeHandle(ref)
-        }}
-        style={this.props.style}
-        onLayout={e => {
-          this._size = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
-          this._initialized = true
-          this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
-        }}
-        {...this.panResponder.panHandlers}
-        onChange={(e) => {
-          if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
-            this.props.onPathsChange(e.nativeEvent.pathsUpdate)
-          } else if (e.nativeEvent.hasOwnProperty('success') && e.nativeEvent.hasOwnProperty('path')) {
-            this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
-          } else if (e.nativeEvent.hasOwnProperty('success')) {
-            this.props.onSketchSaved(e.nativeEvent.success)
-          }
-        }}
-        localSourceImage={this.props.localSourceImage}
-        permissionDialogTitle={this.props.permissionDialogTitle}
-        permissionDialogMessage={this.props.permissionDialogMessage}
-        text={this.state.text}
-      />
-    );
+    <RNSketchCanvas
+      ref={ref => {
+        this._handle = ReactNative.findNodeHandle(ref)
+      }}
+      style={this.props.style}
+      onLayout={e => {
+        this._size = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
+        this._initialized = true
+        this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
+      }}
+      {...this.panResponder.panHandlers}
+      onChange={(e) => {
+        if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
+          this.props.onPathsChange(e.nativeEvent.pathsUpdate)
+        } else if (e.nativeEvent.hasOwnProperty('success') && e.nativeEvent.hasOwnProperty('path')) {
+          this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
+        } else if (e.nativeEvent.hasOwnProperty('success')) {
+          this.props.onSketchSaved(e.nativeEvent.success)
+        }
+      }}
+      localSourceImage={this.props.localSourceImage}
+      permissionDialogTitle={this.props.permissionDialogTitle}
+      permissionDialogMessage={this.props.permissionDialogMessage}
+      text={this.state.text}
+    />
+  );
   }
 }
 
