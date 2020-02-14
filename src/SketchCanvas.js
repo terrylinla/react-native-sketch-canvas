@@ -13,7 +13,6 @@ import ReactNative, {
   processColor
 } from 'react-native'
 import { requestPermissions } from './handlePermissions';
-import Svg, {Path, Line} from 'react-native-svg';
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
   nativeOnly: {
@@ -358,30 +357,30 @@ class SketchCanvas extends React.Component {
 
   render() {
     return (
-        <RNSketchCanvas
-    ref={ref => {
-      this._handle = ReactNative.findNodeHandle(ref)
-    }}
-    style={this.props.style}
-    onLayout={e => {
-      this._size = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
-      this._initialized = true
-      this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
-    }}
-    {...this.panResponder.panHandlers}
-    onChange={(e) => {
-      if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
-        this.props.onPathsChange(e.nativeEvent.pathsUpdate)
-      } else if (e.nativeEvent.hasOwnProperty('success') && e.nativeEvent.hasOwnProperty('path')) {
-        this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
-      } else if (e.nativeEvent.hasOwnProperty('success')) {
-        this.props.onSketchSaved(e.nativeEvent.success)
-      }
-    }}
-    localSourceImage={this.props.localSourceImage}
-    permissionDialogTitle={this.props.permissionDialogTitle}
-    permissionDialogMessage={this.props.permissionDialogMessage}
-    text={this.state.text}
+    <RNSketchCanvas
+      ref={ref => {
+        this._handle = ReactNative.findNodeHandle(ref)
+      }}
+      style={this.props.style}
+      onLayout={e => {
+        this._size = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }
+        this._initialized = true
+        this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
+      }}
+      {...this.panResponder.panHandlers}
+      onChange={(e) => {
+        if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
+          this.props.onPathsChange(e.nativeEvent.pathsUpdate)
+        } else if (e.nativeEvent.hasOwnProperty('success') && e.nativeEvent.hasOwnProperty('path')) {
+          this.props.onSketchSaved(e.nativeEvent.success, e.nativeEvent.path)
+        } else if (e.nativeEvent.hasOwnProperty('success')) {
+          this.props.onSketchSaved(e.nativeEvent.success)
+        }
+      }}
+      localSourceImage={this.props.localSourceImage}
+      permissionDialogTitle={this.props.permissionDialogTitle}
+      permissionDialogMessage={this.props.permissionDialogMessage}
+      text={this.state.text}
     />
   );
   }
