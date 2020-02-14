@@ -221,10 +221,10 @@ class SketchCanvas extends React.Component {
         this.props.onStrokeStart(x, y)
       },
       onPanResponderMove: (evt, gestureState) => {
+        if (!this.props.touchEnabled) return
         const prevX = parseFloat((gestureState.x0 + ((gestureState.moveX - gestureState.x0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.x).toFixed(2) * this._screenScale);
         const prevY = parseFloat((gestureState.y0 + ((gestureState.moveY - gestureState.y0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.y).toFixed(2) * this._screenScale);
         if (!this.props.lineEnabled) {
-          if (!this.props.touchEnabled) return
           if (this._path) {
             UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
               prevX,
@@ -278,7 +278,6 @@ class SketchCanvas extends React.Component {
               this.deletePath(this.state.prevPathId)
             }
           }
-          return true;
         }
       },
       onPanResponderRelease: (evt, gestureState) => {
