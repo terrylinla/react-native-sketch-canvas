@@ -167,7 +167,10 @@ public class SketchData {
 
             // Draw a line to the middle of points a and b
             // This is so the next draw which uses a curve looks correct and continues from there
-            canvas.drawLine(a.x, a.y, mid.x, mid.y, getPaint());
+            // canvas.drawLine(a.x, a.y, mid.x, mid.y, getPaint());
+
+            // Draw a line from a to b points
+            canvas.drawLine(a.x, a.y, b.x, b.y, getPaint());
         } else if (pointsCount >= 1) {
             PointF a = points.get(pointIndex);
 
