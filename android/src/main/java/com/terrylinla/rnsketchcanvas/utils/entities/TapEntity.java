@@ -105,11 +105,6 @@ public class TapEntity extends MotionEntity {
         TapPath.lineTo(centerX - mBordersPadding + halfWidth, centerY + thirdWidth); // Bottom Right
         TapPath.lineTo(centerX + mBordersPadding - halfWidth, getLayer().getY() + mBordersPadding); // Back to Top Left
 
-//        TapPath.moveTo(centerX, getLayer().getY() + mBordersPadding); // Top
-//        TapPath.lineTo(centerX + mBordersPadding - halfWidth, centerY + halfWidth); // Bottom Left
-//        TapPath.lineTo(centerX - mBordersPadding + halfWidth, centerY + halfWidth); // Bottom Right
-//        TapPath.lineTo(centerX, getLayer().getY() + mBordersPadding); // Back to Top
-
         TapPath.close();
         this.mTapCanvas.drawPath(TapPath, mTapPaint);
     }
