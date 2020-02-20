@@ -10,7 +10,8 @@ import ReactNative, {
   PixelRatio,
   Platform,
   ViewPropTypes,
-  processColor
+  processColor,
+  Dimensions,
 } from 'react-native'
 import { requestPermissions } from './handlePermissions';
 
@@ -47,6 +48,10 @@ class SketchCanvas extends React.Component {
 
     lineEnabled: PropTypes.bool,
 
+    lastX: PropTypes.number,
+    lastY: PropTypes.number,
+    distanceLeft: PropTypes.number,
+
     text: PropTypes.arrayOf(PropTypes.shape({
       text: PropTypes.string,
       font: PropTypes.string,
@@ -80,7 +85,7 @@ class SketchCanvas extends React.Component {
       shapeBorderStyle: "Dashed",
       shapeBorderStrokeWidth: 1,
       shapeColor: "#000000",
-      shapeStrokeWidth: 3
+      shapeStrokeWidth: 3,
     },
     user: null,
     zoomLevel: 1,
@@ -107,6 +112,10 @@ class SketchCanvas extends React.Component {
     firstPointPathId: null,
     prevPointPathId: null,
     hasPanResponder: false,
+    layoutWidth: 0,
+    layoutHeight: 0,
+    zoomLayoutWidth: 0,
+    zoomLayoutHeight: 0,
   }
 
   constructor(props) {
@@ -188,11 +197,54 @@ class SketchCanvas extends React.Component {
   addShape(config) {
     if (config) {
       let fontSize = config.textShapeFontSize ? config.textShapeFontSize : 0;
-      UIManager.dispatchViewManagerCommand(
-          this._handle,
-          UIManager.getViewManagerConfig(RNSketchCanvas).Commands.addShape,
-          [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset]
-      );
+      // const prevX = parseFloat((gestureState.x0 + ((gestureState.moveX - gestureState.x0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.x).toFixed(2) * this._screenScale);
+
+      if(this.props.zoomLevel > 1) {
+        console.tron.log("this.props.lastX", this.props.lastX)
+        console.tron.log("this.props.lastY", this.props.lastY)
+        console.tron.log("this.props.distanceLeft", this.props.distanceLeft)
+        console.tron.log("this.props.distanceRight", this.props.distanceRight)
+        console.tron.log("this.props.distanceBottom", this.props.distanceBottom)
+        console.tron.log("this.props.distanceTop", this.props.distanceTop)
+        console.tron.log("this.state", this.state)
+        console.tron.log("this.state.layoutWidth", this.state.layoutWidth)
+        console.tron.log("this.state.layoutHeight", this.state.layoutHeight)
+        /*
+                !!! ()  const width = parseFloat(((this.state.layoutWidth - this.props.lastX) - this._offset.x)).toFixed(2) * this._screenScale)
+                !!! ()  const height = parseFloat(((this.state.layoutHeight - this.props.lastY) - this._offset.y)).toFixed(2) * this._screenScale)
+        */
+        const distanceX = ((this.state.layoutWidth + this.props.distanceLeft + this.props.distanceRight) / 2) - this.props.distanceLeft
+        const distanceY = ((this.state.layoutHeight + this.props.distanceTop + this.props.distanceBottom) / 2) - this.props.distanceTop
+        const newCenterX = parseFloat((distanceX).toFixed(2) * this._screenScale)
+        const newCenterY = parseFloat((distanceY).toFixed(2) * this._screenScale)
+        console.tron.log("distanceX", distanceX)
+        console.tron.log("distanceY", distanceY)
+        console.tron.log("newCenterX", newCenterX)
+        console.tron.log("newCenterY", newCenterY)
+        UIManager.dispatchViewManagerCommand(
+            this._handle,
+            UIManager.getViewManagerConfig(RNSketchCanvas).Commands.addShape,
+            [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset, newCenterX, newCenterY]
+        );
+      } else {
+        console.tron.log("this.props.lastX", this.props.lastX)
+        console.tron.log("this.props.lastY", this.props.lastY)
+        console.tron.log("this.props.distanceLeft", this.props.distanceLeft)
+        console.tron.log("this.props.distanceRight", this.props.distanceRight)
+        console.tron.log("this.props.distanceBottom", this.props.distanceBottom)
+        console.tron.log("this.props.distanceTop", this.props.distanceTop)
+        const centerX = (parseFloat((this.state.layoutWidth - this._offset.x)).toFixed(2) * this._screenScale) / 2
+        const centerY = (parseFloat((this.state.layoutHeight - this._offset.y)).toFixed(2) * this._screenScale) / 2
+        UIManager.dispatchViewManagerCommand(
+            this._handle,
+            UIManager.getViewManagerConfig(RNSketchCanvas).Commands.addShape,
+            [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset, centerX, centerY]
+        );
+        console.tron.log("CenterX", centerX)
+        console.tron.log("CenterY", centerY)
+      }
+
+      //const centerY = (this.state.layoutHeight / 2) * this._screenScale;
     }
   }
 
@@ -443,6 +495,10 @@ class SketchCanvas extends React.Component {
             }}
             style={this.props.style}
             onLayout={(e) => {
+              this.setState({
+                layoutWidth: e.nativeEvent.layout.width,
+                layoutHeight: e.nativeEvent.layout.height,
+              })
               this._size = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height };
               this._initialized = true;
               this._pathsToProcess.length > 0 && this._pathsToProcess.forEach((p) => this.addPath(p));
@@ -468,7 +524,7 @@ class SketchCanvas extends React.Component {
               shapeBorderStyle: this.props.shapeConfiguration.shapeBorderStyle,
               shapeBorderStrokeWidth: this.props.shapeConfiguration.shapeBorderStrokeWidth,
               shapeColor: processColor(this.props.strokeColor),
-              shapeStrokeWidth: this.props.strokeWidth
+              shapeStrokeWidth: this.props.strokeWidth,
             }}
             text={this.state.text}
         />

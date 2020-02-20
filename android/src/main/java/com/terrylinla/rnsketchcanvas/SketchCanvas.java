@@ -595,10 +595,10 @@ public class SketchCanvas extends View {
      * MotionEntities related code
      *
      **/
-    public void addEntity(EntityType shapeType, String textShapeFontType, int textShapeFontSize, String textShapeText, String imageShapeAsset) {
+    public void addEntity(EntityType shapeType, String textShapeFontType, int textShapeFontSize, String textShapeText, String imageShapeAsset, float moveCenterX, float moveCenterY) {
         switch(shapeType) {
             case TAP:
-                addTapEntity();
+                addTapEntity(moveCenterX, moveCenterY);
                 break;
             case CIRCLE:
                 addCircleEntity();
@@ -627,7 +627,11 @@ public class SketchCanvas extends View {
         }
     }
 
-    protected void addTapEntity() {
+    protected void addTapEntity(float moveCenterX, float moveCenterY) {
+        Log.d("ReactNative", "moveCenterX in TapEntity" + moveCenterX);
+        Log.d("ReactNative", "moveCenterY in TapEntity" + moveCenterY);
+        Log.d("ReactNative", "mSketchCanvas.getWidth" + String.valueOf(mSketchCanvas.getWidth()));
+        Log.d("ReactNative", "mSketchCanvas.getHeight" + String.valueOf(mSketchCanvas.getHeight()));
         Layer tapLayer = new Layer();
         TapEntity tapEntity = null;
         if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
@@ -638,7 +642,12 @@ public class SketchCanvas extends View {
         addEntityAndPosition(tapEntity);
 
         PointF center = tapEntity.absoluteCenter();
-        center.y = center.y * 0.5F;
+        //center.x = center.x * 0.5F;
+        //center.y = center.y * 0.5F;
+        center.x = moveCenterX;
+        center.y = moveCenterY;
+        Log.d("ReactNative", "Common center x" + String.valueOf(center.x));
+        Log.d("ReactNative", "Common center y" + String.valueOf(center.y));
         tapEntity.moveCenterTo(center);
 
         invalidateCanvas(true);
