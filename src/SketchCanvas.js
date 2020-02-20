@@ -209,14 +209,12 @@ class SketchCanvas extends React.Component {
         console.tron.log("this.state", this.state)
         console.tron.log("this.state.layoutWidth", this.state.layoutWidth)
         console.tron.log("this.state.layoutHeight", this.state.layoutHeight)
-        /*
-                !!! ()  const width = parseFloat(((this.state.layoutWidth - this.props.lastX) - this._offset.x)).toFixed(2) * this._screenScale)
-                !!! ()  const height = parseFloat(((this.state.layoutHeight - this.props.lastY) - this._offset.y)).toFixed(2) * this._screenScale)
-        */
+
         const distanceX = ((this.state.layoutWidth + this.props.distanceLeft + this.props.distanceRight) / 2) - this.props.distanceLeft
         const distanceY = ((this.state.layoutHeight + this.props.distanceTop + this.props.distanceBottom) / 2) - this.props.distanceTop
         const newCenterX = parseFloat((distanceX).toFixed(2) * this._screenScale)
         const newCenterY = parseFloat((distanceY).toFixed(2) * this._screenScale)
+
         console.tron.log("distanceX", distanceX)
         console.tron.log("distanceY", distanceY)
         console.tron.log("newCenterX", newCenterX)
@@ -224,7 +222,7 @@ class SketchCanvas extends React.Component {
         UIManager.dispatchViewManagerCommand(
             this._handle,
             UIManager.getViewManagerConfig(RNSketchCanvas).Commands.addShape,
-            [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset, newCenterX, newCenterY]
+            [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset, newCenterX, newCenterY, this.props.zoomLevel]
         );
       } else {
         console.tron.log("this.props.lastX", this.props.lastX)
@@ -238,7 +236,7 @@ class SketchCanvas extends React.Component {
         UIManager.dispatchViewManagerCommand(
             this._handle,
             UIManager.getViewManagerConfig(RNSketchCanvas).Commands.addShape,
-            [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset, centerX, centerY]
+            [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset, centerX, centerY, this.props.zoomLevel]
         );
         console.tron.log("CenterX", centerX)
         console.tron.log("CenterY", centerY)
@@ -524,7 +522,7 @@ class SketchCanvas extends React.Component {
               shapeBorderStyle: this.props.shapeConfiguration.shapeBorderStyle,
               shapeBorderStrokeWidth: this.props.shapeConfiguration.shapeBorderStrokeWidth,
               shapeColor: processColor(this.props.strokeColor),
-              shapeStrokeWidth: this.props.strokeWidth,
+              shapeStrokeWidth: this.props.shapeConfiguration.shapeStrokeWidth,
             }}
             text={this.state.text}
         />
