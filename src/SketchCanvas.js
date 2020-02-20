@@ -233,8 +233,8 @@ class SketchCanvas extends React.Component {
         console.tron.log("this.props.distanceRight", this.props.distanceRight)
         console.tron.log("this.props.distanceBottom", this.props.distanceBottom)
         console.tron.log("this.props.distanceTop", this.props.distanceTop)
-        const centerX = (parseFloat((this.state.layoutWidth - this._offset.x)).toFixed(2) * this._screenScale) / 2
-        const centerY = (parseFloat((this.state.layoutHeight - this._offset.y)).toFixed(2) * this._screenScale) / 2
+        const centerX = (parseFloat((this.state.layoutWidth)).toFixed(2) * this._screenScale) / 2
+        const centerY = (parseFloat((this.state.layoutHeight)).toFixed(2) * this._screenScale) / 2
         UIManager.dispatchViewManagerCommand(
             this._handle,
             UIManager.getViewManagerConfig(RNSketchCanvas).Commands.addShape,
