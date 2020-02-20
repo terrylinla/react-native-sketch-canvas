@@ -595,10 +595,10 @@ public class SketchCanvas extends View {
      * MotionEntities related code
      *
      **/
-    public void addEntity(EntityType shapeType, String textShapeFontType, int textShapeFontSize, String textShapeText, String imageShapeAsset, float moveCenterX, float moveCenterY) {
+    public void addEntity(EntityType shapeType, String textShapeFontType, int textShapeFontSize, String textShapeText, String imageShapeAsset, float moveCenterX, float moveCenterY, float zoomLevel) {
         switch(shapeType) {
             case TAP:
-                addTapEntity(moveCenterX, moveCenterY);
+                addTapEntity(moveCenterX, moveCenterY, zoomLevel);
                 break;
             case CIRCLE:
                 addCircleEntity();
@@ -627,27 +627,21 @@ public class SketchCanvas extends View {
         }
     }
 
-    protected void addTapEntity(float moveCenterX, float moveCenterY) {
-        Log.d("ReactNative", "moveCenterX in TapEntity" + moveCenterX);
-        Log.d("ReactNative", "moveCenterY in TapEntity" + moveCenterY);
+    protected void addTapEntity(float moveCenterX, float moveCenterY, float zoomLevel) {
         Log.d("ReactNative", "mSketchCanvas.getWidth" + String.valueOf(mSketchCanvas.getWidth()));
         Log.d("ReactNative", "mSketchCanvas.getHeight" + String.valueOf(mSketchCanvas.getHeight()));
         Layer tapLayer = new Layer();
         TapEntity tapEntity = null;
-        if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
+        //if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
             tapEntity = new TapEntity(tapLayer, mDrawingCanvas.getWidth(), mDrawingCanvas.getHeight(), 300, 20f, mEntityStrokeWidth, mEntityStrokeColor);
-        } else {
-            tapEntity = new TapEntity(tapLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, mEntityStrokeWidth, mEntityStrokeColor);
-        }
-        addEntityAndPosition(tapEntity);
+        //} else {
+        //    tapEntity = new TapEntity(tapLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, mEntityStrokeWidth, mEntityStrokeColor);
+        //}
+        addEntityAndPosition(tapEntity, zoomLevel);
 
         PointF center = tapEntity.absoluteCenter();
-        //center.x = center.x * 0.5F;
-        //center.y = center.y * 0.5F;
         center.x = moveCenterX;
         center.y = moveCenterY;
-        Log.d("ReactNative", "Common center x" + String.valueOf(center.x));
-        Log.d("ReactNative", "Common center y" + String.valueOf(center.y));
         tapEntity.moveCenterTo(center);
 
         invalidateCanvas(true);
@@ -661,7 +655,7 @@ public class SketchCanvas extends View {
         } else {
             circleEntity = new CircleEntity(circleLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 300, 20f, mEntityStrokeWidth, mEntityStrokeColor);
         }
-        addEntityAndPosition(circleEntity);
+        addEntityAndPosition(circleEntity, 1);
 
         PointF center = circleEntity.absoluteCenter();
         center.y = center.y * 0.5F;
@@ -678,7 +672,7 @@ public class SketchCanvas extends View {
         } else {
             triangleEntity = new TriangleEntity(triangleLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 600, 20f, mEntityStrokeWidth, mEntityStrokeColor);
         }
-        addEntityAndPosition(triangleEntity);
+        addEntityAndPosition(triangleEntity, 1);
 
         PointF center = triangleEntity.absoluteCenter();
         center.y = center.y * 0.5F;
@@ -695,7 +689,7 @@ public class SketchCanvas extends View {
         } else {
             arrowEntity = new ArrowEntity(arrowLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), 600, 600, 20f, mEntityStrokeWidth, mEntityStrokeColor);
         }
-        addEntityAndPosition(arrowEntity);
+        addEntityAndPosition(arrowEntity, 1);
 
         PointF center = arrowEntity.absoluteCenter();
         center.y = center.y * 0.5F;
@@ -716,7 +710,7 @@ public class SketchCanvas extends View {
         } else {
             rectEntity = new RectEntity(rectLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight(), width, height, 30f, mEntityStrokeWidth, mEntityStrokeColor);
         }
-        addEntityAndPosition(rectEntity);
+        addEntityAndPosition(rectEntity, 1);
 
         PointF center = rectEntity.absoluteCenter();
         center.y = center.y * 0.5F;
@@ -739,7 +733,7 @@ public class SketchCanvas extends View {
         } else {
             textEntity = new TextEntity(textLayer, mSketchCanvas.getWidth(), mSketchCanvas.getHeight());
         }
-        addEntityAndPosition(textEntity);
+        addEntityAndPosition(textEntity, 1);
 
         PointF center = textEntity.absoluteCenter();
         center.y = center.y * 0.5F;
@@ -774,7 +768,7 @@ public class SketchCanvas extends View {
         return textLayer;
     }
 
-    public void addEntityAndPosition(MotionEntity entity) {
+    public void addEntityAndPosition(MotionEntity entity, float zoomLevel) {
         if (entity != null) {
             if (mEntityBorderStyle == BorderStyle.DASHED) {
                 // Make DashPathEffect work with drawLines (drawSelectedBg in MotionEntity)
@@ -783,7 +777,7 @@ public class SketchCanvas extends View {
             }
 
             initEntityBorder(entity);
-            initialTranslateAndScale(entity);
+            initialTranslateAndScale(entity, zoomLevel);
             mEntities.add(entity);
             onShapeSelectionChanged(entity);
             selectEntity(entity);
@@ -831,9 +825,9 @@ public class SketchCanvas extends View {
         }
     }
 
-    private void initialTranslateAndScale(MotionEntity entity) {
+    private void initialTranslateAndScale(MotionEntity entity, float zoomLevel) {
         entity.moveToCanvasCenter();
-        entity.getLayer().setScale(entity.getLayer().initialScale());
+        entity.getLayer().setScale(entity.getLayer().initialScale(zoomLevel));
     }
 
     private void selectEntity(MotionEntity entity) {

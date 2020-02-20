@@ -4,6 +4,7 @@ import com.facebook.react.uimanager.ThemedReactContext;
 
 public class TextLayer extends Layer {
 
+    private float entityScale;
     private String mText;
     private Font mFont;
     private ThemedReactContext mContext;
@@ -30,8 +31,9 @@ public class TextLayer extends Layer {
     }
 
     @Override
-    public float initialScale() {
-        return Limits.INITIAL_SCALE;
+    public float initialScale(float zoomLevel) {
+            entityScale = Limits.INITIAL_SCALE / zoomLevel;
+            return entityScale;
     }
 
     public String getText() {

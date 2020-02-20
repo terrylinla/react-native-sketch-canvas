@@ -188,9 +188,11 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 String imagePath = args.isNull(4) ? null : args.getString(4);
                 float moveCenterX = args.isNull(5) ? null : (float)args.getDouble(5);
                 float moveCenterY = args.isNull(6) ? null : (float)args.getDouble(6);
+                float zoomLevel = args.isNull(7) ? null : (float)args.getDouble(7);
                 Log.d("ReactNative", "moveCenterX " + moveCenterX);
                 Log.d("ReactNative", "moveCenterY " + moveCenterY);
-                view.addEntity(shapeType, typeFace, fontSize, text, imagePath, moveCenterX, moveCenterY);
+                Log.d("ReactNative", "zoomLevel " + zoomLevel);
+                view.addEntity(shapeType, typeFace, fontSize, text, imagePath, moveCenterX, moveCenterY, zoomLevel);
                 return;
             }
             case COMMAND_INCREASE_SHAPE_FONTSIZE: {

@@ -1,9 +1,12 @@
 package com.terrylinla.rnsketchcanvas.utils.layers;
 
+import android.util.Log;
+
 import androidx.annotation.FloatRange;
 
 public class Layer {
 
+    private float entityScale;
     /**
      * rotation relative to the layer center, in degrees
      */
@@ -68,8 +71,10 @@ public class Layer {
         this.mIsFlipped = !mIsFlipped;
     }
 
-    public float initialScale() {
-        return Limits.INITIAL_ENTITY_SCALE;
+    public float initialScale(float zoomLevel) {
+        entityScale = Limits.INITIAL_ENTITY_SCALE / (zoomLevel * zoomLevel);
+        Log.d("ReactNative", "entityScale" + entityScale);
+        return entityScale;
     }
 
     public float getRotationInDegrees() {
@@ -113,8 +118,8 @@ public class Layer {
     }
 
     interface Limits {
-        float MIN_SCALE = 0.06F;
+        float MIN_SCALE = 0.08F;
         float MAX_SCALE = 4.0F;
-        float INITIAL_ENTITY_SCALE = 0.4F;
+        float INITIAL_ENTITY_SCALE = 0.1F;
     }
 }
