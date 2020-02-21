@@ -117,6 +117,7 @@ class SketchCanvas extends React.Component {
     layoutHeight: 0,
     zoomLayoutWidth: 0,
     zoomLayoutHeight: 0,
+    isShapeSelected: false,
   }
 
   constructor(props) {
@@ -134,9 +135,24 @@ class SketchCanvas extends React.Component {
       text: SketchCanvas.processText(props.text ? props.text.map((t) => Object.assign({}, t)) : null),
       hasPanResponder: false
     };
+
+    this.handleShapeSelect = this.handleShapeSelect.bind(this);
+  }
+
+  handleShapeSelect = () => {
+    if (!this.props.isShapeSelected) {
+      this.setState({
+        isShapeSelected: false,
+      });
+    }
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
+    if(!nextProps.shapeEnabled) {
+      return {
+        isShapeSelected: nextProps.shapeEnabled
+      };
+    }
     if (nextProps.text) {
       return {
         text: ImageEditor.processText(nextProps.text ? nextProps.text.map((t) => Object.assign({}, t)) : null)
@@ -177,27 +193,18 @@ class SketchCanvas extends React.Component {
     const paths = this._paths ? this._paths : null
     const lastElement = paths && this._paths.length > 0 ? this._paths.length - 1 : null
     const isShape = lastElement != null ? paths[lastElement].path.isShape : false
-    console.tron.log("Удаление 1")
     if (!isShape) {
-      console.tron.log("Удаление 2")
-
       let lastId = -1;
       this._paths.forEach(d => lastId = d.drawer === this.props.user ? d.path.id : lastId)
       if (lastId >= 0) {
-        console.tron.log(this._paths)
-        console.tron.log("Удаление 3")
-
         this.deletePath(lastId)
       }
 
       return lastId
     } else {
-      console.tron.log("Удаление 4")
-
       this._paths = this._paths.filter(p => p.path.id !== this._paths[lastElement].path.id)
       this.deleteSelectedShape()
     }
-    console.tron.log(this._paths)
   }
 
   addPath(data) {
@@ -241,7 +248,6 @@ class SketchCanvas extends React.Component {
             isShape: true,
           },
         })
-        console.tron.log("this._paths", this._paths)
         // this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
       } else {
         const centerX = (parseFloat((this.state.layoutWidth)).toFixed(2) * this._screenScale) / 2
@@ -257,7 +263,6 @@ class SketchCanvas extends React.Component {
             isShape: true,
           },
         })
-        console.tron.log("this._paths", this._paths)
       }
     }
   }
@@ -477,22 +482,16 @@ class SketchCanvas extends React.Component {
           const lastPathI = this._paths.length - 1
           const paths = this._paths[lastPathI] || {}
           const isShape = this._paths.length > 0 ? paths.path.isShape : false
-          console.tron.log("Добавляется")
-          console.tron.log("paths", paths)
-          console.tron.log("isShape", isShape)
-          if (isShape === false) {
-            console.tron.log("добавляется в path, если предыдущий isShape === false")
-            this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
-          } else {
-            if (!this.props.shapeEnabled) {
-              console.tron.log("добавляется в path, если предыдущий isShape === true, но текущий false")
+          if (!this.state.isShapeSelected) {
+            if (isShape === false) {
               this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
+            } else {
+              if (!this.props.shapeEnabled) {
+                this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
+              }
             }
           }
-
-          //if (!this._path.isShape) {
         }
-        console.tron.log("this._paths", this._paths)
         UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, [])
 
         if (this.state.previewX || this.state.previewY) {
@@ -537,6 +536,9 @@ class SketchCanvas extends React.Component {
               } else if (e.nativeEvent.hasOwnProperty("success")) {
                 this.props.onSketchSaved(e.nativeEvent.success);
               } else if (e.nativeEvent.hasOwnProperty("isShapeSelected")) {
+                this.setState({
+                  isShapeSelected: e.nativeEvent.isShapeSelected,
+                });
                 this.props.onShapeSelectionChanged(e.nativeEvent.isShapeSelected);
               }
             }}
