@@ -10,7 +10,6 @@ import android.graphics.PorterDuff;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.util.Log;
 
 import com.terrylinla.rnsketchcanvas.utils.layers.Layer;
 
@@ -56,13 +55,9 @@ public class TapEntity extends MotionEntity {
 
         float width = this.mTapBitmap.getWidth();
         float height = this.mTapBitmap.getHeight();
-        Log.d("ReactNative", "Width initial" + String.valueOf(width));
-        Log.d("ReactNative", "Height initial" + String.valueOf(height));
 
         float widthAspect = 1.0F * canvasWidth / this.mTapBitmap.getWidth();
         float heightAspect = 1.0F * canvasHeight / this.mTapBitmap.getHeight();
-        Log.d("ReactNative", "widthAspect initial" + String.valueOf(widthAspect));
-        Log.d("ReactNative", "widthAspect initial" + String.valueOf(widthAspect));
 
         // fit the smallest size
         holyScale = Math.min(widthAspect, heightAspect);

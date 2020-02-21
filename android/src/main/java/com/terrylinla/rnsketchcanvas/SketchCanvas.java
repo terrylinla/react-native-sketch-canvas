@@ -627,10 +627,7 @@ public class SketchCanvas extends View {
         }
     }
 
-    protected void addTapEntity(float moveCenterX, float moveCenterY, float zoomLevel) {
-        Log.d("ReactNative", "mSketchCanvas.getWidth" + String.valueOf(mSketchCanvas.getWidth()));
-        Log.d("ReactNative", "mSketchCanvas.getHeight" + String.valueOf(mSketchCanvas.getHeight()));
-        Layer tapLayer = new Layer();
+    protected void addTapEntity(float moveCenterX, float moveCenterY, float zoomLevel) {        Layer tapLayer = new Layer();
         TapEntity tapEntity = null;
         //if (mSketchCanvas.getWidth() < 100 || mSketchCanvas.getHeight() < 100) {
             tapEntity = new TapEntity(tapLayer, mDrawingCanvas.getWidth(), mDrawingCanvas.getHeight(), 300, 20f, mEntityStrokeWidth, mEntityStrokeColor);

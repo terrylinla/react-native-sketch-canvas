@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.util.Log;
 
 import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.Callback;
@@ -189,9 +188,6 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 float moveCenterX = args.isNull(5) ? null : (float)args.getDouble(5);
                 float moveCenterY = args.isNull(6) ? null : (float)args.getDouble(6);
                 float zoomLevel = args.isNull(7) ? null : (float)args.getDouble(7);
-                Log.d("ReactNative", "moveCenterX " + moveCenterX);
-                Log.d("ReactNative", "moveCenterY " + moveCenterY);
-                Log.d("ReactNative", "zoomLevel " + zoomLevel);
                 view.addEntity(shapeType, typeFace, fontSize, text, imagePath, moveCenterX, moveCenterY, zoomLevel);
                 return;
             }

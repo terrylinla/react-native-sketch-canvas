@@ -10,7 +10,6 @@ import android.graphics.PointF;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.util.Log;
 
 import com.terrylinla.rnsketchcanvas.utils.Utility;
 import com.terrylinla.rnsketchcanvas.utils.entities.BorderStyle;
@@ -139,17 +138,11 @@ public abstract class MotionEntity {
 
     public float absoluteCenterX() {
         float topLeftX = layer.getX() * canvasWidth;
-        //Log.d("ReactNative", String.valueOf(canvasWidth));
-        //Log.d("ReactNative", String.valueOf(canvasHeight));
-        Log.d("ReactNative", "topLeftX " + String.valueOf(topLeftX));
         return topLeftX + getWidth() * holyScale * 0.5F;
     }
 
     public float absoluteCenterY() {
         float topLeftY = layer.getY() * canvasHeight;
-        Log.d("ReactNative", "getY " + String.valueOf(layer.getY()));
-        Log.d("ReactNative", "canvasHeight " + String.valueOf(canvasHeight));
-        Log.d("ReactNative", "topLeftY " + String.valueOf(topLeftY));
         return topLeftY + getHeight() * holyScale * 0.5F;
     }
 
@@ -159,8 +152,6 @@ public abstract class MotionEntity {
 
         float centerX = topLeftX + getWidth() * holyScale * 0.5F;
         float centerY = topLeftY + getHeight() * holyScale * 0.5F;
-        Log.d("ReactNative", "Center X " + String.valueOf(centerX));
-        Log.d("ReactNative", "Center Y " + String.valueOf(centerY));
 
         return new PointF(centerX, centerY);
     }

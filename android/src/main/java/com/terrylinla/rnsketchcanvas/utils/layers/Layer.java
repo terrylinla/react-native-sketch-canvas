@@ -1,7 +1,5 @@
 package com.terrylinla.rnsketchcanvas.utils.layers;
 
-import android.util.Log;
-
 import androidx.annotation.FloatRange;
 
 public class Layer {
@@ -73,7 +71,6 @@ public class Layer {
 
     public float initialScale(float zoomLevel) {
         entityScale = Limits.INITIAL_ENTITY_SCALE / (zoomLevel * zoomLevel);
-        Log.d("ReactNative", "entityScale" + entityScale);
         return entityScale;
     }
 
