@@ -47,6 +47,7 @@ class SketchCanvas extends React.Component {
     touchEnabled: PropTypes.bool,
 
     lineEnabled: PropTypes.bool,
+    shapeEnabled: PropTypes.bool,
 
     lastX: PropTypes.number,
     lastY: PropTypes.number,
@@ -164,14 +165,39 @@ class SketchCanvas extends React.Component {
     UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.clear, [])
   }
 
-  undo() {
-    let lastId = -1;
-    this._paths.forEach(d => lastId = d.drawer === this.props.user ? d.path.id : lastId)
-    if (lastId >= 0) {
-      this.deletePath(lastId)
-    }
+  deleteSelectedShape() {
+    UIManager.dispatchViewManagerCommand(
+        this._handle,
+        UIManager.getViewManagerConfig(RNSketchCanvas).Commands.deleteSelectedShape,
+        []
+    );
+  }
 
-    return lastId
+  undo() {
+    const paths = this._paths ? this._paths : null
+    const lastElement = paths && this._paths.length > 0 ? this._paths.length - 1 : null
+    const isShape = lastElement != null ? paths[lastElement].path.isShape : false
+    console.tron.log("Удаление 1")
+    if (!isShape) {
+      console.tron.log("Удаление 2")
+
+      let lastId = -1;
+      this._paths.forEach(d => lastId = d.drawer === this.props.user ? d.path.id : lastId)
+      if (lastId >= 0) {
+        console.tron.log(this._paths)
+        console.tron.log("Удаление 3")
+
+        this.deletePath(lastId)
+      }
+
+      return lastId
+    } else {
+      console.tron.log("Удаление 4")
+
+      this._paths = this._paths.filter(p => p.path.id !== this._paths[lastElement].path.id)
+      this.deleteSelectedShape()
+    }
+    console.tron.log(this._paths)
   }
 
   addPath(data) {
@@ -196,41 +222,28 @@ class SketchCanvas extends React.Component {
 
   addShape(config) {
     if (config) {
+      const pathId = parseInt(Math.random() * 100000000)
       let fontSize = config.textShapeFontSize ? config.textShapeFontSize : 0;
-      // const prevX = parseFloat((gestureState.x0 + ((gestureState.moveX - gestureState.x0) / (this.props.zoomLevel * this.props.zoomLevel)) - this._offset.x).toFixed(2) * this._screenScale);
 
       if(this.props.zoomLevel > 1) {
-        console.tron.log("this.props.lastX", this.props.lastX)
-        console.tron.log("this.props.lastY", this.props.lastY)
-        console.tron.log("this.props.distanceLeft", this.props.distanceLeft)
-        console.tron.log("this.props.distanceRight", this.props.distanceRight)
-        console.tron.log("this.props.distanceBottom", this.props.distanceBottom)
-        console.tron.log("this.props.distanceTop", this.props.distanceTop)
-        console.tron.log("this.state", this.state)
-        console.tron.log("this.state.layoutWidth", this.state.layoutWidth)
-        console.tron.log("this.state.layoutHeight", this.state.layoutHeight)
-
         const distanceX = ((this.state.layoutWidth + this.props.distanceLeft + this.props.distanceRight) / 2) - this.props.distanceLeft
         const distanceY = ((this.state.layoutHeight + this.props.distanceTop + this.props.distanceBottom) / 2) - this.props.distanceTop
         const newCenterX = parseFloat((distanceX).toFixed(2) * this._screenScale)
         const newCenterY = parseFloat((distanceY).toFixed(2) * this._screenScale)
-
-        console.tron.log("distanceX", distanceX)
-        console.tron.log("distanceY", distanceY)
-        console.tron.log("newCenterX", newCenterX)
-        console.tron.log("newCenterY", newCenterY)
         UIManager.dispatchViewManagerCommand(
             this._handle,
             UIManager.getViewManagerConfig(RNSketchCanvas).Commands.addShape,
             [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset, newCenterX, newCenterY, this.props.zoomLevel]
         );
+        this._paths.push({
+          path: {
+            id: pathId,
+            isShape: true,
+          },
+        })
+        console.tron.log("this._paths", this._paths)
+        // this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
       } else {
-        console.tron.log("this.props.lastX", this.props.lastX)
-        console.tron.log("this.props.lastY", this.props.lastY)
-        console.tron.log("this.props.distanceLeft", this.props.distanceLeft)
-        console.tron.log("this.props.distanceRight", this.props.distanceRight)
-        console.tron.log("this.props.distanceBottom", this.props.distanceBottom)
-        console.tron.log("this.props.distanceTop", this.props.distanceTop)
         const centerX = (parseFloat((this.state.layoutWidth)).toFixed(2) * this._screenScale) / 2
         const centerY = (parseFloat((this.state.layoutHeight)).toFixed(2) * this._screenScale) / 2
         UIManager.dispatchViewManagerCommand(
@@ -238,20 +251,15 @@ class SketchCanvas extends React.Component {
             UIManager.getViewManagerConfig(RNSketchCanvas).Commands.addShape,
             [config.shapeType, config.textShapeFontType, fontSize, config.textShapeText, config.imageShapeAsset, centerX, centerY, this.props.zoomLevel]
         );
-        console.tron.log("CenterX", centerX)
-        console.tron.log("CenterY", centerY)
+        this._paths.push({
+          path: {
+            id: pathId,
+            isShape: true,
+          },
+        })
+        console.tron.log("this._paths", this._paths)
       }
-
-      //const centerY = (this.state.layoutHeight / 2) * this._screenScale;
     }
-  }
-
-  deleteSelectedShape() {
-    UIManager.dispatchViewManagerCommand(
-        this._handle,
-        UIManager.getViewManagerConfig(RNSketchCanvas).Commands.deleteSelectedShape,
-        []
-    );
   }
 
   increaseSelectedShapeFontsize() {
@@ -312,7 +320,8 @@ class SketchCanvas extends React.Component {
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
         this._path = {
           id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
-          width: this.props.strokeWidth, data: []
+          width: this.props.strokeWidth, data: [],
+          isShape: false,
         }
 
         UIManager.dispatchViewManagerCommand(
@@ -465,8 +474,25 @@ class SketchCanvas extends React.Component {
         }
         if (this._path) {
           this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user })
-          this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
+          const lastPathI = this._paths.length - 1
+          const paths = this._paths[lastPathI] || {}
+          const isShape = this._paths.length > 0 ? paths.path.isShape : false
+          console.tron.log("Добавляется")
+          console.tron.log("paths", paths)
+          console.tron.log("isShape", isShape)
+          if (isShape === false) {
+            console.tron.log("добавляется в path, если предыдущий isShape === false")
+            this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
+          } else {
+            if (!this.props.shapeEnabled) {
+              console.tron.log("добавляется в path, если предыдущий isShape === true, но текущий false")
+              this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
+            }
+          }
+
+          //if (!this._path.isShape) {
         }
+        console.tron.log("this._paths", this._paths)
         UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, [])
 
         if (this.state.previewX || this.state.previewY) {
