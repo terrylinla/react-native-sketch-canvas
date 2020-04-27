@@ -440,7 +440,7 @@ public class SketchCanvas extends View {
         }
         try {
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-            bitmap.recycle();
+            // bitmap.recycle();
 
             return bmRotated;
         } catch (OutOfMemoryError e) {
