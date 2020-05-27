@@ -134,6 +134,10 @@ export default class RNSketchCanvas extends React.Component {
     this._alphaStep = -1
   }
 
+  getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback) {
+      return this._sketchCanvas.getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback)
+  }
+
   clear() {
     this._sketchCanvas.clear()
   }
