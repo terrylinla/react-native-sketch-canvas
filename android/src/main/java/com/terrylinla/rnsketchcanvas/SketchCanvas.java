@@ -265,25 +265,18 @@ public class SketchCanvas extends View {
     }
 
     public void save(String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
-        File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + folder);
-        boolean success = f.exists() ? true : f.mkdirs();
-        if (success) {
-            Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
+        Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
 
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-                File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
-            try {
-                bitmap.compress(
-                    format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
-                    format.equals("png") ? 100 : 90,
-                    new FileOutputStream(file));
-                this.onSaved(true, file.getPath());
-            } catch (Exception e) {
-                e.printStackTrace();
-                onSaved(false, null);
-            }
-        } else {
-            Log.e("SketchCanvas", "Failed to create folder!");
+        try {
+            File file = File.createTempFile(filename, (format.equals("png") ? ".png" : ".jpg"));
+
+            bitmap.compress(
+                format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                format.equals("png") ? 100 : 90,
+                new FileOutputStream(file));
+            this.onSaved(true, file.getPath());
+        } catch (Exception e) {
+            e.printStackTrace();
             onSaved(false, null);
         }
     }
