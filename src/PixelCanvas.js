@@ -15,7 +15,7 @@ export default (props: React.PropsWithChildren<Props>) => {
     const [width, setWidth] = useState(0);
     const [height, setHeight] = useState(0);
     const columns: number = width / props.pixelSize;
-    const rows: number = height / props.pixelSize;
+    const rows: number = Math.floor(height / props.pixelSize);
 
     let cells: Array<ReactNode> = [];
     let paths: Array<string> = [];

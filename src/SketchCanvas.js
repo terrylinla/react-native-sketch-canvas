@@ -65,6 +65,7 @@ class SketchCanvas extends React.Component {
 
         permissionDialogTitle: PropTypes.string,
         permissionDialogMessage: PropTypes.string,
+        pixArtMode: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -85,6 +86,7 @@ class SketchCanvas extends React.Component {
 
         permissionDialogTitle: "",
         permissionDialogMessage: "",
+        pixArtMode: false,
     };
 
     state = {
@@ -253,7 +255,7 @@ class SketchCanvas extends React.Component {
             onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
 
             onPanResponderGrant: (evt, gestureState) => {
-                if (!this.props.touchEnabled) return;
+                if (!this.props.touchEnabled || this.props.pixArtMode) return;
                 const e = evt.nativeEvent;
                 this._offset = {
                     x: e.pageX - e.locationX,
@@ -402,51 +404,59 @@ class SketchCanvas extends React.Component {
     }
 
     render() {
+        const { pixArtMode } = this.props;
+        const sketchCanvas: ReactNode = (
+            <RNSketchCanvas
+                ref={(ref) => {
+                    this._handle = ReactNative.findNodeHandle(ref);
+                }}
+                style={this.props.style}
+                onLayout={(e) => {
+                    this._size = {
+                        width: e.nativeEvent.layout.width,
+                        height: e.nativeEvent.layout.height,
+                    };
+                    this._initialized = true;
+                    this._pathsToProcess.length > 0 &&
+                        this._pathsToProcess.forEach((p) => this.addPath(p));
+                }}
+                {...this.panResponder.panHandlers}
+                onChange={(e) => {
+                    if (e.nativeEvent.hasOwnProperty("pathsUpdate")) {
+                        this.props.onPathsChange(e.nativeEvent.pathsUpdate);
+                    } else if (
+                        e.nativeEvent.hasOwnProperty("success") &&
+                        e.nativeEvent.hasOwnProperty("path")
+                    ) {
+                        this.props.onSketchSaved(
+                            e.nativeEvent.success,
+                            e.nativeEvent.path
+                        );
+                    } else if (e.nativeEvent.hasOwnProperty("success")) {
+                        this.props.onSketchSaved(e.nativeEvent.success);
+                    }
+                }}
+                localSourceImage={this.props.localSourceImage}
+                permissionDialogTitle={this.props.permissionDialogTitle}
+                permissionDialogMessage={this.props.permissionDialogMessage}
+                text={this.state.text}
+            />
+        );
+
         return (
-            <PixelCanvas
-                pixelSize={30}
-                cellClicked={(startX, startY, width, height) =>
-                    this.fill(startX, startY, width, height)
-                }
-            >
-                <RNSketchCanvas
-                    ref={(ref) => {
-                        this._handle = ReactNative.findNodeHandle(ref);
-                    }}
-                    style={this.props.style}
-                    onLayout={(e) => {
-                        this._size = {
-                            width: e.nativeEvent.layout.width,
-                            height: e.nativeEvent.layout.height,
-                        };
-                        this._initialized = true;
-                        this._pathsToProcess.length > 0 &&
-                            this._pathsToProcess.forEach((p) =>
-                                this.addPath(p)
-                            );
-                    }}
-                    {...this.panResponder.panHandlers}
-                    onChange={(e) => {
-                        if (e.nativeEvent.hasOwnProperty("pathsUpdate")) {
-                            this.props.onPathsChange(e.nativeEvent.pathsUpdate);
-                        } else if (
-                            e.nativeEvent.hasOwnProperty("success") &&
-                            e.nativeEvent.hasOwnProperty("path")
-                        ) {
-                            this.props.onSketchSaved(
-                                e.nativeEvent.success,
-                                e.nativeEvent.path
-                            );
-                        } else if (e.nativeEvent.hasOwnProperty("success")) {
-                            this.props.onSketchSaved(e.nativeEvent.success);
+            <>
+                {pixArtMode && (
+                    <PixelCanvas
+                        pixelSize={30}
+                        cellClicked={(startX, startY, width, height) =>
+                            this.fill(startX, startY, width, height)
                         }
-                    }}
-                    localSourceImage={this.props.localSourceImage}
-                    permissionDialogTitle={this.props.permissionDialogTitle}
-                    permissionDialogMessage={this.props.permissionDialogMessage}
-                    text={this.state.text}
-                />
-            </PixelCanvas>
+                    >
+                        {sketchCanvas}
+                    </PixelCanvas>
+                )}
+                {!pixArtMode && sketchCanvas}
+            </>
         );
     }
 }
