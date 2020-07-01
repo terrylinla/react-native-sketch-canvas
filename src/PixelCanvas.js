@@ -2,7 +2,7 @@ import React, { ReactNode, useState } from "react";
 import { View, StyleSheet } from "react-native";
 
 interface Props {
-    pixelSize: numbeer;
+    pixelSize: number;
     cellClicked(
         startX: number,
         startY: number,
