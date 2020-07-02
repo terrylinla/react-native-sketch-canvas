@@ -380,8 +380,9 @@ class SketchCanvas extends React.Component {
                 this._path.width * this._screenScale,
             ]
         );
-        for (let row = 0; row < height; row++) {
-            for (let col = 0; col < width; col++) {
+
+        for (let row = -1; row < height + 1; row++) {
+            for (let col = -1; col < width + 1; col++) {
                 UIManager.dispatchViewManagerCommand(
                     this._handle,
                     UIManager.RNSketchCanvas.Commands.addPoint,
@@ -401,6 +402,12 @@ class SketchCanvas extends React.Component {
             UIManager.RNSketchCanvas.Commands.endPath,
             []
         );
+
+        this._paths.push({
+            path: this._path,
+            size: 1,
+            drawer: this.props.user,
+        });
     }
 
     render() {
