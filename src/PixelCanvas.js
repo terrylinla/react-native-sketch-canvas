@@ -16,6 +16,7 @@ export default (props: React.PropsWithChildren<Props>) => {
     const [height, setHeight] = useState(0);
     const columns: number = Math.floor(width / props.pixelSize);
     const rows: number = Math.floor(height / props.pixelSize);
+    const offset: number = (width % props.pixelSize) / 2;
 
     let cells: Array<ReactNode> = [];
     let paths: Array<string> = [];
@@ -34,29 +35,36 @@ export default (props: React.PropsWithChildren<Props>) => {
         );
         const path: string = `${xMovedOverBy},${yMovedOverBy}`;
 
-        if (
-            (xMovedOverBy !== 0 || yMovedOverBy !== 0) &&
-            paths.indexOf(path) === -1 &&
-            row + yMovedOverBy < rows &&
-            col + xMovedOverBy < columns
-        ) {
-            props.cellClicked(
-                left + xMovedOverBy * props.pixelSize,
-                top + yMovedOverBy * props.pixelSize,
-                props.pixelSize,
-                props.pixelSize
-            );
-
-            paths.push(path);
-
-            console.log(`${xMovedOverBy}, ${yMovedOverBy}`);
+        // Check not already coloured in
+        if (paths.indexOf(path) > -1) {
+            return;
         }
+
+        // Check not out of bounds
+        if (col + xMovedOverBy < 0) {
+            return;
+        }
+        if (col + xMovedOverBy >= columns) {
+            return;
+        }
+        if (row + yMovedOverBy >= rows) {
+            return;
+        }
+
+        props.cellClicked(
+            left + xMovedOverBy * props.pixelSize,
+            top + yMovedOverBy * props.pixelSize,
+            props.pixelSize,
+            props.pixelSize
+        );
+
+        paths.push(path);
     };
 
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
             const top: number = row * props.pixelSize;
-            const left: number = col * props.pixelSize;
+            const left: number = col * props.pixelSize + offset;
 
             cells.push(
                 <View
