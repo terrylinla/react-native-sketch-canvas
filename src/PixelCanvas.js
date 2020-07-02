@@ -14,7 +14,7 @@ interface Props {
 export default (props: React.PropsWithChildren<Props>) => {
     const [width, setWidth] = useState(0);
     const [height, setHeight] = useState(0);
-    const columns: number = width / props.pixelSize;
+    const columns: number = Math.floor(width / props.pixelSize);
     const rows: number = Math.floor(height / props.pixelSize);
 
     let cells: Array<ReactNode> = [];
@@ -25,7 +25,7 @@ export default (props: React.PropsWithChildren<Props>) => {
         props.cellClicked(left, top, props.pixelSize, props.pixelSize);
     };
 
-    const onMove = (event, top, left, row) => {
+    const onMove = (event, top, left, row, col) => {
         const xMovedOverBy: number = Math.floor(
             event.nativeEvent.locationX / props.pixelSize
         );
@@ -37,7 +37,8 @@ export default (props: React.PropsWithChildren<Props>) => {
         if (
             (xMovedOverBy !== 0 || yMovedOverBy !== 0) &&
             paths.indexOf(path) === -1 &&
-            row + yMovedOverBy < rows
+            row + yMovedOverBy < rows &&
+            col + xMovedOverBy < columns
         ) {
             props.cellClicked(
                 left + xMovedOverBy * props.pixelSize,
@@ -64,7 +65,9 @@ export default (props: React.PropsWithChildren<Props>) => {
                     onMoveShouldSetResponder={() => true}
                     onMoveShouldSetResponderCapture={() => true}
                     onResponderStart={(event) => onTouch(event, top, left)}
-                    onResponderMove={(event) => onMove(event, top, left, row)}
+                    onResponderMove={(event) =>
+                        onMove(event, top, left, row, col)
+                    }
                     key={`${row}-${col}`}
                     style={[
                         Style.pixel,

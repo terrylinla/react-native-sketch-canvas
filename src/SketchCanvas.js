@@ -381,8 +381,8 @@ class SketchCanvas extends React.Component {
             ]
         );
 
-        for (let row = -1; row < height + 1; row++) {
-            for (let col = -1; col < width + 1; col++) {
+        for (let row = -1; row < height; row++) {
+            for (let col = -1; col < width; col++) {
                 UIManager.dispatchViewManagerCommand(
                     this._handle,
                     UIManager.RNSketchCanvas.Commands.addPoint,
