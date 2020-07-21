@@ -440,8 +440,6 @@ public class SketchCanvas extends View {
         }
         try {
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-            // bitmap.recycle();
-
             return bmRotated;
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
@@ -449,21 +447,6 @@ public class SketchCanvas extends View {
         }
     }
 
-//    public static void normalizeImageForUri(Context context, Uri uri) {
-//        try {
-//            Log.d("normalize", "URI value = " + uri.getPath());
-//            ExifInterface exif = new ExifInterface(uri.getPath());
-//            Log.d("normalize", "Exif value = " + exif);
-//            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
-//            Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
-//            Bitmap rotatedBitmap = rotateBitmap(bitmap, orientation);
-//            if (!bitmap.equals(rotatedBitmap)) {
-//                saveBitmapToFile(context, rotatedBitmap, uri);
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     private Bitmap createImage(boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
         Bitmap bitmap = Bitmap.createBitmap(
