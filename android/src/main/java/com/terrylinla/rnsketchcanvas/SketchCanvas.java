@@ -1,5 +1,6 @@
 package com.terrylinla.rnsketchcanvas;
 
+import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +10,8 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
@@ -24,6 +27,8 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 
 class CanvasText {
@@ -52,6 +57,7 @@ public class SketchCanvas extends View {
     private int mOriginalWidth, mOriginalHeight;
     private Bitmap mBackgroundImage;
     private String mContentMode;
+    private Uri backgroundURI;
 
     private ArrayList<CanvasText> mArrCanvasText = new ArrayList<CanvasText>();
     private ArrayList<CanvasText> mArrTextOnSketch = new ArrayList<CanvasText>();
@@ -68,14 +74,27 @@ public class SketchCanvas extends View {
                 filename.lastIndexOf('.') == -1 ? filename : filename.substring(0, filename.lastIndexOf('.')), 
                 "drawable", 
                 mContext.getPackageName());
+            File file = new File(filename, directory == null ? "" : directory);
             BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-            Bitmap bitmap = res == 0 ? 
-                BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
+            Bitmap bitmap = res == 0 ?
+                BitmapFactory.decodeFile(file.toString(), bitmapOptions) :
                 BitmapFactory.decodeResource(mContext.getResources(), res);
             if(bitmap != null) {
-                mBackgroundImage = bitmap;
-                mOriginalHeight = bitmap.getHeight();
-                mOriginalWidth = bitmap.getWidth();
+                backgroundURI = Uri.fromFile(file);
+                ExifInterface exif = null;
+                try {
+                    exif = new ExifInterface(backgroundURI.getPath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+
+                Bitmap newBitmap = rotateBitmap(bitmap, orientation);
+
+                mBackgroundImage = newBitmap;
+                mOriginalHeight = newBitmap.getHeight();
+                mOriginalWidth = newBitmap.getWidth();
                 mContentMode = mode;
 
                 invalidateCanvas(true);
@@ -336,6 +355,7 @@ public class SketchCanvas extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+
         if (mNeedsFullRedraw && mDrawingCanvas != null) {
             mDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
             for(SketchData path: mPaths) {
@@ -345,10 +365,12 @@ public class SketchCanvas extends View {
         }
 
         if (mBackgroundImage != null) {
+
             Rect dstRect = new Rect();
             canvas.getClipBounds(dstRect);
-            canvas.drawBitmap(mBackgroundImage, null, 
-                Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode), 
+
+            canvas.drawBitmap(mBackgroundImage, null,
+                Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode),
                 null);
         }
 
@@ -357,6 +379,7 @@ public class SketchCanvas extends View {
         }
 
         if (mDrawingBitmap != null) {
+
             canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
         }
 
@@ -381,11 +404,67 @@ public class SketchCanvas extends View {
         invalidate();
     }
 
+    private static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_NORMAL:
+                return bitmap;
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.setScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.setRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.setRotate(180);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.setRotate(90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.setRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.setRotate(-90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.setRotate(-90);
+                break;
+            default:
+                return bitmap;
+        }
+        try {
+            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            return bmRotated;
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     private Bitmap createImage(boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
         Bitmap bitmap = Bitmap.createBitmap(
             mBackgroundImage != null && cropToImageSize ? mOriginalWidth : getWidth(),
             mBackgroundImage != null && cropToImageSize ? mOriginalHeight : getHeight(), 
             Bitmap.Config.ARGB_8888);
+       
+       // if background is not null, then rotate it
+       if (backgroundURI != null){
+        ExifInterface exif = null;
+        try {
+            exif = new ExifInterface(backgroundURI.getPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+
+        Bitmap newBitmap = rotateBitmap(bitmap, orientation);
+       } 
         Canvas canvas = new Canvas(bitmap);
         canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
 
