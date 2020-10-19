@@ -81,8 +81,6 @@ public class SketchCanvas extends View {
                 BitmapFactory.decodeResource(mContext.getResources(), res);
             if(bitmap != null) {
                 backgroundURI = Uri.fromFile(file);
-              
-
                 ExifInterface exif = null;
                 try {
                     exif = new ExifInterface(backgroundURI.getPath());
@@ -453,6 +451,9 @@ public class SketchCanvas extends View {
             mBackgroundImage != null && cropToImageSize ? mOriginalWidth : getWidth(),
             mBackgroundImage != null && cropToImageSize ? mOriginalHeight : getHeight(), 
             Bitmap.Config.ARGB_8888);
+       
+       // if background is not null, then rotate it
+       if (backgroundURI != null){
         ExifInterface exif = null;
         try {
             exif = new ExifInterface(backgroundURI.getPath());
@@ -463,6 +464,7 @@ public class SketchCanvas extends View {
         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
 
         Bitmap newBitmap = rotateBitmap(bitmap, orientation);
+       } 
         Canvas canvas = new Canvas(bitmap);
         canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
 
