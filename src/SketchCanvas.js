@@ -255,9 +255,12 @@ class SketchCanvas extends React.Component {
   }
 }
 
-SketchCanvas.MAIN_BUNDLE = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.MainBundlePath : '';
+SketchCanvas.MAIN_BUNDLE = Platform.OS === 'ios' || Platform.OS === 'windows' ? UIManager.RNSketchCanvas.Constants.MainBundlePath : '';
 SketchCanvas.DOCUMENT = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.NSDocumentDirectory : '';
 SketchCanvas.LIBRARY = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.NSLibraryDirectory : '';
-SketchCanvas.CACHES = Platform.OS === 'ios' ? UIManager.RNSketchCanvas.Constants.NSCachesDirectory : '';
+SketchCanvas.CACHES = Platform.OS === 'ios' ||  Platform.OS === 'windows' ? UIManager.RNSketchCanvas.Constants.NSCachesDirectory : '';
+SketchCanvas.TEMPORARY = Platform.OS === 'windows' ? UIManager.RNSketchCanvas.Constants.TemporaryDirectory : '';
+SketchCanvas.ROAMING = Platform.OS === 'windows' ? UIManager.RNSketchCanvas.Constants.RoamingDirectory : '';
+SketchCanvas.LOCAL = Platform.OS === 'windows' ? UIManager.RNSketchCanvas.Constants.LocalDirectory : '';
 
 module.exports = SketchCanvas;
