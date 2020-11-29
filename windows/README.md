@@ -1,7 +1,7 @@
 # [module name here] Windows Implementation
 
 ## Module Installation
-You can either use autolinking on react-native-windows 0.63 and later or manually link the module on earlier realeases.
+You can either use autolinking on react-native-windows 0.63 and later or manually link the module on earlier releases.
 
 ### Automatic install with autolinking on RNW >= 0.63
 RNSketchCanvas supports autolinking. Just call: `npm i @terrylinla/react-native-sketch-canvas --save`
