@@ -1,0 +1,8 @@
+namespace RNSketchCanvas {
+    [default_interface]
+    runtimeclass RNSketchCanvasView : Windows.UI.Xaml.Controls.Grid {
+        RNSketchCanvasView(Microsoft.ReactNative.IReactContext context);
+        void UpdateProperties(Microsoft.ReactNative.IJSValueReader reader);
+        void DispatchCommand(String commandId, Microsoft.ReactNative.IJSValueReader commandArgsReader);
+    };
+}

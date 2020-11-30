@@ -114,6 +114,9 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProper
   static DOCUMENT: string
   static LIBRARY: string
   static CACHES: string
+  static TEMPORARY: string
+  static ROAMING: string
+  static LOCAL: string
 }
 
 export interface RNSketchCanvasProps {
@@ -176,4 +179,7 @@ export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps 
   static DOCUMENT: string
   static LIBRARY: string
   static CACHES: string
+  static TEMPORARY: string
+  static ROAMING: string
+  static LOCAL: string
 }
