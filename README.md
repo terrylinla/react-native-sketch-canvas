@@ -9,7 +9,7 @@ A React Native component for drawing by touching on both iOS and Android.
 
 Features
 -------------
-* Support iOS and Android
+* Support iOS, Android and Windows.
 * Stroke thickness and color are changable while drawing.
 * Can undo strokes one by one.
 * Can serialize path data to JSON. So it can sync other devices or someone else and continue to edit.
@@ -32,6 +32,28 @@ Link native code
 ```bash
 react-native link @terrylinla/react-native-sketch-canvas
 ```
+
+### Installation on Windows
+You can either use autolinking on react-native-windows 0.63 and later or manually link the module on earlier releases.
+
+#### Automatic install with autolinking on RNW >= 0.63
+RNSketchCanvas supports autolinking. Just call: `npm i @terrylinla/react-native-sketch-canvas --save`
+
+#### Manual installation on RNW >= 0.62
+1. `npm install @terrylinla/react-native-sketch-canvas --save`
+2. Open your solution in Visual Studio 2019 (eg. `windows\yourapp.sln`)
+3. Right-click Solution icon in Solution Explorer > Add > Existing Project...
+4. Add `node_modules\@terrylinla\react-native-sketch-canvas\windows\RNSketchCanvas\RNSketchCanvas.vcxproj`
+5. Right-click main application project > Add > Reference...
+6. Select `RNSketchCanvas` in Solution Projects
+7. In app `pch.h` add `#include "winrt/RNSketchCanvas.h"`
+8. In `App.cpp` add `PackageProviders().Append(winrt::RNSketchCanvas::ReactPackageProvider());` before `InitializeComponent();`
+
+#### Using save on Windows
+On Windows, `save()` will save the resulting image in the Pictures library. In order for the application to save successfully, the `Pictures Library` capability must be added to the application's manifest:
+1. Open your solution in Visual Studio 2019 (eg. `windows\yourapp.sln`)
+2. In the main application project, open the `Package.appxmanifest` file.
+3. In the `Capabilities` tab, check the `Pictures Library` capability.
 
 ## Usage
 -------------
@@ -80,11 +102,11 @@ AppRegistry.registerComponent('example', () => example);
 | style | `object` | Styles to be applied on canvas component |
 | strokeColor | `string` | Set the color of stroke, which can be #RRGGBB or #RRGGBBAA. If strokeColor is set to #00000000, it will automatically become an eraser. <br/>NOTE: Once an eraser path is sent to Android, Android View will disable hardware acceleration automatically. It might reduce the canvas performance afterward. |
 | strokeWidth | `number` | The thickness of stroke |
-| onStrokeStart | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger touches the canvas (starts to draw) |
-| onStrokeChanged | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger moves |
+| onStrokeStart | `function` | An optional function which accepts 2 arguments `x` and `y`. Called when user's finger touches the canvas (starts to draw) |
+| onStrokeChanged | `function` | An optional function which accepts 2 arguments `x` and `y`. Called when user's finger moves |
 | onStrokeEnd | `function` | An optional function called when user's finger leaves the canvas (end drawing) |
-| onSketchSaved | `function` | An optional function which accpets 2 arguments `success` and `path`. If `success` is true, image is saved successfully and the saved image path might be in second argument. In Android, image path will always be returned. In iOS, image is saved to camera roll or file system, path will be set to null or image location respectively. |
-| onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
+| onSketchSaved | `function` | An optional function which accepts 2 arguments `success` and `path`. If `success` is true, image is saved successfully and the saved image path might be in second argument. In Android, image path will always be returned. In iOS, image is saved to camera roll or file system, path will be set to null or image location respectively. In Windows, image is saved to the Pictures library. |
+| onPathsChange | `function` | An optional function which accepts 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
 | user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
 | touchEnabled | `bool` | If false, disable touching. Default is true.  |
 | localSourceImage | `object` | Require an object (see [below](#objects)) which consists of `filename`, `directory`(optional) and `mode`(optional). If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan))([Here](#background-image) for details) |
@@ -99,7 +121,7 @@ AppRegistry.registerComponent('example', () => example);
 | undo() | Delete the latest path. Can undo multiple times. |
 | addPath(path) | Add a path (see [below](#objects)) to canvas.  |
 | deletePath(id) | Delete a path with its `id` |
-| save(imageType, transparent, folder, filename, includeImage, cropToImageSize) | Save image to camera roll or filesystem. If `localSourceImage` is set and a background image is loaded successfully, set `includeImage` to true to include background image and set `cropToImageSize` to true to crop output image to background image.<br/>Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to **/sdcard/Pictures/`folder`/`filename`** (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll or file system. If `folder` and `filename` are set, image will save to **temporary directory/`folder`/`filename`** (which is NSTemporaryDirectory())  |
+| save(imageType, transparent, folder, filename, includeImage, cropToImageSize) | Save image to camera roll or filesystem. If `localSourceImage` is set and a background image is loaded successfully, set `includeImage` to true to include background image and set `cropToImageSize` to true to crop output image to background image.<br/>Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to **/sdcard/Pictures/`folder`/`filename`** (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll or file system. If `folder` and `filename` are set, image will save to **temporary directory/`folder`/`filename`** (which is NSTemporaryDirectory())<br/>Windows: Save image in `imageType` format with transparent background (if `transparent` sets to True) to the Pictures library. |
 | getPaths() | Get the paths that drawn on the canvas |
 | getBase64(imageType, transparent, includeImage, cropToImageSize, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
 
@@ -107,10 +129,13 @@ AppRegistry.registerComponent('example', () => example);
 -------------
 | Constant | Description |
 | :------------ |:---------------|
-| MAIN_BUNDLE | Android: empty string, '' <br/>iOS: equivalent to [[NSBundle mainBundle] bundlePath] |
-| DOCUMENT | Android: empty string, '' <br/>iOS: equivalent to NSDocumentDirectory |
-| LIBRARY | Android: empty string, '' <br/>iOS: equivalent to NSLibraryDirectory |
-| CACHES | Android: empty string, '' <br/>iOS: equivalent to NSCachesDirectory |
+| MAIN_BUNDLE | Android: empty string, '' <br/>iOS: equivalent to [[NSBundle mainBundle] bundlePath] <br/> Windows : `ms-appx://` |
+| DOCUMENT | Android: empty string, '' <br/>iOS: equivalent to NSDocumentDirectory <br/> Windows: empty string, '' |
+| LIBRARY | Android: empty string, '' <br/>iOS: equivalent to NSLibraryDirectory <br/> Windows: empty string, '' |
+| CACHES | Android: empty string, '' <br/>iOS: equivalent to NSCachesDirectory <br/> Windows: equivalent to `ApplicationData::Current().LocalCacheFolder().Path());`|
+| TEMPORARY | Android: empty string, '' <br/>iOS: empty string, '' <br/> Windows : `ms-appx:///temp` |
+| ROAMING | Android: empty string, '' <br/>iOS: empty string, '' <br/> Windows : `ms-appx:///roaming` |
+| LOCAL | Android: empty string, '' <br/>iOS: empty string, '' <br/> Windows : `ms-appx:///local` |
 
 ### ● Using with build-in UI components
 <img src="https://i.imgur.com/O0vVdD6.png" height="400" />
@@ -242,6 +267,9 @@ AppRegistry.registerComponent('example', () => example);
 | DOCUMENT | See [above](#constants) |
 | LIBRARY | See [above](#constants) |
 | CACHES | See [above](#constants) |
+| TEMPORARY | See [above](#constants) |
+| ROAMING | See [above](#constants) |
+| LOCAL | See [above](#constants) |
 
 ## Background Image
 -------------
@@ -257,6 +285,11 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 <br/>
   * iOS:
     1. Open Xcode and add images to project by right clicking `Add Files to [YOUR PROJECT NAME]`.
+    2. Set `filename` to the name of image files with file extension. 
+    3. Set `directory` to MAIN_BUNDLE (e.g. RNSketchCanvas.MAIN_BUNDLE or SketchCanvas.MAIN_BUNDLE)
+<br/>
+  * Windows:
+    1. Open Visual Studio and add images by right clicking the main application's project and choosing `Add >>> Existing Item...`.
     2. Set `filename` to the name of image files with file extension. 
     3. Set `directory` to MAIN_BUNDLE (e.g. RNSketchCanvas.MAIN_BUNDLE or SketchCanvas.MAIN_BUNDLE)
 * Load image from camera
@@ -288,7 +321,7 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 ```
 | Property | Type | Description |
 | :------------ |:---------------|:---------------|
-| folder? | string | Android: the folder name in `Pictures` directory<br/>iOS: if `filename` is not null, image will save to temporary directory with folder and filename, otherwise, it will save to camera roll |
+| folder? | string | Android: the folder name in `Pictures` directory<br/>iOS: if `filename` is not null, image will save to temporary directory with folder and filename, otherwise, it will save to camera roll<br/>Windows: the folder name in the Pictures Library |
 | filename? | string | the file name of image<br/>iOS: Set to `null` to save image to camera roll. |
 | transparent | boolean | save canvas with transparent background, ignored if imageType is `jpg` |
 | imageType | string  | image file format<br/>Options: `png`, `jpg` |
@@ -349,7 +382,7 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 | Property | Type | Description | Default |
 | :------------ |:---------------|:---------------|:---------------| 
 | text | string | the text to display (can be multiline by `\n`) | |
-| font? | string | Android: You can set `font` to `fonts/[filename].ttf` to load font in `android/app/src/main/assets/fonts/` in your Android project<br/>iOS: Set `font` that included with iOS | |
+| font? | string | Android: You can set `font` to `fonts/[filename].ttf` to load font in `android/app/src/main/assets/fonts/` in your Android project<br/>iOS: Set `font` that included with iOS<br/>Windows: Set `font` as explained in the [`Win2D` documentation](https://microsoft.github.io/Win2D/html/P_Microsoft_Graphics_Canvas_Text_CanvasTextFormat_FontFamily.htm) | |
 | fontSize? | number | font size | 12 |
 | fontColor? | string | text color | black |
 | overlay? | string | Set to `TextOnSketch` to overlay drawing with text, otherwise the text will be overlaid with drawing.<br/>Options: `TextOnSketch`, `SketchOnText` | SketchOnText |
