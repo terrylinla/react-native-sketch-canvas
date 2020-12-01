@@ -27,8 +27,12 @@ Features
 Install from `npm` (only support RN >= 0.40)
 ```bash
 npm install @terrylinla/react-native-sketch-canvas --save
+
+afterwards replace the version in package.json with `https://github.com/creambyemute/react-native-sketch-canvas.git` and run yarn or npm install again
 ```
-Link native code
+
+
+Link native code (shouldn't be needed if RN >= 0.60, for windows look below)
 ```bash
 react-native link @terrylinla/react-native-sketch-canvas
 ```
