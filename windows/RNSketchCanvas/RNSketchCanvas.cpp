@@ -122,17 +122,17 @@ namespace winrt::RNSketchCanvas::implementation
           std::string mode = "";
           
           auto value = localSourceImageMap.find("filename");
-          if (value != localSourceImageMap.end())
+          if (value != localSourceImageMap.end() && !value->second.IsNull())
           {
             filename = value->second.AsString();
           }
           value = localSourceImageMap.find("directory");
-          if (value != localSourceImageMap.end())
+          if (value != localSourceImageMap.end() && !value->second.IsNull())
           {
             directory = value->second.AsString();
           }
           value = localSourceImageMap.find("mode");
-          if (value != localSourceImageMap.end())
+          if (value != localSourceImageMap.end() && !value->second.IsNull())
           {
             mode = value->second.AsString();
           }
