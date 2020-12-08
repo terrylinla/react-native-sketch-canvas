@@ -7,7 +7,7 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="62dddd2b-1242-4986-9032-751327c502cc"
+    Name="RNSketchCanvasExample"
     Publisher="CN=Jaime"
     Version="1.0.0.0" />
 
