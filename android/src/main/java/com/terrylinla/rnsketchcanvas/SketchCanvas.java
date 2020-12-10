@@ -265,13 +265,14 @@ public class SketchCanvas extends View {
     }
 
     public void save(String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
-        File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + folder);
+        File f = new File(String.valueOf(mContext.getFilesDir() + File.separator + folder));
+
         boolean success = f.exists() ? true : f.mkdirs();
         if (success) {
             Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
 
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-                File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
+            File file = new File(String.valueOf(mContext.getFilesDir() + File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg")))
+
             try {
                 bitmap.compress(
                     format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
