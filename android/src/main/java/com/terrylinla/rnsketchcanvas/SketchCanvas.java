@@ -271,7 +271,7 @@ public class SketchCanvas extends View {
         if (success) {
             Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
 
-            File file = new File(String.valueOf(mContext.getFilesDir() + File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg")))
+            File file = new File(String.valueOf(mContext.getFilesDir() + File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg")));
 
             try {
                 bitmap.compress(
