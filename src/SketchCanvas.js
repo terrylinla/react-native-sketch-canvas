@@ -84,7 +84,7 @@ class SketchCanvas extends React.Component {
     this._paths = []
     this._path = null
     this._handle = null
-    this._screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get()
+    this._screenScale = (Platform.OS === 'ios' || Platform.OS === 'windows') ? 1 : PixelRatio.get()
     this._offset = { x: 0, y: 0 }
     this._size = { width: 0, height: 0 }
     this._initialized = false
