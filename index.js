@@ -279,6 +279,9 @@ RNSketchCanvas.MAIN_BUNDLE = SketchCanvas.MAIN_BUNDLE;
 RNSketchCanvas.DOCUMENT = SketchCanvas.DOCUMENT;
 RNSketchCanvas.LIBRARY = SketchCanvas.LIBRARY;
 RNSketchCanvas.CACHES = SketchCanvas.CACHES;
+RNSketchCanvas.TEMPORARY = SketchCanvas.TEMPORARY;
+RNSketchCanvas.ROAMING = SketchCanvas.ROAMING;
+RNSketchCanvas.LOCAL = SketchCanvas.LOCAL;
 
 export {
   SketchCanvas
