@@ -38,6 +38,32 @@ namespace winrt::RNSketchCanvas::implementation
 
   }
 
+  IAsyncOperation<CanvasBitmap> asyncBitmapOp_helper(Uri uri)
+  {
+    StorageFile file = co_await StorageFile::GetFileFromApplicationUriAsync(uri);
+    Windows::Storage::Streams::IRandomAccessStream  readContentsStream = co_await file.OpenAsync(FileAccessMode::Read);
+    Windows::Storage::Streams::IInputStream reader = readContentsStream.GetInputStreamAt(0);
+    Windows::Storage::Streams::Buffer buf = Windows::Storage::Streams::Buffer(readContentsStream.Size());
+    co_await reader.ReadAsync(buf, readContentsStream.Size(), Windows::Storage::Streams::InputStreamOptions::None);
+    Windows::Storage::Streams::InMemoryRandomAccessStream new_stream=Windows::Storage::Streams::InMemoryRandomAccessStream();
+    co_await new_stream.WriteAsync(buf);
+    auto loadasync = co_await CanvasBitmap::LoadAsync(CanvasDevice::GetSharedDevice(), new_stream);
+    co_return loadasync;
+  }
+
+  IAsyncOperation<CanvasBitmap> asyncBitmapOp_helper(winrt::hstring filename)
+  {
+      StorageFile file = co_await StorageFile::GetFileFromPathAsync(filename);
+      Windows::Storage::Streams::IRandomAccessStream  readContentsStream = co_await file.OpenAsync(FileAccessMode::Read);
+      Windows::Storage::Streams::IInputStream reader = readContentsStream.GetInputStreamAt(0);
+      Windows::Storage::Streams::Buffer buf = Windows::Storage::Streams::Buffer(readContentsStream.Size());
+      co_await reader.ReadAsync(buf, readContentsStream.Size(), Windows::Storage::Streams::InputStreamOptions::None);
+      Windows::Storage::Streams::InMemoryRandomAccessStream new_stream = Windows::Storage::Streams::InMemoryRandomAccessStream();
+      co_await new_stream.WriteAsync(buf);
+      auto loadasync = co_await CanvasBitmap::LoadAsync(CanvasDevice::GetSharedDevice(), new_stream);
+      co_return loadasync;
+  }
+
   void RNSketchCanvasView::openImageFile(std::string filename, std::string directory, std::string mode)
   {
     if (!filename.empty())
@@ -66,10 +92,10 @@ namespace winrt::RNSketchCanvas::implementation
         if (useUri)
         {
           // Valid URI for file or special ms- location URLs.
-          asyncBitmapOp = CanvasBitmap::LoadAsync(CanvasDevice::GetSharedDevice(), uri);
+          asyncBitmapOp = asyncBitmapOp_helper(uri);
         } else
         {
-          asyncBitmapOp = CanvasBitmap::LoadAsync(CanvasDevice::GetSharedDevice(), winrt::to_hstring(filename));
+          asyncBitmapOp = asyncBitmapOp_helper(winrt::to_hstring(filename));
         }
         asyncBitmapOp.Completed(
           [=](auto&& sender, AsyncStatus const args)
