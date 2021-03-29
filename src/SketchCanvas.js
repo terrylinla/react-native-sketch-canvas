@@ -222,6 +222,7 @@ class SketchCanvas extends React.Component {
   }
 
   async componentDidMount() {
+    if (this.props.saveToStorage === false) return;
     const isStoragePermissionAuthorized = await requestPermissions(
       this.props.permissionDialogTitle,
       this.props.permissionDialogMessage,
