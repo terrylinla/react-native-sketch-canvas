@@ -34,21 +34,24 @@ namespace winrt::RNSketchCanvas
       std::function<void(JSValue, JSValue)> callback
     ) noexcept
     {
-      XamlUIService uiService = XamlUIService::FromContext(reactContext.Handle());
-      auto sketchCanvasInstance = uiService.ElementFromReactTag(tag).as<winrt::RNSketchCanvas::implementation::RNSketchCanvasView>();
-      IAsyncOperation<winrt::hstring> asyncOp = sketchCanvasInstance.get()->getBase64(type, transparent, includeImage, includeText, cropToImageSize);
-      asyncOp.Completed([=](IAsyncOperation<winrt::hstring> const& sender, AsyncStatus const asyncStatus)
-        {
-          if (asyncStatus == AsyncStatus::Error)
+      reactContext.UIDispatcher().Post([=]()
+      {
+        XamlUIService uiService = XamlUIService::FromContext(reactContext.Handle());
+        auto sketchCanvasInstance = uiService.ElementFromReactTag(tag).as<winrt::RNSketchCanvas::implementation::RNSketchCanvasView>();
+        IAsyncOperation<winrt::hstring> asyncOp = sketchCanvasInstance.get()->getBase64(type, transparent, includeImage, includeText, cropToImageSize);
+        asyncOp.Completed([=](IAsyncOperation<winrt::hstring> const& sender, AsyncStatus const asyncStatus)
           {
-            std::string error = "HRESULT " + std::to_string(sender.ErrorCode()) + ": " + std::system_category().message(sender.ErrorCode());
-            callback(error, nullptr);
-          } else if (asyncStatus == AsyncStatus::Completed)
-          {
-            callback(nullptr, winrt::to_string(sender.GetResults()));
+            if (asyncStatus == AsyncStatus::Error)
+            {
+              std::string error = "HRESULT " + std::to_string(sender.ErrorCode()) + ": " + std::system_category().message(sender.ErrorCode());
+              callback(error, nullptr);
+            } else if (asyncStatus == AsyncStatus::Completed)
+            {
+              callback(nullptr, winrt::to_string(sender.GetResults()));
+            }
           }
-        }
-      );
+        );
+      });
     }
 
   };
