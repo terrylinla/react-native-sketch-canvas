@@ -8,7 +8,6 @@ import ReactNative, {
   ViewPropTypes,
 } from 'react-native'
 import SketchCanvas from './src/SketchCanvas'
-import { requestPermissions } from './src/handlePermissions';
 
 export default class RNSketchCanvas extends React.Component {
   static propTypes = {
@@ -192,13 +191,6 @@ export default class RNSketchCanvas extends React.Component {
 
   componentDidUpdate() {
     this._colorChanged = false
-  }
-
-  async componentDidMount() {
-    const isStoragePermissionAuthorized = await requestPermissions(
-      this.props.permissionDialogTitle,
-      this.props.permissionDialogMessage,
-    );
   }
 
   render() {
