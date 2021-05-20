@@ -652,7 +652,7 @@ namespace winrt::RNSketchCanvas::implementation
       CanvasDevice::GetSharedDevice(),
       mBackgroundImage.has_value() && cropToImageSize ? mOriginalWidth : mCanvasControl.ActualWidth(),
       mBackgroundImage.has_value() && cropToImageSize ? mOriginalHeight : mCanvasControl.ActualHeight(),
-      mCanvasControl.Dpi()
+      96 // default dpi should be used here because of device indpendent pixels.
     );
     {
       auto session = canvas.CreateDrawingSession();
