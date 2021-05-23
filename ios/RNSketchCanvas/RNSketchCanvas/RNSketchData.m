@@ -128,7 +128,9 @@
     } else {
         NSUInteger pointsCount = _points.count;
         for (NSUInteger i = 0; i < pointsCount; i++) {
-            [self drawInContext:context pointIndex:i];
+            @autoreleasepool {
+                [self drawInContext:context pointIndex:i];
+            }
         }
     }
 }

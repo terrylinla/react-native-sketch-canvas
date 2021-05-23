@@ -1,7 +1,9 @@
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
- * @flow
+ *
+ * @format
+ * @flow strict-local
  */
 
 import React, { Component } from 'react';
@@ -216,7 +218,7 @@ export default class example extends Component {
                 <TouchableOpacity style={[styles.functionButton, { backgroundColor: 'black', width: 90 }]} onPress={() => {
                   console.log(this.canvas.getPaths())
                   Alert.alert(JSON.stringify(this.canvas.getPaths()))
-                  this.canvas.getBase64('jpg', false, true, true, (err, result) => {
+                  this.canvas.getBase64('jpg', false, true, true, true, (err, result) => {
                     console.log(result)
                   })
                 }}>
@@ -494,7 +496,7 @@ export default class example extends Component {
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <RNSketchCanvas
               text={[
-                { text: 'Welcome to my GitHub', font: 'fonts/IndieFlower.ttf', fontSize: 30, position: { x: 0, y: 0 }, anchor: { x: 0, y: 0 }, coordinate: 'Absolute', fontColor: 'red' },
+                { text: 'Welcome to my GitHub', font: Platform.OS==='windows' ? 'fonts/IndieFlower.ttf#Indie Flower' : 'fonts/IndieFlower.ttf', fontSize: 30, position: { x: 0, y: 0 }, anchor: { x: 0, y: 0 }, coordinate: 'Absolute', fontColor: 'red' },
                 { text: 'Center\nMULTILINE', fontSize: 25, position: { x: 0.5, y: 0.5 }, anchor: { x: 0.5, y: 0.5 }, coordinate: 'Ratio', overlay: 'SketchOnText', fontColor: 'black', alignment: 'Center', lineHeightMultiple: 1 },
                 { text: 'Right\nMULTILINE', fontSize: 25, position: { x: 1, y: 0.25 }, anchor: { x: 1, y: 0.5 }, coordinate: 'Ratio', overlay: 'TextOnSketch', fontColor: 'black', alignment: 'Right', lineHeightMultiple: 1 },
                 { text: 'Signature', font: 'Zapfino', fontSize: 40, position: { x: 0, y: 1 }, anchor: { x: 0, y: 1 }, coordinate: 'Ratio', overlay: 'TextOnSketch', fontColor: '#444444' }
@@ -568,7 +570,7 @@ export default class example extends Component {
               <SketchCanvas
                 text={[
                   { text: 'Page 1', position: { x: 20, y: 20 }, fontSize: Platform.select({ ios: 24, android: 48 }) },
-                  { text: 'Signature', font: Platform.select({ ios: 'Zapfino', android: 'fonts/IndieFlower.ttf' }), position: { x: 20, y: 220 }, fontSize: Platform.select({ ios: 24, android: 48 }), fontColor: 'red' }
+                  { text: 'Signature', font: Platform.select({ ios: 'Zapfino', android: 'fonts/IndieFlower.ttf', windows: 'fonts/IndieFlower.ttf#Indie Flower' }), position: { x: 20, y: 220 }, fontSize: Platform.select({ ios: 24, android: 48 }), fontColor: 'red' }
                 ]}
                 localSourceImage={{ filename: 'whale.png', directory: SketchCanvas.MAIN_BUNDLE, mode: 'AspectFit' }}
                 style={styles.page}
