@@ -80,11 +80,11 @@ AppRegistry.registerComponent('example', () => example);
 | style | `object` | Styles to be applied on canvas component |
 | strokeColor | `string` | Set the color of stroke, which can be #RRGGBB or #RRGGBBAA. If strokeColor is set to #00000000, it will automatically become an eraser. <br/>NOTE: Once an eraser path is sent to Android, Android View will disable hardware acceleration automatically. It might reduce the canvas performance afterward. |
 | strokeWidth | `number` | The thickness of stroke |
-| onStrokeStart | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger touches the canvas (starts to draw) |
-| onStrokeChanged | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger moves |
+| onStrokeStart | `function` | An optional function which accepts 2 arguments `x` and `y`. Called when user's finger touches the canvas (starts to draw) |
+| onStrokeChanged | `function` | An optional function which accepts 2 arguments `x` and `y`. Called when user's finger moves |
 | onStrokeEnd | `function` | An optional function called when user's finger leaves the canvas (end drawing) |
-| onSketchSaved | `function` | An optional function which accpets 2 arguments `success` and `path`. If `success` is true, image is saved successfully and the saved image path might be in second argument. In Android, image path will always be returned. In iOS, image is saved to camera roll or file system, path will be set to null or image location respectively. |
-| onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
+| onSketchSaved | `function` | An optional function which accepts 2 arguments `success` and `path`. If `success` is true, image is saved successfully and the saved image path might be in second argument. In Android, image path will always be returned. In iOS, image is saved to camera roll or file system, path will be set to null or image location respectively. |
+| onPathsChange | `function` | An optional function which accepts 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
 | user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
 | touchEnabled | `bool` | If false, disable touching. Default is true.  |
 | localSourceImage | `object` | Require an object (see [below](#objects)) which consists of `filename`, `directory`(optional) and `mode`(optional). If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan))([Here](#background-image) for details) |
@@ -212,9 +212,9 @@ AppRegistry.registerComponent('example', () => example);
 | undoComponent | `component` | An optional component for undoing |
 | clearComponent | `component` | An optional component for clearing |
 | saveComponent | `component` | An optional component for saving |
-| strokeComponent | `function` | An optional function which accpets 1 argument `color` and should return a component. |
-| strokeSelectedComponent | `function` | An optional function which accpets 3 arguments `color`, `selectedIndex`, `isColorChanged` and should return a component. `isColorChanged` is useful for animating when changing color. Because rerendering also calls this function, we need `isColorChanged` to determine whether the component is rerendering or the selected color is changed. |
-| strokeWidthComponent | `function` | An optional function which accpets 1 argument `width` and should return a component. |
+| strokeComponent | `function` | An optional function which accepts 1 argument `color` and should return a component. |
+| strokeSelectedComponent | `function` | An optional function which accepts 3 arguments `color`, `selectedIndex`, `isColorChanged` and should return a component. `isColorChanged` is useful for animating when changing color. Because rerendering also calls this function, we need `isColorChanged` to determine whether the component is rerendering or the selected color is changed. |
+| strokeWidthComponent | `function` | An optional function which accepts 1 argument `width` and should return a component. |
 | strokeColors | `array` | An array of colors. Example: `[{ color: '#000000' }, {color: '#FF0000'}]` |
 | defaultStrokeIndex | `numbber` | The default index of selected stroke color |
 | defaultStrokeWidth | `number` | The default thickness of stroke |
