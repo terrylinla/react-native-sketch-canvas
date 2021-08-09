@@ -293,7 +293,7 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 | transparent | boolean | save canvas with transparent background, ignored if imageType is `jpg` |
 | imageType | string  | image file format<br/>Options: `png`, `jpg` |
 | includeImage? | boolean | Set to `true` to include the image loaded from `LocalSourceImage`. (Default is `true`) |
-| includeImage? | boolean | Set to `true` to include the text drawn from `Text`. (Default is `true`) |
+| includeText? | boolean | Set to `true` to include the text drawn from `Text`. (Default is `true`) |
 | cropToImageSize? | boolean | Set to `true` to crop output image to the image loaded from `LocalSourceImage`. (Default is `false`) |
 
 ### Path object
