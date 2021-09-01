@@ -355,12 +355,12 @@ namespace winrt::RNSketchCanvas::implementation
   IAsyncOperation<winrt::hstring> RNSketchCanvasView::saveHelper(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
   {
     // Saving in Pictures requires the application having the picturesLibrary capability.
-    StorageFolder picsRoot = KnownFolders::PicturesLibrary();
-    StorageFolder targetSaveFolder = picsRoot;
+    StorageFolder tempRoot = Windows::Storage::ApplicationData::Current().TemporaryFolder();;
+    StorageFolder targetSaveFolder = tempRoot;
     bool try_to_create_folders = false;
     try
     {
-      targetSaveFolder = co_await picsRoot.GetFolderAsync(winrt::to_hstring(folder));
+      targetSaveFolder = co_await tempRoot.GetFolderAsync(winrt::to_hstring(folder));
     } catch (...)
     {
       // Try to create folders.
@@ -368,7 +368,7 @@ namespace winrt::RNSketchCanvas::implementation
     }
     if (try_to_create_folders)
     {
-      targetSaveFolder = co_await picsRoot.CreateFolderAsync(winrt::to_hstring(folder));
+      targetSaveFolder = co_await tempRoot.CreateFolderAsync(winrt::to_hstring(folder));
     }
     StorageFile file = co_await targetSaveFolder.CreateFileAsync(winrt::to_hstring(filename + (format=="png"?".png":".jpg" )), CreationCollisionOption::ReplaceExisting);
 
