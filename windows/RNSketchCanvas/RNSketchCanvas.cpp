@@ -354,7 +354,6 @@ namespace winrt::RNSketchCanvas::implementation
 
   IAsyncOperation<winrt::hstring> RNSketchCanvasView::saveHelper(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
   {
-    // Saving in Pictures requires the application having the picturesLibrary capability.
     StorageFolder tempRoot = Windows::Storage::ApplicationData::Current().TemporaryFolder();;
     StorageFolder targetSaveFolder = tempRoot;
     bool try_to_create_folders = false;
