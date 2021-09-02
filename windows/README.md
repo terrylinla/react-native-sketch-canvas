@@ -17,10 +17,7 @@ RNSketchCanvas supports autolinking. Just call: `npm i @terrylinla/react-native-
 8. In `App.cpp` add `PackageProviders().Append(winrt::RNSketchCanvas::ReactPackageProvider());` before `InitializeComponent();`
 
 ### Using save on Windows
-On Windows, `save()` will save the resulting image in the Pictures library. In order for the application to save successfully, the `Pictures Library` capability must be added to the application's manifest:
-1. Open your solution in Visual Studio 2019 (eg. `windows\yourapp.sln`)
-2. In the main application project, open the `Package.appxmanifest` file.
-3. In the `Capabilities` tab, check the `Pictures Library` capability.
+On Windows, `save()` will save the resulting image in the TemporaryDirectory folder of the application.
 
 ## Module development
 
