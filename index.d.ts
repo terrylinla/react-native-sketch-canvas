@@ -63,6 +63,7 @@ export interface LocalSourceImage {
 export interface SketchCanvasProps {
   style?: StyleProp<ViewStyle>
   strokeColor?: string
+  promptForExternalWritePermissions?: boolean
   strokeWidth?: number
   user?: string
 
