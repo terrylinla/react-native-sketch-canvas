@@ -50,6 +50,7 @@ class SketchCanvas extends React.Component {
     })),
     localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.oneOf(['AspectFill', 'AspectFit', 'ScaleToFill']) }),
 
+    promptForExternalWritePermissions: PropTypes.bool,
     permissionDialogTitle: PropTypes.string,
     permissionDialogMessage: PropTypes.string,
   };
@@ -218,10 +219,12 @@ class SketchCanvas extends React.Component {
   }
 
   async componentDidMount() {
-    const isStoragePermissionAuthorized = await requestPermissions(
-      this.props.permissionDialogTitle,
-      this.props.permissionDialogMessage,
-    );
+    if (this.props.promptForExternalWritePermissions) {
+      const isStoragePermissionAuthorized = await requestPermissions(
+        this.props.permissionDialogTitle,
+        this.props.permissionDialogMessage,
+      );
+    }
   }
 
   render() {
