@@ -12,7 +12,6 @@ import ReactNative, {
   ViewPropTypes,
   processColor
 } from 'react-native'
-import { requestPermissions } from './handlePermissions';
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
   nativeOnly: {
@@ -169,7 +168,7 @@ class SketchCanvas extends React.Component {
           id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
           width: this.props.strokeWidth, data: []
         }
-        
+
         UIManager.dispatchViewManagerCommand(
           this._handle,
           UIManager.RNSketchCanvas.Commands.newPath,
@@ -216,15 +215,6 @@ class SketchCanvas extends React.Component {
         return true;
       },
     });
-  }
-
-  async componentDidMount() {
-    if (this.props.promptForExternalWritePermissions) {
-      const isStoragePermissionAuthorized = await requestPermissions(
-        this.props.permissionDialogTitle,
-        this.props.permissionDialogMessage,
-      );
-    }
   }
 
   render() {
