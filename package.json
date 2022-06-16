@@ -24,5 +24,8 @@
     "react": "16.13.1",
     "react-native": "0.63.2",
     "react-native-windows": "^0.63.7"
+  },
+  "dependencies": {
+    "deprecated-react-native-prop-types": "^2.3.0"
   }
 }
