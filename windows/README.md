@@ -1,13 +1,16 @@
 # [module name here] Windows Implementation
 
 ## Module Installation
+
 You can either use autolinking on react-native-windows 0.63 and later or manually link the module on earlier releases.
 
 ### Automatic install with autolinking on RNW >= 0.63
-RNSketchCanvas supports autolinking. Just call: `npm i @wwimmo/react-native-sketch-canvas --save`
+
+RNSketchCanvas supports autolinking. Just add: `"@wwimmo/react-native-sketch-canvas": "https://github.com/wwimmo/react-native-sketch-canvas.git"` to your package.json and run yarn/npm install
 
 ### Manual installation on RNW >= 0.62
-1. `npm install @wwimmo/react-native-sketch-canvas --save`
+
+1. Add `"@wwimmo/react-native-sketch-canvas": "https://github.com/wwimmo/react-native-sketch-canvas.git"` and run yarn/npm install
 2. Open your solution in Visual Studio 2019 (eg. `windows\yourapp.sln`)
 3. Right-click Solution icon in Solution Explorer > Add > Existing Project...
 4. Add `node_modules\@wwimmo\react-native-sketch-canvas\windows\RNSketchCanvas\RNSketchCanvas.vcxproj`
@@ -17,12 +20,13 @@ RNSketchCanvas supports autolinking. Just call: `npm i @wwimmo/react-native-sket
 8. In `App.cpp` add `PackageProviders().Append(winrt::RNSketchCanvas::ReactPackageProvider());` before `InitializeComponent();`
 
 ### Using save on Windows
+
 On Windows, `save()` will save the resulting image in the TemporaryDirectory folder of the application.
 
 ## Module development
 
 If you want to contribute to this module Windows implementation, first you must install the [Windows Development Dependencies](https://aka.ms/rnw-deps).
 
-You must temporarily install the `react-native-windows` package. Versions of `react-native-windows` and `react-native` must match, e.g. if the module uses `react-native@0.62`, install `npm i react-native-windows@^0.62 --dev`.
+You must temporarily install the `react-native-windows` package. Versions of `react-native-windows` and `react-native` must match, e.g. if the module uses `react-native@0.62`, install `yarn add react-native-windows@^0.62 --dev`.
 
 Now, you will be able to open corresponding `RNSketchCanvas...sln` file, e.g. `RNSketchCanvas62.sln` for `react-native-windows@0.62`.
