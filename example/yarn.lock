@@ -2030,7 +2030,7 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@terrylinla/react-native-sketch-canvas@file:..":
+"@wwimmo/react-native-sketch-canvas@file:..":
   version "0.8.0"
 
 "@types/archiver@^5.1.0":

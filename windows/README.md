@@ -4,13 +4,13 @@
 You can either use autolinking on react-native-windows 0.63 and later or manually link the module on earlier releases.
 
 ### Automatic install with autolinking on RNW >= 0.63
-RNSketchCanvas supports autolinking. Just call: `npm i @terrylinla/react-native-sketch-canvas --save`
+RNSketchCanvas supports autolinking. Just call: `npm i @wwimmo/react-native-sketch-canvas --save`
 
 ### Manual installation on RNW >= 0.62
-1. `npm install @terrylinla/react-native-sketch-canvas --save`
+1. `npm install @wwimmo/react-native-sketch-canvas --save`
 2. Open your solution in Visual Studio 2019 (eg. `windows\yourapp.sln`)
 3. Right-click Solution icon in Solution Explorer > Add > Existing Project...
-4. Add `node_modules\@terrylinla\react-native-sketch-canvas\windows\RNSketchCanvas\RNSketchCanvas.vcxproj`
+4. Add `node_modules\@wwimmo\react-native-sketch-canvas\windows\RNSketchCanvas\RNSketchCanvas.vcxproj`
 5. Right-click main application project > Add > Reference...
 6. Select `RNSketchCanvas` in Solution Projects
 7. In app `pch.h` add `#include "winrt/RNSketchCanvas.h"`

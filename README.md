@@ -26,15 +26,15 @@ A React Native component for drawing by touching on both iOS and Android.
 Install from `npm` (only support RN >= 0.40)
 
 ```bash
-npm install @terrylinla/react-native-sketch-canvas --save
+npm install @wwimmo/react-native-sketch-canvas --save
 
-afterwards replace the version in package.json with `https://github.com/creambyemute/react-native-sketch-canvas.git` and run yarn or npm install again
+afterwards replace the version in package.json with `https://github.com/wwimmo/react-native-sketch-canvas.git` and run yarn or npm install again
 ```
 
 Link native code (shouldn't be needed if RN >= 0.60, for windows look below)
 
 ```bash
-react-native link @terrylinla/react-native-sketch-canvas
+react-native link @wwimmo/react-native-sketch-canvas
 ```
 
 ### Installation on Windows
@@ -43,14 +43,14 @@ You can either use autolinking on react-native-windows 0.63 and later or manuall
 
 #### Automatic install with autolinking on RNW >= 0.63
 
-RNSketchCanvas supports autolinking. Just call: `npm i @terrylinla/react-native-sketch-canvas --save`
+RNSketchCanvas supports autolinking. Just call: `npm i @wwimmo/react-native-sketch-canvas --save`
 
 #### Manual installation on RNW >= 0.62
 
-1. `npm install @terrylinla/react-native-sketch-canvas --save`
+1. `npm install @wwimmo/react-native-sketch-canvas --save`
 2. Open your solution in Visual Studio 2019 (eg. `windows\yourapp.sln`)
 3. Right-click Solution icon in Solution Explorer > Add > Existing Project...
-4. Add `node_modules\@terrylinla\react-native-sketch-canvas\windows\RNSketchCanvas\RNSketchCanvas.vcxproj`
+4. Add `node_modules\@wwimmo\react-native-sketch-canvas\windows\RNSketchCanvas\RNSketchCanvas.vcxproj`
 5. Right-click main application project > Add > Reference...
 6. Select `RNSketchCanvas` in Solution Projects
 7. In app `pch.h` add `#include "winrt/RNSketchCanvas.h"`
@@ -72,7 +72,7 @@ On Windows, `save()` will save the resulting image in the TemporaryDirectory fol
 import React, { Component } from "react";
 import { AppRegistry, StyleSheet, View } from "react-native";
 
-import { SketchCanvas } from "@terrylinla/react-native-sketch-canvas";
+import { SketchCanvas } from "@wwimmo/react-native-sketch-canvas";
 
 export default class example extends Component {
     render() {
@@ -154,7 +154,7 @@ AppRegistry.registerComponent("example", () => example);
 import React, { Component } from "react";
 import { AppRegistry, StyleSheet, Text, View, Alert } from "react-native";
 
-import RNSketchCanvas from "@terrylinla/react-native-sketch-canvas";
+import RNSketchCanvas from "@wwimmo/react-native-sketch-canvas";
 
 export default class example extends Component {
     render() {
@@ -462,4 +462,4 @@ Check full example app in the [example](./example) folder
 
 ---
 
-Please refer [here](https://github.com/terrylinla/react-native-sketch-canvas/wiki/Troubleshooting).
+Please refer [here](https://github.com/wwimmo/react-native-sketch-canvas/wiki/Troubleshooting).
