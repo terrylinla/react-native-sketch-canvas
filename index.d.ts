@@ -21,32 +21,12 @@ type Path = {
     path: PathData;
 };
 
-type CanvasText = {
-    text: string;
-    font?: string;
-    fontSize?: number;
-    fontColor?: string;
-    overlay?: "TextOnSketch" | "SketchOnText";
-    anchor: { x: number; y: number };
-    position: { x: number; y: number };
-    coordinate?: "Absolute" | "Ratio";
-    /**
-     * If your text is multiline, `alignment` can align shorter lines with left/center/right.
-     */
-    alignment?: "Left" | "Center" | "Right";
-    /**
-     * If your text is multiline, `lineHeightMultiple` can adjust the space between lines.
-     */
-    lineHeightMultiple?: number;
-};
-
 export interface SavePreference {
     folder: string;
     filename: string;
     transparent: boolean;
     imageType: ImageType;
     includeImage?: boolean;
-    includeText?: boolean;
     cropToImageSize?: boolean;
 }
 
@@ -62,7 +42,6 @@ export interface SketchCanvasProps {
     strokeWidth?: number;
     user?: string;
 
-    text?: CanvasText[];
     localSourceImage?: LocalSourceImage;
     touchEnabled?: boolean;
 
@@ -92,7 +71,6 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProps>
     /**
      * @param imageType "png" or "jpg"
      * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
-     * @param includeText Set to `true` to include the text drawn from `Text`.
      * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
      */
     save(
@@ -101,7 +79,6 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProps>
         folder: string,
         filename: string,
         includeImage: boolean,
-        includeText: boolean,
         cropToImageSize: boolean
     ): void;
     getPaths(): Path[];
@@ -109,14 +86,12 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & ViewProps>
     /**
      * @param imageType "png" or "jpg"
      * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
-     * @param includeText Set to `true` to include the text drawn from `Text`.
      * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
      */
     getBase64(
         imageType: ImageType,
         transparent: boolean,
         includeImage: boolean,
-        includeText: boolean,
         cropToImageSize: boolean,
         callback: (error: any, result?: string) => void
     ): void;
@@ -170,12 +145,10 @@ export interface RNSketchCanvasProps {
         transparent: boolean;
         imageType: ImageType;
         includeImage?: boolean;
-        includeText?: boolean;
         cropToImageSize?: boolean;
     };
     onSketchSaved?: (result: boolean, path: string) => void;
 
-    text?: CanvasText[];
     /**
      * {
      *    path: string,

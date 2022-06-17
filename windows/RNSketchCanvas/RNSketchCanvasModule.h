@@ -29,7 +29,6 @@ namespace winrt::RNSketchCanvas
       std::string type,
       bool transparent,
       bool includeImage,
-      bool includeText,
       bool cropToImageSize,
       std::function<void(JSValue, JSValue)> callback
     ) noexcept
@@ -38,7 +37,7 @@ namespace winrt::RNSketchCanvas
       {
         XamlUIService uiService = XamlUIService::FromContext(reactContext.Handle());
         auto sketchCanvasInstance = uiService.ElementFromReactTag(tag).as<winrt::RNSketchCanvas::implementation::RNSketchCanvasView>();
-        IAsyncOperation<winrt::hstring> asyncOp = sketchCanvasInstance->getBase64(type, transparent, includeImage, includeText, cropToImageSize);
+        IAsyncOperation<winrt::hstring> asyncOp = sketchCanvasInstance->getBase64(type, transparent, includeImage, cropToImageSize);
         asyncOp.Completed([=](IAsyncOperation<winrt::hstring> const& sender, AsyncStatus const asyncStatus)
           {
             if (asyncStatus == AsyncStatus::Error)

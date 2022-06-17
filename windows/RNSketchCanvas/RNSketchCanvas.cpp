@@ -19,7 +19,6 @@ namespace winrt
   using namespace Windows::UI::Xaml::Input;
   using namespace Windows::UI::Xaml::Media;
   using namespace Microsoft::Graphics::Canvas;
-  using namespace Microsoft::Graphics::Canvas::Text;
   using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 } // namespace winrt
 
@@ -127,7 +126,6 @@ namespace winrt::RNSketchCanvas::implementation
   {
     auto nativeProps = winrt::single_threaded_map<hstring, ViewManagerPropertyType>();
     nativeProps.Insert(L"localSourceImage", ViewManagerPropertyType::Map);
-    nativeProps.Insert(L"text", ViewManagerPropertyType::Array);
     return nativeProps.GetView();
   }
 
@@ -164,12 +162,6 @@ namespace winrt::RNSketchCanvas::implementation
           }
 
           this->openImageFile(filename, directory, mode);
-        }
-      } else if (propertyName == "text")
-      {
-        if (propertyValue != nullptr)
-        {
-          this->setCanvasText(propertyValue.AsArray());
         }
       }
     }
@@ -352,7 +344,7 @@ namespace winrt::RNSketchCanvas::implementation
     }
   }
 
-  IAsyncOperation<winrt::hstring> RNSketchCanvasView::saveHelper(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
+  IAsyncOperation<winrt::hstring> RNSketchCanvasView::saveHelper(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool cropToImageSize)
   {
     StorageFolder tempRoot = Windows::Storage::ApplicationData::Current().TemporaryFolder();;
     StorageFolder targetSaveFolder = tempRoot;
@@ -371,7 +363,7 @@ namespace winrt::RNSketchCanvas::implementation
     }
     StorageFile file = co_await targetSaveFolder.CreateFileAsync(winrt::to_hstring(filename + (format=="png"?".png":".jpg" )), CreationCollisionOption::ReplaceExisting);
 
-    CanvasBitmap bitmap = createImage(format == "png" && transparent, includeImage, includeText, cropToImageSize);
+    CanvasBitmap bitmap = createImage(format == "png" && transparent, includeImage, cropToImageSize);
 
     auto transactionStream = co_await file.OpenTransactedWriteAsync();
 
@@ -384,9 +376,9 @@ namespace winrt::RNSketchCanvas::implementation
     return file.Path();
   }
 
-  void RNSketchCanvasView::save(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
+  void RNSketchCanvasView::save(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool cropToImageSize)
   {
-    IAsyncOperation<winrt::hstring> asyncSave = saveHelper(format, folder, filename, transparent, includeImage, includeText, cropToImageSize);
+    IAsyncOperation<winrt::hstring> asyncSave = saveHelper(format, folder, filename, transparent, includeImage, cropToImageSize);
 
     asyncSave.Completed([=](IAsyncOperation<winrt::hstring> const& sender, AsyncStatus const asyncStatus)
       {
@@ -403,9 +395,9 @@ namespace winrt::RNSketchCanvas::implementation
 
   }
 
-  IAsyncOperation<winrt::hstring> RNSketchCanvasView::getBase64(std::string format, bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
+  IAsyncOperation<winrt::hstring> RNSketchCanvasView::getBase64(std::string format, bool transparent, bool includeImage, bool cropToImageSize)
   {
-    CanvasBitmap bitmap = createImage(format == "png" && transparent, includeImage, includeText, cropToImageSize);
+    CanvasBitmap bitmap = createImage(format == "png" && transparent, includeImage, cropToImageSize);
 
     Streams::InMemoryRandomAccessStream stream;
 
@@ -447,17 +439,6 @@ namespace winrt::RNSketchCanvas::implementation
       );
     }
 
-    for (std::shared_ptr<CanvasText> & text : mArrSketchOnText)
-    {
-      args.DrawingSession().DrawText(
-        winrt::to_hstring(text->text),
-        text->drawPosition.x + text->lineOffset.x,
-        text->drawPosition.y + text->lineOffset.y,
-        text->color,
-        text->paint
-      );
-    }
-
     if (mDrawingCanvas.has_value())
     {
       args.DrawingSession().DrawImage(mDrawingCanvas.value());
@@ -466,18 +447,6 @@ namespace winrt::RNSketchCanvas::implementation
     {
       args.DrawingSession().DrawImage(mTranslucentDrawingCanvas.value());
     }
-    
-    for (std::shared_ptr<CanvasText> & text : mArrTextOnSketch)
-    {
-      args.DrawingSession().DrawText(
-        winrt::to_hstring(text->text),
-        text->drawPosition.x + text->lineOffset.x,
-        text->drawPosition.y + text->lineOffset.y,
-        text->color,
-        text->paint
-      );
-    }
-
   }
   void RNSketchCanvasView::OnCanvasSizeChanged(const IInspectable canvas, Windows::UI::Xaml::SizeChangedEventArgs const& args)
   {
@@ -495,110 +464,9 @@ namespace winrt::RNSketchCanvas::implementation
         session.Clear(Colors::Transparent());
       }
 
-      for (std::shared_ptr<CanvasText> & text : mArrCanvasText)
-      {
-        float2 position = float2(text->position.x, text->position.y);
-        if (!text->isAbsoluteCoordinate)
-        {
-          position.x *= newSize.Width;
-          position.y *= newSize.Height;
-        }
-        position.x -= text->textBounds.X;
-        position.y -= text->textBounds.Y;
-        position.x -= (text->textBounds.Width * text->anchor.x);
-        position.y -= (text->height * text->anchor.y);
-        text->drawPosition = position;
-      }
-
       mNeedsFullRedraw = true;
       mCanvasControl.Invalidate();
     }
-  }
-
-  void RNSketchCanvasView::setCanvasText(JSValueArray const& aText)
-  {
-    mArrCanvasText.clear();
-    mArrSketchOnText.clear();
-    mArrTextOnSketch.clear();
-
-    for (int i = 0; i < aText.size(); i++)
-    {
-      JSValueObject const& property = aText[i].AsObject();
-      if (property.find("text") != property.end())
-      {
-        std::string alignment = property.find("alignment") != property.end() ? property["alignment"].AsString() : "Left";
-        int lineOffset = 0, maxTextWidth = 0;
-        std::vector<std::string> lines = Utility::splitLines(property["text"].AsString());
-        std::vector<std::shared_ptr<CanvasText>> textSet;
-        for (auto const& line : lines)
-        {
-          std::vector<std::shared_ptr<CanvasText>> & arr = property.find("overlay") != property.end() && property["overlay"].AsString() == "TextOnSketch" ? mArrTextOnSketch : mArrSketchOnText;
-          std::shared_ptr<CanvasText> text = std::make_shared<CanvasText>();
-          text->paint.HorizontalAlignment(CanvasHorizontalAlignment::Left);
-          text->text = line;
-          if (property.find("font") != property.end())
-          {
-            text->paint.FontFamily(winrt::to_hstring(property["font"].AsString()));
-          }
-          text->paint.FontSize(property.find("fontSize") != property.end() ? property["fontSize"].AsSingle() : 12.0f);
-          text->paint.WordWrapping(CanvasWordWrapping::NoWrap);
-          text->paint.LastLineWrapping(false);
-          text->color = property.find("fontColor") != property.end() ? Utility::uint32ToColor(property["fontColor"].AsInt32()) : Colors::Black();
-          text->anchor = property.find("anchor") != property.end() ? float2(property["anchor"].AsObject()["x"].AsSingle(), property["anchor"].AsObject()["y"].AsSingle()) : float2(.0f, .0f);
-          text->position = property.find("position") != property.end() ? float2(property["position"].AsObject()["x"].AsSingle(), property["position"].AsObject()["y"].AsSingle()) : float2(.0f, .0f);
-          text->isAbsoluteCoordinate = !(property.find("coordinate") != property.end() && property["coordinate"].AsString() == "Ratio");
-          CanvasTextLayout boundsLayout = CanvasTextLayout(CanvasDevice::GetSharedDevice(), winrt::to_hstring(line), text->paint, 0, 0);
-          text->textBounds = Rect(boundsLayout.LayoutBounds().X, boundsLayout.LayoutBounds().Y, boundsLayout.LayoutBounds().Width, boundsLayout.LayoutBounds().Height);
-          text->lineOffset = float2(0, lineOffset);
-          lineOffset += text->textBounds.Height * (property.find("lineHeightMultiple") != property.end() ? property["lineHeightMultiple"].AsSingle() : 1.f);
-          maxTextWidth = max(maxTextWidth, text->textBounds.Width);
-          arr.push_back(text);
-          mArrCanvasText.push_back(text);
-          textSet.push_back(text);
-        }
-        for (auto& text : textSet)
-        {
-          text->height = lineOffset;
-          if (text->textBounds.Width < maxTextWidth)
-          {
-            float diff = maxTextWidth - text->textBounds.Width;
-            text->textBounds.X += diff * text->anchor.x;
-          }
-        }
-        if (mCanvasControl.ActualWidth() > 0 && mCanvasControl.ActualHeight() > 0)
-        {
-          for (std::shared_ptr<CanvasText> & text : textSet)
-          {
-            text->height = lineOffset;
-            float2 position = float2(text->position.x, text->position.y);
-            if (!text->isAbsoluteCoordinate)
-            {
-              position.x *= mCanvasControl.ActualWidth();
-              position.y *= mCanvasControl.ActualHeight();
-            }
-            position.x -= text->textBounds.X;
-            position.y -= text->textBounds.Y;
-            position.x -= (text->textBounds.Width * text->anchor.x);
-            position.y -= (text->height * text->anchor.y);
-            text->drawPosition = position;
-          }
-        }
-        if (lines.size() > 1)
-        {
-          for (std::shared_ptr<CanvasText> & text : textSet)
-          {
-            if (alignment == "Right")
-            {
-              text->lineOffset.x = (maxTextWidth - text->textBounds.Width);
-            } else if (alignment == "Center")
-            {
-              text->lineOffset.x = (maxTextWidth - text->textBounds.Width) / 2;
-            }
-          }
-        }
-      }
-    }
-    invalidateCanvas(false);
   }
 
   void RNSketchCanvasView::onSaved(bool success, std::string path)
@@ -645,7 +513,7 @@ namespace winrt::RNSketchCanvas::implementation
     mCanvasControl.Invalidate();
   }
 
-  Microsoft::Graphics::Canvas::CanvasBitmap RNSketchCanvasView::createImage(bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
+  Microsoft::Graphics::Canvas::CanvasBitmap RNSketchCanvasView::createImage(bool transparent, bool includeImage, bool cropToImageSize)
   {
     CanvasRenderTarget canvas = CanvasRenderTarget(
       CanvasDevice::GetSharedDevice(),
@@ -671,20 +539,6 @@ namespace winrt::RNSketchCanvas::implementation
         );
       }
 
-      if (includeText)
-      {
-        for (std::shared_ptr<CanvasText> & text : mArrSketchOnText)
-        {
-          session.DrawText(
-            winrt::to_hstring(text->text),
-            text->drawPosition.x + text->lineOffset.x,
-            text->drawPosition.y + text->lineOffset.y,
-            text->color,
-            text->paint
-          );
-        }
-      }
-
       if (mBackgroundImage.has_value() && cropToImageSize)
       {
         session.DrawImage(
@@ -700,20 +554,6 @@ namespace winrt::RNSketchCanvas::implementation
       } else
       {
         session.DrawImage(mDrawingCanvas.value());
-      }
-
-      if (includeText)
-      {
-        for (std::shared_ptr<CanvasText> & text : mArrTextOnSketch)
-        {
-          session.DrawText(
-            winrt::to_hstring(text->text),
-            text->drawPosition.x + text->lineOffset.x,
-            text->drawPosition.y + text->lineOffset.y,
-            text->color,
-            text->paint
-          );
-        }
       }
 
     }

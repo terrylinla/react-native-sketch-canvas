@@ -40,7 +40,6 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static SketchCanvas Canvas = null;
 
     private static final String PROPS_LOCAL_SOURCE_IMAGE = "localSourceImage";
-    private static final String PROPS_TEXT = "text";
 
     @Override
     public String getName() {
@@ -62,11 +61,6 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 localSourceImage.hasKey("mode") ? localSourceImage.getString("mode") : ""
             );
         }
-    }
-
-    @ReactProp(name = PROPS_TEXT)
-    public void setText(SketchCanvas viewContainer, ReadableArray text) {
-        viewContainer.setCanvasText(text);
     }
 
     @Override
