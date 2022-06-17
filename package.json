@@ -1,31 +1,32 @@
 {
-  "name": "@terrylinla/react-native-sketch-canvas",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/terrylinla/react-native-sketch-canvas"
-  },
-  "version": "0.8.1",
-  "description": "react-native-sketch-canvas allows you to draw / sketch on both iOS and Android devices and sync the drawing data between users. Of course you can save as image.",
-  "author": "Terry Lin",
-  "main": "index.js",
-  "keywords": [
-    "react-native",
-    "react-native-sketch",
-    "react-native-svg",
-    "react",
-    "native",
-    "sketch",
-    "svg",
-    "draw"
-  ],
-  "nativePackage": true,
-  "license": "MIT",
-  "devDependencies": {
-    "react": "16.13.1",
-    "react-native": "0.63.2",
-    "react-native-windows": "^0.63.7"
-  },
-  "dependencies": {
-    "deprecated-react-native-prop-types": "^2.3.0"
-  }
+    "name": "@terrylinla/react-native-sketch-canvas",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/terrylinla/react-native-sketch-canvas"
+    },
+    "version": "0.8.1",
+    "description": "react-native-sketch-canvas allows you to draw / sketch on both iOS and Android devices and sync the drawing data between users. Of course you can save as image.",
+    "author": "Terry Lin",
+    "main": "index.js",
+    "keywords": [
+        "react-native",
+        "react-native-sketch",
+        "react-native-svg",
+        "react",
+        "native",
+        "sketch",
+        "svg",
+        "draw"
+    ],
+    "nativePackage": true,
+    "license": "MIT",
+    "devDependencies": {
+        "react": "16.13.1",
+        "react-native": "0.63.2",
+        "react-native-windows": "^0.63.7",
+        "prettier": "^2.7.1"
+    },
+    "dependencies": {
+        "deprecated-react-native-prop-types": "^2.3.0"
+    }
 }

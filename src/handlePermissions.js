@@ -1,10 +1,10 @@
-import { PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform } from "react-native";
 
 export const requestPermissions = async (permissionDialogTitle, permissionDialogMessage) => {
-    if (Platform.OS === 'android') {
+    if (Platform.OS === "android") {
         const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE, {
             title: permissionDialogTitle,
-            message: permissionDialogMessage,
+            message: permissionDialogMessage
         });
 
         // On devices before SDK version 23, the permissions are automatically granted if they appear in the manifest,
@@ -14,4 +14,4 @@ export const requestPermissions = async (permissionDialogTitle, permissionDialog
         return isAuthorized;
     }
     return true;
-}
+};
