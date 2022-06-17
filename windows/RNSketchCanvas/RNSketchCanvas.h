@@ -8,19 +8,6 @@
 
 namespace winrt::RNSketchCanvas::implementation
 {
-
-  class CanvasText
-  {
-  public:
-    std::string text;
-    Microsoft::Graphics::Canvas::Text::CanvasTextFormat paint;
-    winrt::Windows::Foundation::Numerics::float2 anchor, position, drawPosition, lineOffset;
-    bool isAbsoluteCoordinate;
-    winrt::Windows::Foundation::Rect textBounds;
-    float height;
-    Windows::UI::Color color;
-  };
-
   class RNSketchCanvasView : public RNSketchCanvasViewT<RNSketchCanvasView>
   {
   public:
@@ -53,9 +40,9 @@ namespace winrt::RNSketchCanvas::implementation
     void addPath(int32_t id, uint32_t strokeColor, float strokeWidth, std::vector<winrt::Windows::Foundation::Numerics::float2> points);
     void deletePath(int32_t id);
     void end();
-    void save(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool includeText, bool cropToImageSize);
+    void save(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool cropToImageSize);
 
-    IAsyncOperation<winrt::hstring> getBase64(std::string format, bool transparent, bool includeImage, bool includeText, bool cropToImageSize);
+    IAsyncOperation<winrt::hstring> getBase64(std::string format, bool transparent, bool includeImage, bool cropToImageSize);
 
   private:
     std::vector<std::shared_ptr<SketchData>> mPaths;
@@ -71,11 +58,7 @@ namespace winrt::RNSketchCanvas::implementation
     int mOriginalWidth, mOriginalHeight;
     std::string mContentMode;
 
-    std::vector<std::shared_ptr<CanvasText>> mArrCanvasText;
-    std::vector<std::shared_ptr<CanvasText>> mArrTextOnSketch;
-    std::vector<std::shared_ptr<CanvasText>> mArrSketchOnText;
-
-    IAsyncOperation<winrt::hstring> saveHelper(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool includeText, bool cropToImageSize);
+    IAsyncOperation<winrt::hstring> saveHelper(std::string format, std::string folder, std::string filename, bool transparent, bool includeImage, bool cropToImageSize);
 
     Microsoft::ReactNative::IReactContext m_reactContext{ nullptr };
     void OnCanvasDraw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const&, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const&);
@@ -83,12 +66,10 @@ namespace winrt::RNSketchCanvas::implementation
     Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl::Draw_revoker mCanvasDrawRevoker{};
     Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl::SizeChanged_revoker mCanvaSizeChangedRevoker{};
 
-    void setCanvasText(Microsoft::ReactNative::JSValueArray const& aText);
-
     void onSaved(bool success, std::string path);
 
     void invalidateCanvas(bool shouldDispatchEvent);
-    Microsoft::Graphics::Canvas::CanvasBitmap createImage(bool transparent, bool includeImage, bool includeText, bool cropToImageSize);
+    Microsoft::Graphics::Canvas::CanvasBitmap createImage(bool transparent, bool includeImage, bool cropToImageSize);
   };
 }
 

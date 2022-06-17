@@ -36,20 +36,6 @@ class SketchCanvas extends React.Component {
 
         touchEnabled: PropTypes.bool,
 
-        text: PropTypes.arrayOf(
-            PropTypes.shape({
-                text: PropTypes.string,
-                font: PropTypes.string,
-                fontSize: PropTypes.number,
-                fontColor: PropTypes.string,
-                overlay: PropTypes.oneOf(["TextOnSketch", "SketchOnText"]),
-                anchor: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
-                position: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
-                coordinate: PropTypes.oneOf(["Absolute", "Ratio"]),
-                alignment: PropTypes.oneOf(["Left", "Center", "Right"]),
-                lineHeightMultiple: PropTypes.number
-            })
-        ),
         localSourceImage: PropTypes.shape({
             filename: PropTypes.string,
             directory: PropTypes.string,
@@ -73,15 +59,10 @@ class SketchCanvas extends React.Component {
 
         touchEnabled: true,
 
-        text: null,
         localSourceImage: null,
 
         permissionDialogTitle: "",
         permissionDialogMessage: ""
-    };
-
-    state = {
-        text: null
     };
 
     constructor(props) {
@@ -94,19 +75,6 @@ class SketchCanvas extends React.Component {
         this._offset = { x: 0, y: 0 };
         this._size = { width: 0, height: 0 };
         this._initialized = false;
-
-        this.state.text = this._processText(props.text ? props.text.map((t) => Object.assign({}, t)) : null);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        this.setState({
-            text: this._processText(nextProps.text ? nextProps.text.map((t) => Object.assign({}, t)) : null)
-        });
-    }
-
-    _processText(text) {
-        text && text.forEach((t) => (t.fontColor = processColor(t.fontColor)));
-        return text;
     }
 
     clear() {
@@ -155,11 +123,11 @@ class SketchCanvas extends React.Component {
         );
     }
 
-    save(imageType, transparent, folder, filename, includeImage, includeText, cropToImageSize) {
+    save(imageType, transparent, folder, filename, includeImage, cropToImageSize) {
         UIManager.dispatchViewManagerCommand(
             this._handle,
             UIManager.getViewManagerConfig("RNSketchCanvas").Commands.save,
-            [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize]
+            [imageType, folder, filename, transparent, includeImage, cropToImageSize]
         );
     }
 
@@ -167,14 +135,13 @@ class SketchCanvas extends React.Component {
         return this._paths;
     }
 
-    getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback) {
+    getBase64(imageType, transparent, includeImage, cropToImageSize, callback) {
         if (Platform.OS === "ios") {
             SketchCanvasManager.transferToBase64(
                 this._handle,
                 imageType,
                 transparent,
                 includeImage,
-                includeText,
                 cropToImageSize,
                 callback
             );
@@ -184,7 +151,6 @@ class SketchCanvas extends React.Component {
                 imageType,
                 transparent,
                 includeImage,
-                includeText,
                 cropToImageSize,
                 callback
             );
@@ -296,7 +262,6 @@ class SketchCanvas extends React.Component {
                 localSourceImage={this.props.localSourceImage}
                 permissionDialogTitle={this.props.permissionDialogTitle}
                 permissionDialogMessage={this.props.permissionDialogMessage}
-                text={this.state.text}
             />
         );
     }

@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import ReactNative, { View, Text, TouchableOpacity, FlatList } from "react-native";
+import { View, TouchableOpacity, FlatList } from "react-native";
 import SketchCanvas from "./src/SketchCanvas";
 import { requestPermissions } from "./src/handlePermissions";
 import { ViewPropTypes } from "deprecated-react-native-prop-types";
@@ -38,20 +38,6 @@ export default class RNSketchCanvas extends React.Component {
         savePreference: PropTypes.func,
         onSketchSaved: PropTypes.func,
 
-        text: PropTypes.arrayOf(
-            PropTypes.shape({
-                text: PropTypes.string,
-                font: PropTypes.string,
-                fontSize: PropTypes.number,
-                fontColor: PropTypes.string,
-                overlay: PropTypes.oneOf(["TextOnSketch", "SketchOnText"]),
-                anchor: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
-                position: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
-                coordinate: PropTypes.oneOf(["Absolute", "Ratio"]),
-                alignment: PropTypes.oneOf(["Left", "Center", "Right"]),
-                lineHeightMultiple: PropTypes.number
-            })
-        ),
         localSourceImage: PropTypes.shape({
             filename: PropTypes.string,
             directory: PropTypes.string,
@@ -114,7 +100,6 @@ export default class RNSketchCanvas extends React.Component {
         savePreference: null,
         onSketchSaved: () => {},
 
-        text: null,
         localSourceImage: null,
 
         permissionDialogTitle: "",
@@ -160,7 +145,6 @@ export default class RNSketchCanvas extends React.Component {
                 p.folder ? p.folder : "",
                 p.filename,
                 p.includeImage !== false,
-                p.includeText !== false,
                 p.cropToImageSize || false
             );
         } else {
@@ -312,7 +296,6 @@ export default class RNSketchCanvas extends React.Component {
                     strokeWidth={this.state.strokeWidth}
                     onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
                     onPathsChange={this.props.onPathsChange}
-                    text={this.props.text}
                     localSourceImage={this.props.localSourceImage}
                     permissionDialogTitle={this.props.permissionDialogTitle}
                     permissionDialogMessage={this.props.permissionDialogMessage}

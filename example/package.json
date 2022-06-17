@@ -13,7 +13,7 @@
     "windows": "react-native run-windows"
   },
   "dependencies": {
-    "@terrylinla/react-native-sketch-canvas": "file:..",
+    "@wwimmo/react-native-sketch-canvas": "file:..",
     "react": "16.13.1",
     "react-native": "0.63.2",
     "react-native-camera": "^3.40.0",
