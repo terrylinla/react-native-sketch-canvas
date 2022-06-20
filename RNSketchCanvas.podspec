@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.name         = 'RNSketchCanvas'
   s.version      = package['version']
   s.summary      = package['description']
-  s.homepage     = 'https://github.com/creambyemute/react-native-sketch-canvas'
+  s.homepage     = 'https://github.com/wwimmo/react-native-sketch-canvas'
   s.license      = package['license']
   s.authors      = package['author']
   s.source       = { :git => package['repository']['url'] }

@@ -26,7 +26,13 @@ A React Native component for drawing by touching on both iOS and Android.
 Install from `npm/yarn` (only support RN >= 0.40)
 
 ```bash
-Add `"@wwimmo/react-native-sketch-canvas": "https://github.com/wwimmo/react-native-sketch-canvas.git"` to your package.json and run yarn/npm install
+yarn @wwimmo/react-native-sketch-canvas
+```
+
+or
+
+```bash
+npm install @wwimmo/react-native-sketch-canvas
 ```
 
 Link native code (shouldn't be needed if RN >= 0.60, for windows look below)
@@ -41,11 +47,11 @@ You can either use autolinking on react-native-windows 0.63 and later or manuall
 
 #### Automatic install with autolinking on RNW >= 0.63
 
-RNSketchCanvas supports autolinking. Just add: `"@wwimmo/react-native-sketch-canvas": "https://github.com/wwimmo/react-native-sketch-canvas.git"` to your package.json and run yarn/npm install
+RNSketchCanvas supports autolinking. See above for installation
 
 #### Manual installation on RNW >= 0.62
 
-1. Add `"@wwimmo/react-native-sketch-canvas": "https://github.com/wwimmo/react-native-sketch-canvas.git"` to your package.json and run yarn/npm install
+1. Install the package `yarn @wwimmo/react-native-sketch-canvas`
 2. Open your solution in Visual Studio 2019 (eg. `windows\yourapp.sln`)
 3. Right-click Solution icon in Solution Explorer > Add > Existing Project...
 4. Add `node_modules\@wwimmo\react-native-sketch-canvas\windows\RNSketchCanvas\RNSketchCanvas.vcxproj`

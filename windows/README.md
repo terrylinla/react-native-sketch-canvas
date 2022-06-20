@@ -6,11 +6,11 @@ You can either use autolinking on react-native-windows 0.63 and later or manuall
 
 ### Automatic install with autolinking on RNW >= 0.63
 
-RNSketchCanvas supports autolinking. Just add: `"@wwimmo/react-native-sketch-canvas": "https://github.com/wwimmo/react-native-sketch-canvas.git"` to your package.json and run yarn/npm install
+RNSketchCanvas supports autolinking. Just install the library: `yarn @wwimmo/react-native-sketch-canvas`
 
 ### Manual installation on RNW >= 0.62
 
-1. Add `"@wwimmo/react-native-sketch-canvas": "https://github.com/wwimmo/react-native-sketch-canvas.git"` and run yarn/npm install
+1. Install with `yarn @wwimmo/react-native-sketch-canvas`
 2. Open your solution in Visual Studio 2019 (eg. `windows\yourapp.sln`)
 3. Right-click Solution icon in Solution Explorer > Add > Existing Project...
 4. Add `node_modules\@wwimmo\react-native-sketch-canvas\windows\RNSketchCanvas\RNSketchCanvas.vcxproj`
