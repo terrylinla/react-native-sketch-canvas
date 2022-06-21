@@ -113,7 +113,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 return;
             }
             case COMMAND_SAVE: {
-                view.save(args.getString(0), args.getString(1), args.getString(2), args.getBoolean(3), args.getBoolean(4), args.getBoolean(5), args.getBoolean(6));
+                view.save(args.getString(0), args.getString(1), args.getString(2), args.getBoolean(3), args.getBoolean(4),args.getBoolean(6));
                 return;
             }
             case COMMAND_END_PATH: {

@@ -165,7 +165,6 @@ export default class RNSketchCanvas extends React.Component {
                     "-" +
                     ("0" + date.getSeconds()).slice(-2),
                 true,
-                true,
                 false
             );
         }
