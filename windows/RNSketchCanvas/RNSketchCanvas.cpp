@@ -245,7 +245,7 @@ namespace winrt::RNSketchCanvas::implementation
         commandArgs[2].AsString(),
         commandArgs[3].AsBoolean(),
         commandArgs[4].AsBoolean(),
-        commandArgs[6].AsBoolean()
+        commandArgs[5].AsBoolean()
       );
     } else if (commandId == L"endPath")
     {
