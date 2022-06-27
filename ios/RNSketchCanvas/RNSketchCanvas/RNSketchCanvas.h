@@ -19,12 +19,3 @@
 - (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage cropToImageSize:(BOOL)cropToImageSize;
 
 @end
-
-@property (nonatomic) UIFont *font;
-@property (nonatomic) UIColor *fontColor;
-@property (nonatomic) CGPoint anchor, position;
-@property (nonatomic) NSDictionary *attribute;
-@property (nonatomic) BOOL isAbsoluteCoordinate;
-@property (nonatomic) CGRect drawRect;
-
-@end
