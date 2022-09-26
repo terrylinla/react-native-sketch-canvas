@@ -9,10 +9,10 @@ import ReactNative, {
   PanResponder,
   PixelRatio,
   Platform,
-  ViewPropTypes,
   processColor
 } from 'react-native'
 import { requestPermissions } from './handlePermissions';
+import { ViewPropTypes } from 'deprecated-react-native-prop-types'
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
   nativeOnly: {
