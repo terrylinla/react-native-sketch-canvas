@@ -60,8 +60,9 @@ public class SketchCanvas extends View {
             BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
             File file = new File(filename, directory == null ? "" : directory);
             Bitmap bitmap = res == 0 ? 
-                BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
+                BitmapFactory.decodeFile(file.toString(), bitmapOptions) :
                 BitmapFactory.decodeResource(mContext.getResources(), res);
+            
              try {
                 ExifInterface exif = new ExifInterface(file.getAbsolutePath());
                 Matrix matrix = new Matrix();
