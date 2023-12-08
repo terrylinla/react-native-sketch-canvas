@@ -9,6 +9,8 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
@@ -56,9 +58,29 @@ public class SketchCanvas extends View {
                 "drawable", 
                 mContext.getPackageName());
             BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+            File file = new File(filename, directory == null ? "" : directory);
             Bitmap bitmap = res == 0 ? 
-                BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
+                BitmapFactory.decodeFile(file.toString(), bitmapOptions) :
                 BitmapFactory.decodeResource(mContext.getResources(), res);
+            
+             try {
+                ExifInterface exif = new ExifInterface(file.getAbsolutePath());
+                Matrix matrix = new Matrix();
+
+                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+                if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
+                    matrix.postRotate(90);
+                } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
+                    matrix.postRotate(180);
+                } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
+                    matrix.postRotate(270);
+                }
+
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true); // rotating bitmap
+            } catch (Exception e) {
+
+            }
+
             if(bitmap != null) {
                 mBackgroundImage = bitmap;
                 mOriginalHeight = bitmap.getHeight();
