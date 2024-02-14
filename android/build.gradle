@@ -28,5 +28,5 @@ android {
 }
 
 dependencies {
-    provided "com.facebook.react:react-native:+"
+    api "com.facebook.react:react-native:+"
 }
